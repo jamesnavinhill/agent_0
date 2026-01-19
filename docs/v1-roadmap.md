@@ -26,7 +26,7 @@ The goal is to remove all mocks and ensure "What you see is what exists".
   * Google Search Grounding enabled.
   * Outputs persisted to `gallery_items`.
   * Knowledge persisted to `knowledge` table.
-* [ ] **Gallery Persistence:** Ensure Gallery UI fetches from DB (server-side) and displays real items.
+* [x] **Gallery Persistence:** Ensure Gallery UI fetches from DB (server-side) and displays real items.
 * [ ] **Schedule Panel Real Data:** Refactor Schedule Panel to fetch/manage tasks completely from DB (remove mock goals).
 * [ ] **Memory System:** Ensure `addMemory` connects to DB vector search (pgvector).
 
@@ -35,8 +35,8 @@ The goal is to remove all mocks and ensure "What you see is what exists".
 Each task will be a modular file in `lib/agent/tools/`.
 
 * **Task 1: The Morning Read (Optimization)**
-  * *Status:* V1 Executable.
-  * *Next:* Improve prompt for better formatting, link validation.
+  * *Status:* V1 Executable & Optimized.
+  * *Notes:* Prompt refined for high-signal content; Modal UI improved.
 * **Task 2: Code Maintenance**
   * *Goal:* Agent reads its own repo, runs `tsc`, and logs issues.
   * *Model:* Gemini 3 Pro (Vibe-coding).

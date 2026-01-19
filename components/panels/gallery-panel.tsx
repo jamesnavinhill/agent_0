@@ -338,17 +338,15 @@ export function GalleryPanel() {
 
       {/* Detail dialog - Made Wider/Larger */}
       <Dialog open={!!selectedOutput} onOpenChange={() => setSelectedOutput(null)}>
-        {/* Detail dialog - Made Wider/Larger */}
-        <Dialog open={!!selectedOutput} onOpenChange={() => setSelectedOutput(null)}>
-          <DialogContent className="max-w-4xl h-[85vh] flex flex-col p-0 gap-0 overflow-hidden border-border/50 sm:rounded-2xl shadow-2xl">
-            {selectedOutput && (
-              <DetailContent
-                output={selectedOutput}
-                onClose={() => setSelectedOutput(null)}
-              />
-            )}
-          </DialogContent>
-        </Dialog>
+        <DialogContent className="max-w-4xl h-[85vh] flex flex-col p-0 gap-0 overflow-hidden border-border/50 sm:rounded-2xl shadow-2xl">
+          {selectedOutput && (
+            <DetailContent
+              output={selectedOutput}
+              onClose={() => setSelectedOutput(null)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
