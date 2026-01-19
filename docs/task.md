@@ -1,6 +1,7 @@
 # Sprint 5 Task Tracker
 
 ## Phase 1: Testing & Logging Foundation ✅ COMPLETE
+
 - [x] Set up Vitest and testing infrastructure
   - [x] Install dependencies (vitest, testing-library, jsdom)
   - [x] Create [vitest.config.ts](file:///c:/Users/james/projects/agent_0/vitest.config.ts)
@@ -21,25 +22,46 @@
 
 ---
 
-## Phase 2: Voice I/O (Next Session)
-- [ ] Implement browser-based Whisper STT
-  - [ ] Install @xenova/transformers
-  - [ ] Create `lib/voice/whisper-client.ts`
-  - [ ] Modify [multimodal-input.tsx](file:///c:/Users/james/projects/agent_0/components/input/multimodal-input.tsx) for transcription
-- [ ] Implement Web Speech API TTS
-  - [ ] Create `lib/voice/tts-client.ts`
-  - [ ] Create `hooks/use-tts.ts`
-  - [ ] Add speak buttons to chat-panel
-  - [ ] Add speak buttons to thoughts-panel
+## Phase 2: Voice I/O ✅ COMPLETE
 
-## Phase 3: Multi-Agent (Future)
-- [ ] Create agent types and pool
-- [ ] Enhance orchestrator for multi-agent
-- [ ] Create `hooks/use-sub-agents.ts`
-- [ ] Add sub-agent state to store
+- [x] Implement browser-based Whisper STT
+  - [x] Install @xenova/transformers
+  - [x] Create [lib/voice/whisper-client.ts](file:///c:/Users/james/projects/agent_0/lib/voice/whisper-client.ts)
+  - [x] Modify [multimodal-input.tsx](file:///c:/Users/james/projects/agent_0/components/input/multimodal-input.tsx) for transcription
+- [x] Implement Web Speech API TTS
+  - [x] Create [lib/voice/tts-client.ts](file:///c:/Users/james/projects/agent_0/lib/voice/tts-client.ts)
+  - [x] Create [hooks/use-tts.ts](file:///c:/Users/james/projects/agent_0/hooks/use-tts.ts)
+  - [x] Add speak buttons to [chat-panel.tsx](file:///c:/Users/james/projects/agent_0/components/panels/chat-panel.tsx)
+  - [x] Add speak buttons to [thoughts-panel.tsx](file:///c:/Users/james/projects/agent_0/components/panels/thoughts-panel.tsx)
+  - [x] Add speak buttons to [activity-panel.tsx](file:///c:/Users/james/projects/agent_0/components/panels/activity-panel.tsx)
 
-## Phase 4: Visibility & Polish (Future)
-- [ ] Enhance monitor panel with real data
-- [ ] Improve activity streaming
-- [ ] Add browser preview capability
-- [ ] Update scheduled task defaults
+---
+
+## Phase 3: Multi-Agent ✅ COMPLETE
+
+- [x] Create agent types and pool
+  - [x] Create [lib/agents/types.ts](file:///c:/Users/james/projects/agent_0/lib/agents/types.ts)
+  - [x] Create [lib/agents/sub-agent.ts](file:///c:/Users/james/projects/agent_0/lib/agents/sub-agent.ts)
+  - [x] Create [lib/agents/agent-pool.ts](file:///c:/Users/james/projects/agent_0/lib/agents/agent-pool.ts)
+- [x] Create [hooks/use-sub-agents.ts](file:///c:/Users/james/projects/agent_0/hooks/use-sub-agents.ts)
+- [x] Enhance orchestrator for multi-agent
+  - [x] [lib/autonomy/orchestrator.ts](file:///c:/Users/james/projects/agent_0/lib/autonomy/orchestrator.ts) with sub-agent spawning
+  - [x] Task decomposition for research tasks
+  - [x] Agent pool integration
+- [x] Add sub-agent UI visibility panel
+  - [x] [components/panels/sub-agents-panel.tsx](file:///c:/Users/james/projects/agent_0/components/panels/sub-agents-panel.tsx)
+  - [x] Added to navigation rail and page routing
+
+---
+
+## Phase 4: Visibility & Polish ✅ COMPLETE
+
+- [x] Enhance monitor panel with real data
+  - [x] Replace mock terminal with real activity bus stream
+  - [x] Add real-time activity event subscription
+- [x] Improve activity streaming
+  - [x] Add log levels (debug/info/action/thought/error)
+  - [x] Add source tracking and metadata
+- [x] Update scheduled task defaults
+  - [x] Essay task now runs every 6 hours
+  - [x] Added focused prompt for quality essays

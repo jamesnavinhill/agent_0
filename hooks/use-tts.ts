@@ -4,6 +4,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { getTTSClient, TTSOptions } from '@/lib/voice/tts-client';
+import type TTSClient from '@/lib/voice/tts-client';
 
 export interface UseTTSReturn {
     speak: (text: string, options?: TTSOptions) => void;
@@ -25,12 +26,15 @@ export function useTTS(): UseTTSReturn {
     const [selectedVoice, setSelectedVoice] = useState<SpeechSynthesisVoice | null>(null);
     const [ready, setReady] = useState(false);
 
-    const ttsClientRef = useRef(getTTSClient());
+    const ttsClientRef = useRef<TTSClient | null>(null);
     const statusCheckInterval = useRef<NodeJS.Timeout | null>(null);
 
-    // Load voices on mount
+    // Initialize client on mount (client-side only)
     useEffect(() => {
-        const client = ttsClientRef.current;
+        const client = getTTSClient();
+        if (!client) return;
+
+        ttsClientRef.current = client;
 
         // Initial load
         const loadedVoices = client.getVoices();
@@ -38,7 +42,7 @@ export function useTTS(): UseTTSReturn {
         setReady(client.ready);
 
         // Set default voice (prefer English)
-        if (loadedVoices.length > 0 && !selectedVoice) {
+        if (loadedVoices.length > 0) {
             const defaultVoice = client.getDefaultVoice('en');
             setSelectedVoice(defaultVoice || loadedVoices[0]);
         }
@@ -69,8 +73,10 @@ export function useTTS(): UseTTSReturn {
     useEffect(() => {
         statusCheckInterval.current = setInterval(() => {
             const client = ttsClientRef.current;
-            setIsSpeaking(client.isSpeaking);
-            setIsPaused(client.isPaused);
+            if (client) {
+                setIsSpeaking(client.isSpeaking);
+                setIsPaused(client.isPaused);
+            }
         }, 100);
 
         return () => {
@@ -82,6 +88,7 @@ export function useTTS(): UseTTSReturn {
 
     const speak = useCallback((text: string, options: TTSOptions = {}) => {
         const client = ttsClientRef.current;
+        if (!client) return;
 
         const mergedOptions: TTSOptions = {
             ...options,
@@ -107,18 +114,27 @@ export function useTTS(): UseTTSReturn {
     }, [selectedVoice]);
 
     const stop = useCallback(() => {
-        ttsClientRef.current.stop();
+        const client = ttsClientRef.current;
+        if (client) {
+            client.stop();
+        }
         setIsSpeaking(false);
         setIsPaused(false);
     }, []);
 
     const pause = useCallback(() => {
-        ttsClientRef.current.pause();
+        const client = ttsClientRef.current;
+        if (client) {
+            client.pause();
+        }
         setIsPaused(true);
     }, []);
 
     const resume = useCallback(() => {
-        ttsClientRef.current.resume();
+        const client = ttsClientRef.current;
+        if (client) {
+            client.resume();
+        }
         setIsPaused(false);
     }, []);
 
@@ -139,3 +155,4 @@ export function useTTS(): UseTTSReturn {
         ready,
     };
 }
+

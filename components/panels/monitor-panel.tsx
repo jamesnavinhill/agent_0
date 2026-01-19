@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useAgentStore } from "@/lib/store/agent-store"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -30,6 +30,12 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import {
+  subscribeActivity,
+  getRecentActivities,
+  type ActivityEvent,
+  type ActivityLevel,
+} from "@/lib/activity/bus"
 
 type MonitorView = "browser" | "terminal" | "split"
 
@@ -40,19 +46,39 @@ interface TerminalLine {
   content: string
 }
 
-// Mock terminal output for demo
-const mockTerminalLines: TerminalLine[] = [
-  { id: "1", timestamp: new Date(Date.now() - 30000), type: "system", content: "Agent Zero v0.1.0 initialized" },
-  { id: "2", timestamp: new Date(Date.now() - 25000), type: "system", content: "Connecting to APIs..." },
-  { id: "3", timestamp: new Date(Date.now() - 20000), type: "output", content: "✓ Gemini API connected" },
-  { id: "4", timestamp: new Date(Date.now() - 18000), type: "output", content: "✓ File system mounted at /workspace" },
-  { id: "5", timestamp: new Date(Date.now() - 15000), type: "input", content: "$ research --topic 'emergent AI behavior'" },
-  { id: "6", timestamp: new Date(Date.now() - 12000), type: "output", content: "Searching knowledge bases..." },
-  { id: "7", timestamp: new Date(Date.now() - 10000), type: "output", content: "Found 47 relevant papers" },
-  { id: "8", timestamp: new Date(Date.now() - 8000), type: "input", content: "$ analyze --depth deep --save" },
-  { id: "9", timestamp: new Date(Date.now() - 5000), type: "output", content: "Analysis in progress..." },
-  { id: "10", timestamp: new Date(), type: "system", content: "█" },
-]
+/**
+ * Map activity level to terminal line type
+ */
+function levelToTerminalType(level?: ActivityLevel): TerminalLine["type"] {
+  switch (level) {
+    case "action":
+      return "input"
+    case "error":
+      return "error"
+    case "thought":
+    case "debug":
+      return "system"
+    default:
+      return "output"
+  }
+}
+
+/**
+ * Convert ActivityEvent to TerminalLine format
+ */
+function activityToTerminalLine(event: ActivityEvent): TerminalLine {
+  const prefix = event.source ? `[${event.source}] ` : ""
+  const content = event.level === "action"
+    ? `$ ${event.action}`
+    : `${prefix}${event.action}${event.details ? `: ${event.details}` : ""}`
+
+  return {
+    id: event.id ?? crypto.randomUUID(),
+    timestamp: new Date(event.timestamp),
+    type: levelToTerminalType(event.level),
+    content,
+  }
+}
 
 export function MonitorPanel() {
   const { state } = useAgentStore()
@@ -60,7 +86,36 @@ export function MonitorPanel() {
   const [isLive, setIsLive] = useState(true)
   const [isPublic, setIsPublic] = useState(false)
   const [viewerCount] = useState(12)
-  const [terminalLines] = useState<TerminalLine[]>(mockTerminalLines)
+  const [terminalLines, setTerminalLines] = useState<TerminalLine[]>([])
+  const scrollRef = useRef<HTMLDivElement>(null)
+
+  // Subscribe to activity bus for real-time terminal updates
+  useEffect(() => {
+    // Initialize with recent activities
+    const recent = getRecentActivities({ limit: 50 })
+    setTerminalLines(recent.map(activityToTerminalLine))
+
+    // Subscribe to new activity events
+    const unsubscribe = subscribeActivity((event) => {
+      if (!isLive) return
+
+      setTerminalLines((prev) => {
+        const newLine = activityToTerminalLine(event)
+        const updated = [...prev, newLine]
+        // Keep last 100 lines
+        return updated.slice(-100)
+      })
+    })
+
+    return unsubscribe
+  }, [isLive])
+
+  // Auto-scroll to bottom when new lines added
+  useEffect(() => {
+    if (scrollRef.current && isLive) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+    }
+  }, [terminalLines, isLive])
 
   const isConnected = state !== "error"
 
@@ -82,7 +137,7 @@ export function MonitorPanel() {
               <span className="text-xs text-muted-foreground">PAUSED</span>
             )}
           </div>
-          
+
           {isPublic && (
             <div className="flex items-center gap-1.5 text-muted-foreground">
               <Users className="w-3.5 h-3.5" />
@@ -192,7 +247,7 @@ export function MonitorPanel() {
                 <RotateCcw className="w-3 h-3" />
               </Button>
             </div>
-            
+
             {/* Browser View */}
             <div className="flex-1 bg-surface-0 flex items-center justify-center relative overflow-hidden">
               {isConnected ? (
@@ -222,7 +277,7 @@ export function MonitorPanel() {
                   <p className="text-sm text-muted-foreground">Browser disconnected</p>
                 </div>
               )}
-              
+
               {/* Expand button */}
               <Button
                 variant="ghost"

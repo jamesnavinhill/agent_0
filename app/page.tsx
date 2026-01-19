@@ -13,6 +13,7 @@ import { MonitorPanel } from "@/components/panels/monitor-panel"
 import { SchedulePanel } from "@/components/panels/schedule-panel"
 import { MemoryPanel } from "@/components/panels/memory-panel"
 import { CreatePanel } from "@/components/panels/create-panel"
+import { SubAgentsPanel } from "@/components/panels/sub-agents-panel"
 import { MultimodalInput } from "@/components/input/multimodal-input"
 import { StatusBar } from "@/components/agent/status-bar"
 import { DemoInitializer } from "@/components/demo/demo-initializer"
@@ -21,8 +22,8 @@ import { PanelLeftClose, PanelLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 export default function AgentInterface() {
-  const { 
-    activePanel, 
+  const {
+    activePanel,
     sidebarOpen,
     setSidebarOpen,
     state,
@@ -47,6 +48,8 @@ export default function AgentInterface() {
         return <ActivityPanel />
       case "gallery":
         return <GalleryPanel />
+      case "subagents":
+        return <SubAgentsPanel />
       case "monitor":
         return <MonitorPanel />
       case "schedule":
@@ -77,10 +80,10 @@ export default function AgentInterface() {
   return (
     <div className="flex flex-col h-screen bg-background overflow-hidden">
       <DemoInitializer />
-      
+
       <div className="flex flex-1 min-h-0">
         <NavRail />
-        
+
         <div className="flex-1 flex flex-col min-w-0">
           <header className="h-12 border-b border-border flex items-center justify-between px-4 bg-surface-1">
             <div className="flex items-center gap-3">
@@ -97,14 +100,14 @@ export default function AgentInterface() {
                 Autonomous AI Interface
               </span>
             </div>
-            
+
             <div className="flex items-center gap-2">
               <div className={cn(
                 "w-2 h-2 rounded-full transition-colors",
-                state === "error" 
-                  ? "bg-destructive" 
-                  : isLoading 
-                    ? "bg-accent animate-pulse" 
+                state === "error"
+                  ? "bg-destructive"
+                  : isLoading
+                    ? "bg-accent animate-pulse"
                     : "bg-muted"
               )} />
               <span className="text-xs text-muted-foreground">
@@ -112,7 +115,7 @@ export default function AgentInterface() {
               </span>
             </div>
           </header>
-          
+
           <div className="flex-1 flex min-h-0">
             <main className={cn(
               "flex-1 flex flex-col min-w-0",
@@ -121,7 +124,7 @@ export default function AgentInterface() {
               <div className="flex-1 overflow-hidden">
                 {renderMainPanel()}
               </div>
-              
+
               {activePanel === "chat" && (
                 <MultimodalInput
                   onSend={handleSend}
@@ -129,7 +132,7 @@ export default function AgentInterface() {
                 />
               )}
             </main>
-            
+
             {activePanel === "chat" && sidebarOpen && (
               <aside className="hidden lg:flex lg:flex-1 flex-col min-w-0 max-w-sm border-l border-border">
                 {renderSecondaryPanel()}
@@ -138,7 +141,7 @@ export default function AgentInterface() {
           </div>
         </div>
       </div>
-      
+
       <StatusBar />
     </div>
   )

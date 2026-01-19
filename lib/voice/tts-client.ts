@@ -166,8 +166,12 @@ let ttsInstance: TTSClient | null = null;
 
 /**
  * Get the singleton TTS client instance
+ * Returns null if called on the server (SSR)
  */
-export function getTTSClient(): TTSClient {
+export function getTTSClient(): TTSClient | null {
+    if (typeof window === 'undefined') {
+        return null;
+    }
     if (!ttsInstance) {
         ttsInstance = new TTSClient();
     }

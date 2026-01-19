@@ -12,6 +12,7 @@ import {
   Database,
   Radio,
   Sparkles,
+  Users,
 } from "lucide-react"
 import { AgentOrb } from "@/components/agent/agent-orb"
 import {
@@ -26,6 +27,7 @@ const navItems = [
   { id: "create" as const, icon: Sparkles, label: "Create" },
   { id: "thoughts" as const, icon: Brain, label: "Thoughts" },
   { id: "activity" as const, icon: Activity, label: "Activity" },
+  { id: "subagents" as const, icon: Users, label: "Sub-Agents" },
   { id: "gallery" as const, icon: ImageIcon, label: "Gallery" },
   { id: "monitor" as const, icon: Radio, label: "Live Monitor" },
 ]
@@ -46,7 +48,7 @@ export function NavRail() {
         <div className="mb-6">
           <AgentOrb size="sm" showLabel={false} />
         </div>
-        
+
         {/* Main nav items */}
         <div className="flex flex-col gap-1 flex-1">
           {navItems.map((item) => (
@@ -72,7 +74,7 @@ export function NavRail() {
             </Tooltip>
           ))}
         </div>
-        
+
         {/* Bottom items */}
         <div className="flex flex-col gap-1 mt-auto">
           {bottomItems.map((item) => (
