@@ -1,6 +1,9 @@
 -- Agent Zero Database Schema
 -- Run this in Neon SQL Editor to initialize the database
 
+-- Enable pgvector extension
+CREATE EXTENSION IF NOT EXISTS vector;
+
 -- Memories table for agent memory system
 CREATE TABLE IF NOT EXISTS memories (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -70,6 +73,19 @@ CREATE TABLE IF NOT EXISTS goals (
   completed BOOLEAN DEFAULT false,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Knowledge Bank for research and sources
+CREATE TABLE IF NOT EXISTS knowledge (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title VARCHAR(255) NOT NULL,
+  url VARCHAR(2048),
+  summary TEXT,
+  content TEXT, -- Full content if scraped
+  embedding VECTOR(768), -- For semantic search (optional if using pgvector)
+  tags TEXT[],
+  source VARCHAR(50) DEFAULT 'web',
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Indexes for common queries

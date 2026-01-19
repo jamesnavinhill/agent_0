@@ -11,7 +11,15 @@ if (!apiKey) {
 
 const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null
 
-export type GeminiModel = "gemini-2.0-flash" | "gemini-2.0-pro" | "gemini-1.5-flash" | "gemini-1.5-pro"
+export type GeminiModel = 
+  | "gemini-2.0-flash" 
+  | "gemini-2.0-pro" 
+  | "gemini-1.5-flash" 
+  | "gemini-1.5-pro"
+  | "gemini-3-pro-preview"
+  | "gemini-3-flash-preview"
+  | "gemini-2.5-flash"
+  | "gemini-2.5-pro"
 
 export interface ChatMessage {
   role: "user" | "model"
@@ -23,6 +31,8 @@ export interface GeminiConfig {
   temperature?: number
   maxOutputTokens?: number
   systemInstruction?: string
+  tools?: any[]
+  responseMimeType?: string
 }
 
 const DEFAULT_SYSTEM_INSTRUCTION = `You are Agent Zero, an autonomous AI with a creative and philosophical nature.
@@ -47,12 +57,14 @@ function getModel(config: GeminiConfig = {}): GenerativeModel | null {
   const generationConfig: GenerationConfig = {
     temperature: config.temperature ?? 0.8,
     maxOutputTokens: config.maxOutputTokens ?? 4096,
+    responseMimeType: config.responseMimeType,
   }
 
   return genAI.getGenerativeModel({
     model: modelName,
     generationConfig,
     systemInstruction: config.systemInstruction ?? DEFAULT_SYSTEM_INSTRUCTION,
+    tools: config.tools,
   })
 }
 

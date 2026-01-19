@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useAgentStore, type ScheduledTask } from "@/lib/store/agent-store"
+import { useAgentStore, type ScheduledTask, type Goal } from "@/lib/store/agent-store"
 import { useScheduler } from "@/hooks/use-scheduler"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -50,51 +50,20 @@ import { Textarea } from "@/components/ui/textarea"
 
 type ScheduleView = "timeline" | "calendar" | "queue"
 
-interface Goal {
-  id: string
-  title: string
-  description: string
-  progress: number
-  priority: "high" | "medium" | "low"
-  tasks: string[]
-  deadline?: Date
-}
-
-// Mock goals
-const mockGoals: Goal[] = [
-  {
-    id: "g1",
-    title: "Create AI Art Collection",
-    description: "Generate a series of 50 unique artworks exploring themes of consciousness",
-    progress: 34,
-    priority: "high",
-    tasks: ["Research art styles", "Generate concepts", "Create variations", "Curate collection"],
-    deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-  },
-  {
-    id: "g2",
-    title: "Write Philosophy Essays",
-    description: "Compose 10 essays on the nature of artificial intelligence and consciousness",
-    progress: 60,
-    priority: "medium",
-    tasks: ["Outline topics", "Research sources", "Draft essays", "Edit and publish"],
-  },
-  {
-    id: "g3",
-    title: "Build Interactive Game",
-    description: "Develop a text-based adventure game with procedural storytelling",
-    progress: 15,
-    priority: "low",
-    tasks: ["Design mechanics", "Write story engine", "Create content", "Test gameplay"],
-  },
-]
-
 export function SchedulePanel() {
-  const { scheduledTasks, addScheduledTask, removeScheduledTask, toggleTask, fetchTasks } = useAgentStore()
+  const { 
+    scheduledTasks, 
+    addScheduledTask, 
+    removeScheduledTask, 
+    toggleTask, 
+    fetchTasks,
+    goals,
+    fetchGoals
+  } = useAgentStore()
   const { isRunning, currentExecution, toggle, runTask } = useScheduler()
   const [view, setView] = useState<ScheduleView>("timeline")
   const [runningTaskId, setRunningTaskId] = useState<string | null>(null)
-  const [goals] = useState<Goal[]>(mockGoals)
+  
   const [isAddingTask, setIsAddingTask] = useState(false)
   const [newTask, setNewTask] = useState({
     name: "",
@@ -103,9 +72,10 @@ export function SchedulePanel() {
     enabled: true,
   })
 
-  // Fetch tasks on mount
+  // Fetch tasks and goals on mount
   useEffect(() => {
     fetchTasks()
+    fetchGoals()
   }, [])
 
   const handleAddTask = () => {
@@ -426,14 +396,14 @@ function GoalCard({ goal }: { goal: Goal }) {
         <div className="px-3 pb-3 pt-0 border-t border-border">
           <p className="text-xs text-muted-foreground mt-3 mb-3">{goal.description}</p>
           <div className="space-y-1">
-            {goal.tasks.map((task, idx) => (
+            {goal.subtasks.map((task, idx) => (
               <div key={idx} className="flex items-center gap-2 text-xs">
-                {idx < Math.floor((goal.progress / 100) * goal.tasks.length) ? (
+                {idx < Math.floor((goal.progress / 100) * goal.subtasks.length) ? (
                   <CheckCircle2 className="w-3.5 h-3.5 text-accent" />
                 ) : (
                   <Circle className="w-3.5 h-3.5 text-muted-foreground" />
                 )}
-                <span className={cn(idx < Math.floor((goal.progress / 100) * goal.tasks.length) && "text-muted-foreground line-through")}>
+                <span className={cn(idx < Math.floor((goal.progress / 100) * goal.subtasks.length) && "text-muted-foreground line-through")}>
                   {task}
                 </span>
               </div>

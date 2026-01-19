@@ -1,0 +1,36 @@
+name: Agent Scheduler
+
+on:
+  schedule:
+    - cron: '*/10 * * * *' # Run every 10 minutes
+  workflow_dispatch: # Allow manual trigger via GitHub UI
+
+jobs:
+  trigger-agent:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call Agent Cron Endpoint
+        run: |
+          # Use the VERCEL_APP_URL secret if set, otherwise fallback to the production URL pattern or exit
+          # It is recommended to set VERCEL_APP_URL in repository secrets
+          
+          if [ -z "${{ secrets.VERCEL_APP_URL }}" ]; then
+            echo "VERCEL_APP_URL secret is not set. Please configure it in Settings > Secrets."
+            exit 1
+          fi
+
+          echo "Triggering Agent Heartbeat at $(date)..."
+          
+          response=$(curl -s -w "%{http_code}" -X GET ${{ secrets.VERCEL_APP_URL }}/api/cron \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}")
+          
+          http_code=${response: -3}
+          content=${response:0:${#response}-3}
+          
+          echo "Response Code: $http_code"
+          echo "Response Content: $content"
+          
+          if [ "$http_code" -ne 200 ]; then
+            echo "Failed to trigger agent."
+            exit 1
+          fi

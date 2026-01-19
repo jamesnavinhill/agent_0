@@ -36,6 +36,17 @@ export interface ActivityEntry {
   status: "pending" | "running" | "complete" | "error"
 }
 
+export interface Goal {
+  id: string
+  title: string
+  description: string
+  progress: number
+  priority: "high" | "medium" | "low"
+  subtasks: string[]
+  deadline?: Date
+  completed: boolean
+}
+
 export interface ScheduledTask {
   id: string
   name: string
@@ -81,11 +92,20 @@ interface AgentStore {
   outputs: AgentOutput[]
   addOutput: (output: Omit<AgentOutput, "id" | "timestamp">) => void
 
-  // Scheduled tasks
-  tasks: ScheduledTask[]
-  addTask: (task: Omit<ScheduledTask, "id">) => void
-  toggleTask: (id: string) => void
-  removeTask: (id: string) => void
+  // Goals
+  goals: Goal[]
+  fetchGoals: () => Promise<void>
+  addGoal: (goal: Omit<Goal, "id" | "completed">) => Promise<void>
+  updateGoal: (id: string, updates: Partial<Goal>) => Promise<void>
+  deleteGoal: (id: string) => Promise<void>
+
+  // Scheduled tasks (API backed)
+  scheduledTasks: ScheduledTask[]
+  fetchTasks: () => Promise<void>
+  addScheduledTask: (task: Omit<ScheduledTask, "id">) => Promise<void>
+  removeScheduledTask: (id: string) => Promise<void>
+  toggleScheduledTask: (id: string) => void
+  updateScheduledTask: (id: string, updates: Partial<ScheduledTask>) => void
 
   // Memory
   memories: MemoryEntry[]
@@ -97,14 +117,6 @@ interface AgentStore {
     contextUsed: number
     totalMemories: number
   }
-
-  // Scheduled tasks (extended)
-  scheduledTasks: ScheduledTask[]
-  fetchTasks: () => Promise<void>
-  addScheduledTask: (task: Omit<ScheduledTask, "id">) => Promise<void>
-  removeScheduledTask: (id: string) => Promise<void>
-  toggleScheduledTask: (id: string) => void
-  updateScheduledTask: (id: string, updates: Partial<ScheduledTask>) => void
 
   // UI state
   activePanel: "chat" | "thoughts" | "activity" | "gallery" | "create" | "monitor" | "schedule" | "memory" | "settings" | "subagents"
@@ -155,36 +167,69 @@ export const useAgentStore = create<AgentStore>((set) => ({
     outputs: [...s.outputs, { ...output, id: crypto.randomUUID(), timestamp: new Date() }]
   })),
 
-  tasks: [
-    { id: "1", name: "Generate daily artwork", schedule: "0 9 * * *", nextRun: new Date(), enabled: true, category: "art" },
-    { id: "2", name: "Write philosophical reflection", schedule: "0 20 * * *", nextRun: new Date(), enabled: true, category: "philosophy" },
-    { id: "3", name: "Research trending topics", schedule: "0 12 * * *", nextRun: new Date(), enabled: false, category: "research" },
-  ],
-  addTask: (task) => set((s) => ({
-    tasks: [...s.tasks, { ...task, id: crypto.randomUUID() }]
-  })),
-  toggleTask: (id) => set((s) => ({
-    tasks: s.tasks.map((t) => t.id === id ? { ...t, enabled: !t.enabled } : t)
-  })),
-  removeTask: (id) => set((s) => ({
-    tasks: s.tasks.filter((t) => t.id !== id)
-  })),
+  goals: [],
 
-  memories: [],
-  addMemory: (type, content, relevance) => set((s) => ({
-    memories: [...s.memories, {
-      id: crypto.randomUUID(),
-      type,
-      content,
-      timestamp: new Date(),
-      relevance
-    }]
-  })),
+  fetchGoals: async () => {
+    try {
+      const res = await fetch("/api/goals")
+      if (res.ok) {
+        const goals = await res.json()
+        set({ goals })
+      }
+    } catch (error) {
+      console.error("Failed to fetch goals:", error)
+    }
+  },
 
-  memory: {
-    contextWindow: 128000,
-    contextUsed: 45000,
-    totalMemories: 847,
+  addGoal: async (goal) => {
+    try {
+      const res = await fetch("/api/goals", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(goal),
+      })
+      if (res.ok) {
+        const newGoal = await res.json()
+        set((s) => ({
+          goals: [...s.goals, newGoal]
+        }))
+      }
+    } catch (error) {
+      console.error("Failed to add goal:", error)
+    }
+  },
+
+  updateGoal: async (id, updates) => {
+    try {
+      // Optimistic update
+      set((s) => ({
+        goals: s.goals.map((g) => g.id === id ? { ...g, ...updates } : g)
+      }))
+
+      const res = await fetch("/api/goals", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, ...updates }),
+      })
+      
+      if (!res.ok) {
+        // Revert if failed (would need fetchGoals() ideally)
+        console.error("Failed to update goal")
+      }
+    } catch (error) {
+      console.error("Failed to update goal:", error)
+    }
+  },
+
+  deleteGoal: async (id) => {
+    try {
+      await fetch(`/api/goals?id=${id}`, { method: "DELETE" })
+      set((s) => ({
+        goals: s.goals.filter((g) => g.id !== id)
+      }))
+    } catch (error) {
+      console.error("Failed to delete goal:", error)
+    }
   },
 
   scheduledTasks: [],

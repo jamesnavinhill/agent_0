@@ -3,6 +3,7 @@ import { getDueTasks, updateTaskStatus, updateTaskSchedule } from "@/lib/db/task
 import { generateText } from "@/lib/api/gemini"
 import { getNextRunTime } from "@/lib/scheduler/cron"
 import { pushActivity } from "@/lib/activity/bus"
+import { performMorningRead } from "@/lib/agent/tools/research"
 
 export const dynamic = "force-dynamic"
 export const maxDuration = 60 // Allow longer timeout for cron jobs
@@ -38,7 +39,11 @@ export async function GET(req: NextRequest) {
             try {
                 // 2. Execute
                 let output = ""
-                if (task.prompt) {
+                
+                // Route tasks to specialized handlers
+                if (task.name.includes("Morning Read") || task.category === "research") {
+                     output = await performMorningRead()
+                } else if (task.prompt) {
                     // Use prompt if available
                     output = await generateText(task.prompt)
                 } else {
