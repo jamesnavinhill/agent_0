@@ -1,6 +1,14 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import {
+    saveApiKey,
+    getApiKey,
+    removeApiKey,
+    getMaskedKey,
+    validateKeyFormat,
+    type ApiKeyType
+} from "@/lib/utils/secure-storage"
 
 const SETTINGS_KEY = "agent_zero_settings"
 
@@ -18,21 +26,6 @@ const defaultSettings: AgentSettings = {
     schedulesEnabled: true,
 }
 
-// Simple obfuscation for API key (not true encryption, but better than plaintext)
-function obfuscate(str: string): string {
-    if (!str) return ""
-    return btoa(str.split("").reverse().join(""))
-}
-
-function deobfuscate(str: string): string {
-    if (!str) return ""
-    try {
-        return atob(str).split("").reverse().join("")
-    } catch {
-        return ""
-    }
-}
-
 export function useSettings() {
     const [settings, setSettingsState] = useState<AgentSettings>(defaultSettings)
     const [loaded, setLoaded] = useState(false)
@@ -42,15 +35,18 @@ export function useSettings() {
         if (typeof window === "undefined") return
 
         try {
+            // Load non-sensitive settings
             const stored = localStorage.getItem(SETTINGS_KEY)
-            if (stored) {
-                const parsed = JSON.parse(stored)
-                setSettingsState({
-                    ...defaultSettings,
-                    ...parsed,
-                    apiKey: deobfuscate(parsed.apiKey || ""),
-                })
-            }
+            const parsed = stored ? JSON.parse(stored) : {}
+
+            // Load API key from secure storage
+            const apiKey = getApiKey("google") || ""
+
+            setSettingsState({
+                ...defaultSettings,
+                ...parsed,
+                apiKey,
+            })
         } catch (error) {
             console.warn("Failed to load settings:", error)
         }
@@ -62,11 +58,16 @@ export function useSettings() {
         if (typeof window === "undefined") return
 
         try {
-            const toStore = {
-                ...newSettings,
-                apiKey: obfuscate(newSettings.apiKey),
+            // Store API key separately with secure storage
+            if (newSettings.apiKey) {
+                saveApiKey("google", newSettings.apiKey)
+            } else {
+                removeApiKey("google")
             }
-            localStorage.setItem(SETTINGS_KEY, JSON.stringify(toStore))
+
+            // Store non-sensitive settings normally (without apiKey)
+            const { apiKey, ...safeSettings } = newSettings
+            localStorage.setItem(SETTINGS_KEY, JSON.stringify(safeSettings))
         } catch (error) {
             console.warn("Failed to save settings:", error)
         }
@@ -105,6 +106,14 @@ export function useSettings() {
         persist(defaultSettings)
     }, [persist])
 
+    // Get masked version of API key for display
+    const maskedApiKey = getMaskedKey("google")
+
+    // Validate API key format
+    const validateApiKey = useCallback((key: string) => {
+        return validateKeyFormat("google", key)
+    }, [])
+
     return {
         settings,
         loaded,
@@ -116,5 +125,7 @@ export function useSettings() {
         clearApiKey,
         resetToDefaults,
         hasApiKey: Boolean(settings.apiKey),
+        maskedApiKey,
+        validateApiKey,
     }
 }

@@ -20,6 +20,7 @@ import { DemoInitializer } from "@/components/demo/demo-initializer"
 import { cn } from "@/lib/utils"
 import { PanelLeftClose, PanelLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { PanelErrorBoundary } from "@/components/error-boundary"
 
 export default function AgentInterface() {
   const {
@@ -37,35 +38,49 @@ export default function AgentInterface() {
   }, [sendMessage])
 
   const renderMainPanel = () => {
-    switch (activePanel) {
-      case "chat":
-        return <ChatPanel />
-      case "create":
-        return <CreatePanel />
-      case "thoughts":
-        return <ThoughtsPanel />
-      case "activity":
-        return <ActivityPanel />
-      case "gallery":
-        return <GalleryPanel />
-      case "subagents":
-        return <SubAgentsPanel />
-      case "monitor":
-        return <MonitorPanel />
-      case "schedule":
-        return <SchedulePanel />
-      case "memory":
-        return <MemoryPanel />
-      case "settings":
-        return <SettingsPanel />
-      default:
-        return <ChatPanel />
-    }
+    const panelName = activePanel.charAt(0).toUpperCase() + activePanel.slice(1)
+
+    const panel = (() => {
+      switch (activePanel) {
+        case "chat":
+          return <ChatPanel />
+        case "create":
+          return <CreatePanel />
+        case "thoughts":
+          return <ThoughtsPanel />
+        case "activity":
+          return <ActivityPanel />
+        case "gallery":
+          return <GalleryPanel />
+        case "subagents":
+          return <SubAgentsPanel />
+        case "monitor":
+          return <MonitorPanel />
+        case "schedule":
+          return <SchedulePanel />
+        case "memory":
+          return <MemoryPanel />
+        case "settings":
+          return <SettingsPanel />
+        default:
+          return <ChatPanel />
+      }
+    })()
+
+    return (
+      <PanelErrorBoundary name={`${panelName} Panel`}>
+        {panel}
+      </PanelErrorBoundary>
+    )
   }
 
   const renderSecondaryPanel = () => {
     if (activePanel === "chat") {
-      return <ThoughtsPanel />
+      return (
+        <PanelErrorBoundary name="Thoughts Panel">
+          <ThoughtsPanel />
+        </PanelErrorBoundary>
+      )
     }
     return null
   }
