@@ -12,7 +12,11 @@ async function getPipeline() {
     }
 
     if (!pipelinePromise) {
-        pipelinePromise = import('@xenova/transformers').then(mod => mod.pipeline);
+        pipelinePromise = import('@xenova/transformers').then(mod => {
+            mod.env.allowLocalModels = false;
+            mod.env.useBrowserCache = false;
+            return mod.pipeline;
+        });
     }
 
     return pipelinePromise;
