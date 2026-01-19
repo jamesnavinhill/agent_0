@@ -64,8 +64,8 @@ interface MemoryItem {
 
 
 export function MemoryPanel() {
-  const { memory, knowledge } = useAgentStore()
-  const { memories: storeMemories, stats, loading, remove, clear, refresh, exportToJSON } = useMemory()
+  const { memory } = useAgentStore()
+  const { memories: storeMemories, knowledge, stats, loading, remove, clear, refresh, exportToJSON } = useMemory()
   const [filter, setFilter] = useState<MemoryType>("all")
   const [searchQuery, setSearchQuery] = useState("")
   const [expandedSection, setExpandedSection] = useState<string | null>("context")
@@ -271,13 +271,13 @@ export function MemoryPanel() {
           <CollapsibleSection
             title="Knowledge Base"
             icon={<Archive className="w-4 h-4" />}
-            badge="3 sources"
+            badge={`${knowledge.length} sources`}
             expanded={expandedSection === "knowledge"}
             onToggle={() => setExpandedSection(expandedSection === "knowledge" ? null : "knowledge")}
           >
             <div className="space-y-1">
               {knowledge.length > 0 ? (
-                knowledge.map((k) => (
+                knowledge.map((k: any) => (
                   <div key={k.id} className="flex items-center gap-3 p-2 rounded-lg bg-surface-1">
                     <Database className="w-4 h-4 text-accent shrink-0" />
                     <div className="flex-1 min-w-0">

@@ -18,16 +18,19 @@ export function useMemory() {
             if (res.ok) {
                 const data = await res.json()
                 setMemories(data.memories || [])
+                const knowledgeItems = data.knowledge || []
+
                 // Calculate stats client side for now or fetch from API
                 const items = data.memories || []
                 const stats = {
-                    total: items.length,
+                    total: items.length + knowledgeItems.length,
                     byLayer: {
                         shortTerm: items.filter((m: any) => m.type === "shortTerm").length,
                         longTerm: items.filter((m: any) => m.type === "longTerm").length,
                         episodic: items.filter((m: any) => m.type === "episodic").length,
                         semantic: items.filter((m: any) => m.type === "semantic").length,
-                    }
+                    },
+                    knowledge: knowledgeItems
                 }
                 setStats(stats)
             }
@@ -104,6 +107,7 @@ export function useMemory() {
 
     return {
         memories,
+        knowledge: (stats as any).knowledge || [],
         loading,
         stats,
         save,
