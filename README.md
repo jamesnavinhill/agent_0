@@ -61,7 +61,7 @@ Agent Zero is a next-generation AI agent framework designed to feel alive. It fe
 4. __Run Development Server__:
 
    ```bash
-   npm run dev
+   pnpm run dev
    ```
 
    Open [http://localhost:3000](http://localhost:3000) to see the agent in action.
