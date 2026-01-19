@@ -1,4 +1,5 @@
 import EventEmitter from "events"
+import { saveActivity } from "./db-store"
 
 /**
  * Log levels for activity events
@@ -28,6 +29,7 @@ const recent: ActivityEvent[] = []
 
 /**
  * Push a new activity event to the stream
+ * Also persists to database if configured
  */
 export function pushActivity(event: ActivityEvent) {
   const e: ActivityEvent = {
@@ -39,6 +41,11 @@ export function pushActivity(event: ActivityEvent) {
   recent.push(e)
   if (recent.length > RECENT_LIMIT) recent.shift()
   emitter.emit("activity", e)
+
+  // Persist to database asynchronously (fire and forget)
+  saveActivity(e).catch(() => {
+    // Silently ignore DB errors - in-memory still works
+  })
 }
 
 /**

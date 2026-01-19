@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
 import { subscribeActivity, getRecentActivities } from '@/lib/activity/bus'
+import { getDbActivities } from '@/lib/activity/db-store'
+import { isDatabaseConfigured } from '@/lib/db/neon'
 
 export async function GET(req: Request) {
   const headers = new Headers({
@@ -10,25 +12,32 @@ export async function GET(req: Request) {
 
   const stream = new ReadableStream({
     async start(controller) {
-      // send recent activities
-      const recent = getRecentActivities()
-      controller.enqueue(encode(`event: connected\ndata: ${JSON.stringify({ time: Date.now(), recentCount: recent.length })}\n\n`))
+      // Load recent activities - prefer database if available
+      let recent
+      if (isDatabaseConfigured()) {
+        recent = await getDbActivities({ limit: 200 })
+      } else {
+        recent = getRecentActivities()
+      }
+
+      controller.enqueue(encode(`event: connected\ndata: ${JSON.stringify({ time: Date.now(), recentCount: recent.length, source: isDatabaseConfigured() ? 'database' : 'memory' })}\n\n`))
 
       for (const r of recent) {
         controller.enqueue(encode(`event: activity\ndata: ${JSON.stringify(r)}\n\n`))
       }
 
+      // Subscribe to new real-time events via EventEmitter
       const unsub = subscribeActivity((ev) => {
         try {
           controller.enqueue(encode(`event: activity\ndata: ${JSON.stringify(ev)}\n\n`))
-        } catch {}
+        } catch { }
       })
 
       const { signal } = req as any
       if (signal) {
         signal.addEventListener('abort', () => {
           unsub()
-          try { controller.close() } catch {}
+          try { controller.close() } catch { }
         })
       }
     }
