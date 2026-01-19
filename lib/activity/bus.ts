@@ -1,5 +1,7 @@
-import EventEmitter from "events"
-import { saveActivity } from "./db-store"
+/**
+ * Browser-compatible activity event bus
+ * Uses a simple subscriber pattern instead of Node.js EventEmitter
+ */
 
 /**
  * Log levels for activity events
@@ -25,29 +27,45 @@ export interface ActivityEvent {
   metadata?: Record<string, unknown>
 }
 
-const emitter = new EventEmitter()
+// Browser-compatible subscriber pattern
+type ActivityCallback = (ev: ActivityEvent) => void
+const subscribers: Set<ActivityCallback> = new Set()
 const RECENT_LIMIT = 200
 const recent: ActivityEvent[] = []
 
 /**
  * Push a new activity event to the stream
- * Also persists to database if configured
+ * Database persistence is handled separately via API calls
  */
 export function pushActivity(event: ActivityEvent) {
   const e: ActivityEvent = {
     ...event,
-    id: event.id ?? crypto.randomUUID(),
+    id: event.id ?? (typeof crypto !== 'undefined' ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`),
     timestamp: event.timestamp ?? Date.now(),
     level: event.level ?? "info",
   }
   recent.push(e)
   if (recent.length > RECENT_LIMIT) recent.shift()
-  emitter.emit("activity", e)
 
-  // Persist to database asynchronously (fire and forget)
-  saveActivity(e).catch(() => {
-    // Silently ignore DB errors - in-memory still works
+  // Notify all subscribers
+  subscribers.forEach(cb => {
+    try {
+      cb(e)
+    } catch (err) {
+      console.error("Activity subscriber error:", err)
+    }
   })
+
+  // Persist to database via API (fire and forget, only on client with fetch available)
+  if (typeof fetch !== 'undefined') {
+    fetch('/api/activity/push', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(e),
+    }).catch(() => {
+      // Silently ignore - in-memory still works
+    })
+  }
 }
 
 /**
@@ -55,8 +73,8 @@ export function pushActivity(event: ActivityEvent) {
  * Returns unsubscribe function
  */
 export function subscribeActivity(cb: (ev: ActivityEvent) => void) {
-  emitter.on("activity", cb)
-  return () => emitter.off("activity", cb)
+  subscribers.add(cb)
+  return () => subscribers.delete(cb)
 }
 
 /**
