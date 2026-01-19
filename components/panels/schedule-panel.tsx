@@ -104,17 +104,17 @@ export function SchedulePanel() {
 
   // Group tasks by time period
   const now = new Date()
-  const todayTasks = scheduledTasks.filter((t) => {
+  const todayTasks = scheduledTasks?.filter((t) => {
     if (!t.nextRun) return false
     const taskDate = new Date(t.nextRun)
     return taskDate.toDateString() === now.toDateString()
-  })
+  }) ?? []
 
-  const upcomingTasks = scheduledTasks.filter((t) => {
+  const upcomingTasks = scheduledTasks?.filter((t) => {
     if (!t.nextRun) return false
     const taskDate = new Date(t.nextRun)
     return taskDate > now && taskDate.toDateString() !== now.toDateString()
-  })
+  }) ?? []
 
   return (
     <div className="h-full flex flex-col">
@@ -155,7 +155,7 @@ export function SchedulePanel() {
           )}
         </div>
         <span className="text-[10px] text-muted-foreground">
-          {scheduledTasks.filter(t => t.enabled).length} active tasks
+          {scheduledTasks?.filter(t => t.enabled).length ?? 0} active tasks
         </span>
       </div>
 
@@ -263,7 +263,7 @@ export function SchedulePanel() {
                 <h3 className="text-sm font-medium">Active Goals</h3>
               </div>
               <div className="space-y-2">
-                {goals.map((goal) => (
+                {goals?.map((goal) => (
                   <GoalCard key={goal.id} goal={goal} />
                 ))}
               </div>
@@ -396,14 +396,14 @@ function GoalCard({ goal }: { goal: Goal }) {
         <div className="px-3 pb-3 pt-0 border-t border-border">
           <p className="text-xs text-muted-foreground mt-3 mb-3">{goal.description}</p>
           <div className="space-y-1">
-            {goal.subtasks.map((task, idx) => (
+            {goal.subtasks?.map((task, idx) => (
               <div key={idx} className="flex items-center gap-2 text-xs">
-                {idx < Math.floor((goal.progress / 100) * goal.subtasks.length) ? (
+                {idx < Math.floor((goal.progress / 100) * (goal.subtasks?.length ?? 0)) ? (
                   <CheckCircle2 className="w-3.5 h-3.5 text-accent" />
                 ) : (
                   <Circle className="w-3.5 h-3.5 text-muted-foreground" />
                 )}
-                <span className={cn(idx < Math.floor((goal.progress / 100) * goal.subtasks.length) && "text-muted-foreground line-through")}>
+                <span className={cn(idx < Math.floor((goal.progress / 100) * (goal.subtasks?.length ?? 0)) && "text-muted-foreground line-through")}>
                   {task}
                 </span>
               </div>
