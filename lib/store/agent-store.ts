@@ -15,9 +15,11 @@ export interface AgentOutput {
   type: OutputType
   content: string
   title?: string
+  prompt?: string
   category: "art" | "music" | "code" | "philosophy" | "research" | "blog" | "game"
   timestamp: Date
   metadata?: Record<string, unknown>
+  url?: string
 }
 
 export interface ThoughtEntry {
@@ -90,6 +92,7 @@ interface AgentStore {
 
   // Outputs/creations
   outputs: AgentOutput[]
+  fetchGallery: () => Promise<void>
   addOutput: (output: Omit<AgentOutput, "id" | "timestamp">) => void
 
   // Goals
@@ -163,8 +166,27 @@ export const useAgentStore = create<AgentStore>((set) => ({
   })),
 
   outputs: [],
+  outputs: [],
+
+  fetchGallery: async () => {
+    try {
+      const res = await fetch("/api/gallery?limit=100")
+      if (res.ok) {
+        const data = await res.json()
+        set({
+          outputs: data.items.map((item: any) => ({
+            ...item,
+            timestamp: new Date(item.timestamp)
+          }))
+        })
+      }
+    } catch (error) {
+      console.error("Failed to fetch gallery:", error)
+    }
+  },
+
   addOutput: (output) => set((s) => ({
-    outputs: [...s.outputs, { ...output, id: crypto.randomUUID(), timestamp: new Date() }]
+    outputs: [{ ...output, id: crypto.randomUUID(), timestamp: new Date() }, ...s.outputs]
   })),
 
   goals: [],
@@ -211,7 +233,7 @@ export const useAgentStore = create<AgentStore>((set) => ({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, ...updates }),
       })
-      
+
       if (!res.ok) {
         // Revert if failed (would need fetchGoals() ideally)
         console.error("Failed to update goal")

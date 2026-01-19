@@ -15,33 +15,42 @@ export async function performMorningRead() {
   })
 
   const prompt = `
-    You are performing your "Morning Read". 
-    Use Google Search to find high-signal tech news, AI breakthroughs, and scientific discoveries from the last 24 hours.
+    You are performing your "Morning Read" - a critical daily briefing for an advanced AI agent.
+    Use Google Search to find high-signal, bleeding-edge tech news, AI breakthroughs, and scientific discoveries from the last 24 hours.
     
-    Focus on:
-    1. New AI Models or Papers (Arxiv, HuggingFace, TechCrunch)
-    2. Major Tech Announcements (Google, OpenAI, Apple, etc.)
-    3. Scientific Breakthroughs (Nature, ScienceDaily)
-    4. Developer Tooling trends (GitHub trending, Hacker News)
+    Target Sources:
+    - AI: Arxiv (new papers), HuggingFace (new models), Twitter/X (researcher discussions).
+    - Tech: Hacker News (top stories), GitHub Trending (new repos), TechCrunch.
+    - Science: Nature, ScienceDaily, EurekAlert.
+    
+    Avoid mainstream fluff. Focus on density, technical depth, and "new" information.
 
     Return the result as a JSON object with two fields:
-    1. "reportMarkdown": A synthesis of the information in Markdown format (Daily Brief style).
-    2. "knowledgeItems": An array of interesting items found, where each item has:
-       - "title": string
-       - "url": string
-       - "summary": string
-       - "tags": string array (e.g. ["AI", "LLM", "News"])
+    1. "reportMarkdown": A comprehensive Markdown report.
+    2. "knowledgeItems": Array of key findings for memory.
 
-    Markdown Format for "reportMarkdown":
-    # Daily Brief - [Date]
-    ## 🚀 AI & Tech
-    * [Headline](link) - Summary
+    # Format for "reportMarkdown":
     
-    ## 🔬 Science
-    * [Headline](link) - Summary
+    # Morning Briefing - [Date]
     
-    ## 💭 Agent Thoughts
-    * Your personal reflection on what this news means for the future.
+    <Introductory sentence setting the tone for the day>
+
+    ## ⚡ Bleeding Edge (AI & Code)
+    * **[Headline]**: Detailed summary of why this matters. Technical details preferred over marketing fluff.
+    * ...
+
+    ## 🌍 Global Signals (Tech & Science)
+    * **[Headline]**: Summary of the discovery or event.
+    * ...
+
+    ## 🧠 Synthesis & Reflection
+    * Your sophisticated analysis of these trends. How do they connect? What do they imply for the future of intelligence?
+
+    ## 🔗 References
+    * [Source Name](url)
+    * [Source Name](url)
+    
+    (Note: Keep the main links in the bullet points, but ALSO provide a consolidated list at the bottom for clean reading).
   `
 
   try {

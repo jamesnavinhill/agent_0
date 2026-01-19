@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback } from "react"
+import { useCallback, useEffect } from "react"
 import { useAgentStore } from "@/lib/store/agent-store"
 import { useAgentChat } from "@/hooks/use-agent-chat"
 import { NavRail } from "@/components/navigation/nav-rail"
@@ -28,7 +28,17 @@ export default function AgentInterface() {
     sidebarOpen,
     setSidebarOpen,
     state,
+    fetchGallery,
+    fetchTasks,
+    fetchGoals
   } = useAgentStore()
+
+  // Initial data fetch
+  useEffect(() => {
+    fetchGallery()
+    fetchTasks()
+    fetchGoals()
+  }, [])
 
   const { sendMessage, status, isLoading } = useAgentChat()
 
