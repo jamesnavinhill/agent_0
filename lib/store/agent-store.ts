@@ -287,6 +287,23 @@ export const useAgentStore = create<AgentStore>((set) => ({
     )
   })),
 
+  memories: [],
+  addMemory: (type, content, relevance) => set((s) => ({
+    memories: [...s.memories, {
+      id: crypto.randomUUID(),
+      type,
+      content,
+      relevance,
+      timestamp: new Date()
+    }].slice(-100) // Keep last 100
+  })),
+
+  memory: {
+    contextWindow: 128000,
+    contextUsed: 0,
+    totalMemories: 0
+  },
+
   activePanel: "chat",
   setActivePanel: (panel) => set({ activePanel: panel }),
 
