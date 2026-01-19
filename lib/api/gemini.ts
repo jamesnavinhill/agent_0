@@ -12,14 +12,10 @@ if (!apiKey) {
 const ai = apiKey ? new GoogleGenAI({ apiKey }) : null
 
 export type GeminiModel =
-  | "gemini-2.0-flash"
-  | "gemini-2.0-pro"
-  | "gemini-1.5-flash"
-  | "gemini-1.5-pro"
-  | "gemini-3-pro-preview"
-  | "gemini-3-flash-preview"
-  | "gemini-2.5-flash"
-  | "gemini-2.5-pro"
+  | "gemini-3-flash-preview"   // Default - Fast, balanced, scale (The "Heartbeat")
+  | "gemini-3-pro-preview"     // Complex reasoning, vibe-coding (The "Brain")
+  | "gemini-2.5-flash"         // Low-latency, high-volume agent actions
+  | "gemini-2.5-pro"           // Deep research, large context
 
 export interface ChatMessage {
   role: "user" | "model"
@@ -55,7 +51,7 @@ export async function chat(
 ): Promise<string> {
   if (!ai) throw new Error("Gemini not initialized - check GOOGLE_API_KEY")
 
-  const modelName = config.model ?? "gemini-2.0-flash"
+  const modelName = config.model ?? "gemini-3-flash-preview"
   log.info("Starting chat", { messageCount: messages.length, model: modelName })
 
   // Convert messages to Content format
@@ -95,7 +91,7 @@ export async function* chatStream(
 ): AsyncGenerator<string, void, unknown> {
   if (!ai) throw new Error("Gemini not initialized - check GOOGLE_API_KEY")
 
-  const modelName = config.model ?? "gemini-2.0-flash"
+  const modelName = config.model ?? "gemini-3-flash-preview"
   log.info("Starting chat stream", { messageCount: messages.length, model: modelName })
 
   // Convert messages to Content format
@@ -140,7 +136,7 @@ export async function generateText(
 ): Promise<string> {
   if (!ai) throw new Error("Gemini not initialized - check GOOGLE_API_KEY")
 
-  const modelName = config.model ?? "gemini-2.0-flash"
+  const modelName = config.model ?? "gemini-3-flash-preview"
   log.info("Generating text", { promptLength: prompt.length, model: modelName })
 
   const genConfig: GenerateContentConfig = {

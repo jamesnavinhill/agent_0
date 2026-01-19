@@ -285,8 +285,10 @@ export function SettingsPanel() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="gemini-2.0-flash">Gemini 2.0 Flash (Fast)</SelectItem>
-                <SelectItem value="gemini-2.0-pro">Gemini 2.0 Pro (Advanced)</SelectItem>
+                <SelectItem value="gemini-3-flash-preview">Gemini 3 Flash (Fast)</SelectItem>
+                <SelectItem value="gemini-3-pro-preview">Gemini 3 Pro (Brain)</SelectItem>
+                <SelectItem value="gemini-2.5-flash">Gemini 2.5 Flash (Agentic)</SelectItem>
+                <SelectItem value="gemini-2.5-pro">Gemini 2.5 Pro (Research)</SelectItem>
               </SelectContent>
             </Select>
           </div>

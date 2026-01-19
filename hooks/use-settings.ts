@@ -14,14 +14,14 @@ const SETTINGS_KEY = "agent_zero_settings"
 
 export interface AgentSettings {
     apiKey: string
-    model: "gemini-2.0-flash" | "gemini-2.0-pro"
+    model: "gemini-3-flash-preview" | "gemini-3-pro-preview" | "gemini-2.5-flash" | "gemini-2.5-pro"
     temperature: number
     schedulesEnabled: boolean
 }
 
 const defaultSettings: AgentSettings = {
     apiKey: "",
-    model: "gemini-2.0-flash",
+    model: "gemini-3-flash-preview",
     temperature: 0.7,
     schedulesEnabled: true,
 }
