@@ -61,84 +61,25 @@ interface MemoryItem {
   }
 }
 
-// Mock memory data
-const mockMemories: MemoryItem[] = [
-  {
-    id: "m1",
-    type: "shortTerm",
-    content: "User prefers dark themes and minimal interfaces",
-    metadata: { timestamp: new Date(Date.now() - 5 * 60 * 1000), relevance: 0.95, accessCount: 12 },
-  },
-  {
-    id: "m2",
-    type: "shortTerm",
-    content: "Currently working on AI agent interface project",
-    metadata: { timestamp: new Date(Date.now() - 10 * 60 * 1000), relevance: 0.98, accessCount: 34 },
-  },
-  {
-    id: "m3",
-    type: "longTerm",
-    content: "Art style preference: Abstract, generative, algorithmic patterns",
-    metadata: { timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000), source: "conversation", tags: ["art", "preferences"] },
-  },
-  {
-    id: "m4",
-    type: "longTerm",
-    content: "Philosophy interests: consciousness, emergence, information theory",
-    metadata: { timestamp: new Date(Date.now() - 48 * 60 * 60 * 1000), source: "exploration", tags: ["philosophy"] },
-  },
-  {
-    id: "m5",
-    type: "episodic",
-    content: "Generated fractal artwork series 'Digital Dreams' - 12 pieces",
-    metadata: { timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), source: "creation" },
-  },
-  {
-    id: "m6",
-    type: "episodic",
-    content: "Completed research on emergent behavior in neural networks",
-    metadata: { timestamp: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), source: "research" },
-  },
-  {
-    id: "m7",
-    type: "semantic",
-    content: "Concept: Emergence - Complex patterns arising from simple rules",
-    metadata: { timestamp: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), tags: ["concept", "complexity"] },
-  },
-  {
-    id: "m8",
-    type: "semantic",
-    content: "Connection: Art + Math = Generative aesthetics",
-    metadata: { timestamp: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000), tags: ["connection", "art", "math"] },
-  },
-  {
-    id: "m9",
-    type: "file",
-    content: "/workspace/projects/agent-interface/README.md",
-    metadata: { timestamp: new Date(Date.now() - 60 * 60 * 1000), source: "file" },
-  },
-  {
-    id: "m10",
-    type: "file",
-    content: "/workspace/art/digital-dreams/fractal-001.png",
-    metadata: { timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), source: "file" },
-  },
-]
 
-const memoryStats = {
-  shortTerm: { used: 847, total: 1000, label: "Short-term" },
-  longTerm: { used: 2341, total: 10000, label: "Long-term" },
-  episodic: { used: 156, total: 500, label: "Episodic" },
-  semantic: { used: 423, total: 1000, label: "Semantic" },
-  files: { used: 12, total: 100, label: "Files" },
-}
 
 export function MemoryPanel() {
-  const { memory } = useAgentStore()
+  const { memory, knowledge } = useAgentStore()
   const { memories: storeMemories, stats, loading, remove, clear, refresh, exportToJSON } = useMemory()
   const [filter, setFilter] = useState<MemoryType>("all")
   const [searchQuery, setSearchQuery] = useState("")
   const [expandedSection, setExpandedSection] = useState<string | null>("context")
+
+  // Use real stats from hook if available, or calculate
+  // The hook returns { total: number, byLayer: Record<MemoryLayer, number> }
+  // We need to map it to the UI format
+  const memoryStats = useMemo(() => ({
+    shortTerm: { used: stats.byLayer.shortTerm || 0, total: 1000, label: "Short-term" },
+    longTerm: { used: stats.byLayer.longTerm || 0, total: 10000, label: "Long-term" },
+    episodic: { used: stats.byLayer.episodic || 0, total: 500, label: "Episodic" },
+    semantic: { used: stats.byLayer.semantic || 0, total: 1000, label: "Semantic" },
+    files: { used: 0, total: 100, label: "Files" }, // TODO: Add files to stats
+  }), [stats])
 
   // Transform store memories to panel format
   const memories: MemoryItem[] = useMemo(() => storeMemories.map((m) => ({
@@ -146,7 +87,7 @@ export function MemoryPanel() {
     type: m.layer === "shortTerm" ? "shortTerm" : m.layer === "longTerm" ? "longTerm" : m.layer === "episodic" ? "episodic" : m.layer === "semantic" ? "semantic" : "shortTerm",
     content: m.content,
     metadata: {
-      timestamp: m.timestamp,
+      timestamp: new Date(m.timestamp), // Ensure date object
       source: m.metadata?.source,
       relevance: m.metadata?.relevance,
       accessCount: m.metadata?.accessCount,
@@ -335,24 +276,24 @@ export function MemoryPanel() {
             onToggle={() => setExpandedSection(expandedSection === "knowledge" ? null : "knowledge")}
           >
             <div className="space-y-1">
-              <KnowledgeSourceCard
-                name="Project Files"
-                count={24}
-                size="1.2 MB"
-                synced={new Date(Date.now() - 5 * 60 * 1000)}
-              />
-              <KnowledgeSourceCard
-                name="Research Papers"
-                count={47}
-                size="12.4 MB"
-                synced={new Date(Date.now() - 60 * 60 * 1000)}
-              />
-              <KnowledgeSourceCard
-                name="Conversation History"
-                count={156}
-                size="340 KB"
-                synced={new Date()}
-              />
+              {knowledge.length > 0 ? (
+                knowledge.map((k) => (
+                  <div key={k.id} className="flex items-center gap-3 p-2 rounded-lg bg-surface-1">
+                    <Database className="w-4 h-4 text-accent shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{k.title}</p>
+                      <a href={k.url} target="_blank" rel="noopener noreferrer" className="text-[10px] text-muted-foreground hover:underline truncate block">
+                        {k.url || "No URL"}
+                      </a>
+                    </div>
+                    <Badge variant="outline" className="text-[9px]">
+                      {k.tags?.[0] || "research"}
+                    </Badge>
+                  </div>
+                ))
+              ) : (
+                <p className="text-xs text-muted-foreground text-center py-2">No knowledge items found.</p>
+              )}
             </div>
             <Button variant="outline" size="sm" className="w-full mt-2 h-7 text-xs bg-transparent">
               Add Knowledge Source
