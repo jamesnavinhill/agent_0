@@ -13,6 +13,9 @@ export interface Task {
     next_run: string | null
     last_status: string | null
     created_at: string
+    category?: string
+    prompt?: string
+    parameters?: Record<string, any>
 }
 
 export async function GET() {

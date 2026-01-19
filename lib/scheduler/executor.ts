@@ -213,27 +213,25 @@ async function executeResearchTask(
   task: ScheduledTask,
   context: ExecutorContext
 ): Promise<TaskResult> {
-  // Research tasks must be executed server-side to access Google Search Grounding and DB
-  // We trigger the verify/test endpoint which runs proper PerformMorningRead logic
+  // Research tasks are executed server-side via the unified /api/agent/execute endpoint
+  // This uses the shared runner logic (same as Cron)
   context.addThought(`Starting research task: ${task.name}`, "action")
 
-  // Note: We use the test endpoint for now as it exposes the logic directly
-  // In the future we should have a dedicated /api/execute/research endpoint
-  const response = await fetch("/api/test/morning-read", {
+  const response = await fetch("/api/agent/execute", {
     method: "POST",
     headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${process.env.NEXT_PUBLIC_CRON_SECRET || ""}`
-    }
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ taskId: task.id })
   })
 
   if (!response.ok) {
     const error = await response.text()
-    throw new Error(`Research failed: ${error} (Status: ${response.status})`)
+    throw new Error(`Execution failed: ${error} (Status: ${response.status})`)
   }
 
   const result = await response.json()
-  const report = result.report ?? result.reportMarkdown ?? JSON.stringify(result)
+  const report = result.output || JSON.stringify(result)
 
   context.addOutput({
     type: "text",
