@@ -140,7 +140,7 @@ export const useAgentStore = create<AgentStore>((set) => ({
       action,
       details,
       timestamp: new Date(),
-      status: "pending"
+      status: "pending" as const
     }].slice(-100)
   })),
   updateActivity: (id, status) => set((s) => ({

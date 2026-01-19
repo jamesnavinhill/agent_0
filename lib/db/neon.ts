@@ -1,7 +1,6 @@
 import { neon, neonConfig, NeonQueryFunction } from "@neondatabase/serverless"
 
-// Configure Neon for edge/serverless environment
-neonConfig.fetchConnectionCache = true
+
 
 /**
  * Get database connection string from environment

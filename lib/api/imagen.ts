@@ -46,7 +46,7 @@ export async function generateImage(
     config: {
       numberOfImages: mergedConfig.numberOfImages,
       aspectRatio: mergedConfig.aspectRatio,
-      personGeneration: mergedConfig.personGeneration,
+      personGeneration: mergedConfig.personGeneration?.toUpperCase() as any,
     },
   })
 
@@ -88,7 +88,7 @@ export async function generateImages(
     config: {
       numberOfImages: mergedConfig.numberOfImages,
       aspectRatio: mergedConfig.aspectRatio,
-      personGeneration: mergedConfig.personGeneration,
+      personGeneration: mergedConfig.personGeneration?.toUpperCase() as any,
     },
   })
 

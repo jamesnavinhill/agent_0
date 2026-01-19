@@ -107,7 +107,7 @@ export function MonitorPanel() {
       })
     })
 
-    return unsubscribe
+    return () => { unsubscribe() }
   }, [isLive])
 
   // Auto-scroll to bottom when new lines added

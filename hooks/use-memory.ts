@@ -15,7 +15,7 @@ export function useMemory() {
         setLoading(true)
         try {
             const items = await memoryStore.list()
-            const memoryStats = await memoryStore.getStats()
+            const memoryStats = await memoryStore.getStats?.() ?? { total: 0, byLayer: { shortTerm: 0, longTerm: 0, episodic: 0, semantic: 0 } }
             setMemories(items)
             setStats(memoryStats)
         } catch (error) {

@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server"
-import { getSql, query, isDatabaseConfigured } from "@/lib/db/neon"
+import { getSql, sql as dbQuery, isDatabaseConfigured } from "@/lib/db/neon"
 import { uploadFile, deleteFile, isBlobConfigured, getContentType } from "@/lib/storage/blob"
 import fs from "fs/promises"
 import path from "path"
@@ -24,30 +24,31 @@ interface GalleryItem {
 // ============================================================================
 
 async function dbSaveItem(item: Omit<GalleryItem, "id" | "created_at">): Promise<GalleryItem | null> {
-  const sql = getSql()
-  if (!sql) return null
+  if (!isDatabaseConfigured()) return null
 
-  const rows = await query<GalleryItem>(
-    sql,
-    `INSERT INTO gallery_items (type, blob_url, title, prompt, category, metadata)
-     VALUES ($1, $2, $3, $4, $5, $6)
-     RETURNING *`,
-    [
-      item.type,
-      item.blob_url,
-      item.title ?? null,
-      item.prompt ?? null,
-      item.category ?? "art",
-      item.metadata ? JSON.stringify(item.metadata) : null,
-    ]
-  )
-
-  return rows[0] ?? null
+  try {
+    const rows = await dbQuery<GalleryItem>(
+      `INSERT INTO gallery_items (type, blob_url, title, prompt, category, metadata)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       RETURNING *`,
+      [
+        item.type,
+        item.blob_url,
+        item.title ?? null,
+        item.prompt ?? null,
+        item.category ?? "art",
+        item.metadata ? JSON.stringify(item.metadata) : null,
+      ]
+    )
+    return rows[0] ?? null
+  } catch (e) {
+    console.error("dbSaveItem error:", e)
+    return null
+  }
 }
 
 async function dbGetItems(filter?: { category?: string; type?: string; limit?: number }): Promise<GalleryItem[]> {
-  const sql = getSql()
-  if (!sql) return []
+  if (!isDatabaseConfigured()) return []
 
   let sqlQuery = `SELECT * FROM gallery_items WHERE 1=1`
   const params: unknown[] = []
@@ -66,20 +67,27 @@ async function dbGetItems(filter?: { category?: string; type?: string; limit?: n
   sqlQuery += ` ORDER BY created_at DESC LIMIT $${paramIndex}`
   params.push(filter?.limit ?? 50)
 
-  return await query<GalleryItem>(sql, sqlQuery, params)
+  try {
+    return await dbQuery<GalleryItem>(sqlQuery, params)
+  } catch (e) {
+    console.error("dbGetItems error:", e)
+    return []
+  }
 }
 
 async function dbDeleteItem(id: string): Promise<GalleryItem | null> {
-  const sql = getSql()
-  if (!sql) return null
+  if (!isDatabaseConfigured()) return null
 
-  const rows = await query<GalleryItem>(
-    sql,
-    `DELETE FROM gallery_items WHERE id = $1 RETURNING *`,
-    [id]
-  )
-
-  return rows[0] ?? null
+  try {
+    const rows = await dbQuery<GalleryItem>(
+      `DELETE FROM gallery_items WHERE id = $1 RETURNING *`,
+      [id]
+    )
+    return rows[0] ?? null
+  } catch (e) {
+    console.error("dbDeleteItem error:", e)
+    return null
+  }
 }
 
 // ============================================================================

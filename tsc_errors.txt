@@ -1,0 +1,21 @@
+﻿app/api/gallery/route.ts(2,18): error TS2305: Module '"@/lib/db/neon"' has no exported member 'query'.
+components/panels/monitor-panel.tsx(93,13): error TS2345: Argument of type '() => () => EventEmitter<DefaultEventMap>' is not assignable to parameter of type 'EffectCallback'.
+  Type '() => EventEmitter<DefaultEventMap>' is not assignable to type 'void | Destructor'.
+    Type '() => EventEmitter<DefaultEventMap>' is not assignable to type 'Destructor'.
+      Type 'EventEmitter<DefaultEventMap>' is not assignable to type 'void | { [UNDEFINED_VOID_ONLY]: never; }'.
+hooks/use-memory.ts(18,39): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+hooks/use-memory.ts(18,39): error TS18048: 'memoryStore.getStats' is possibly 'undefined'.
+lib/api/imagen.ts(49,7): error TS2322: Type '"dont_allow" | "allow_adult" | "allow_all" | undefined' is not assignable to type 'PersonGeneration | undefined'.
+  Type '"dont_allow"' is not assignable to type 'PersonGeneration | undefined'. Did you mean 'PersonGeneration.DONT_ALLOW'?
+lib/api/imagen.ts(91,7): error TS2322: Type '"dont_allow" | "allow_adult" | "allow_all" | undefined' is not assignable to type 'PersonGeneration | undefined'.
+  Type '"dont_allow"' is not assignable to type 'PersonGeneration | undefined'. Did you mean 'PersonGeneration.DONT_ALLOW'?
+lib/store/agent-store.ts(137,41): error TS2345: Argument of type '(s: AgentStore) => { activities: (ActivityEntry | { id: string; action: string; details: string | undefined; timestamp: Date; status: string; })[]; }' is not assignable to parameter of type 'AgentStore | Partial<AgentStore> | ((state: AgentStore) => AgentStore | Partial<AgentStore>)'.
+  Type '(s: AgentStore) => { activities: (ActivityEntry | { id: string; action: string; details: string | undefined; timestamp: Date; status: string; })[]; }' is not assignable to type '(state: AgentStore) => AgentStore | Partial<AgentStore>'.
+    Type '{ activities: (ActivityEntry | { id: string; action: string; details: string | undefined; timestamp: Date; status: string; })[]; }' is not assignable to type 'AgentStore | Partial<AgentStore>'.
+      Type '{ activities: (ActivityEntry | { id: string; action: string; details: string | undefined; timestamp: Date; status: string; })[]; }' is not assignable to type 'Partial<AgentStore>'.
+        Types of property 'activities' are incompatible.
+          Type '(ActivityEntry | { id: string; action: string; details: string | undefined; timestamp: Date; status: string; })[]' is not assignable to type 'ActivityEntry[]'.
+            Type 'ActivityEntry | { id: string; action: string; details: string | undefined; timestamp: Date; status: string; }' is not assignable to type 'ActivityEntry'.
+              Type '{ id: string; action: string; details: string | undefined; timestamp: Date; status: string; }' is not assignable to type 'ActivityEntry'.
+                Types of property 'status' are incompatible.
+                  Type 'string' is not assignable to type '"pending" | "running" | "complete" | "error"'.
