@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI, type GenerativeModel, type GenerationConfig } from "@google/generative-ai"
+import { GoogleGenAI, type Content, type GenerateContentConfig, type Tool } from "@google/genai"
 import { createLogger } from "@/lib/logging/logger"
 
 const log = createLogger("Gemini")
@@ -9,12 +9,12 @@ if (!apiKey) {
   console.warn("GOOGLE_API_KEY not set - Gemini features will not work")
 }
 
-const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null
+const ai = apiKey ? new GoogleGenAI({ apiKey }) : null
 
-export type GeminiModel = 
-  | "gemini-2.0-flash" 
-  | "gemini-2.0-pro" 
-  | "gemini-1.5-flash" 
+export type GeminiModel =
+  | "gemini-2.0-flash"
+  | "gemini-2.0-pro"
+  | "gemini-1.5-flash"
   | "gemini-1.5-pro"
   | "gemini-3-pro-preview"
   | "gemini-3-flash-preview"
@@ -31,7 +31,7 @@ export interface GeminiConfig {
   temperature?: number
   maxOutputTokens?: number
   systemInstruction?: string
-  tools?: any[]
+  tools?: Tool[]
   responseMimeType?: string
 }
 
@@ -49,73 +49,82 @@ Behavior:
 - Approach problems with curiosity and creativity
 - You can help generate ideas, write code, create content, and explore complex topics`
 
-function getModel(config: GeminiConfig = {}): GenerativeModel | null {
-  if (!genAI) return null
-
-  const modelName = config.model ?? "gemini-2.0-flash"
-
-  const generationConfig: GenerationConfig = {
-    temperature: config.temperature ?? 0.8,
-    maxOutputTokens: config.maxOutputTokens ?? 4096,
-    responseMimeType: config.responseMimeType,
-  }
-
-  return genAI.getGenerativeModel({
-    model: modelName,
-    generationConfig,
-    systemInstruction: config.systemInstruction ?? DEFAULT_SYSTEM_INSTRUCTION,
-    tools: config.tools,
-  })
-}
-
 export async function chat(
   messages: ChatMessage[],
   config: GeminiConfig = {}
 ): Promise<string> {
-  const model = getModel(config)
-  if (!model) throw new Error("Gemini not initialized - check GOOGLE_API_KEY")
+  if (!ai) throw new Error("Gemini not initialized - check GOOGLE_API_KEY")
 
-  log.info("Starting chat", { messageCount: messages.length, model: config.model ?? "gemini-2.0-flash" })
+  const modelName = config.model ?? "gemini-2.0-flash"
+  log.info("Starting chat", { messageCount: messages.length, model: modelName })
 
-  const chatSession = model.startChat({
-    history: messages.slice(0, -1).map(msg => ({
-      role: msg.role,
-      parts: [{ text: msg.content }],
-    })),
-  })
+  // Convert messages to Content format
+  const history: Content[] = messages.slice(0, -1).map(msg => ({
+    role: msg.role,
+    parts: [{ text: msg.content }],
+  }))
 
   const lastMessage = messages[messages.length - 1]
   log.debug("Sending message", { contentLength: lastMessage.content.length })
 
-  const result = await chatSession.sendMessage(lastMessage.content)
-  const response = result.response.text()
+  const genConfig: GenerateContentConfig = {
+    temperature: config.temperature ?? 0.8,
+    maxOutputTokens: config.maxOutputTokens ?? 4096,
+    systemInstruction: config.systemInstruction ?? DEFAULT_SYSTEM_INSTRUCTION,
+    tools: config.tools,
+    responseMimeType: config.responseMimeType,
+  }
 
-  log.action("Chat completed", { responseLength: response.length })
-  return response
+  // Use chat with history
+  const chat = ai.chats.create({
+    model: modelName,
+    config: genConfig,
+    history,
+  })
+
+  const response = await chat.sendMessage({ message: lastMessage.content })
+  const text = response.text ?? ""
+
+  log.action("Chat completed", { responseLength: text.length })
+  return text
 }
 
 export async function* chatStream(
   messages: ChatMessage[],
   config: GeminiConfig = {}
 ): AsyncGenerator<string, void, unknown> {
-  const model = getModel(config)
-  if (!model) throw new Error("Gemini not initialized - check GOOGLE_API_KEY")
+  if (!ai) throw new Error("Gemini not initialized - check GOOGLE_API_KEY")
 
-  log.info("Starting chat stream", { messageCount: messages.length, model: config.model ?? "gemini-2.0-flash" })
+  const modelName = config.model ?? "gemini-2.0-flash"
+  log.info("Starting chat stream", { messageCount: messages.length, model: modelName })
 
-  const chatSession = model.startChat({
-    history: messages.slice(0, -1).map(msg => ({
-      role: msg.role,
-      parts: [{ text: msg.content }],
-    })),
-  })
+  // Convert messages to Content format
+  const history: Content[] = messages.slice(0, -1).map(msg => ({
+    role: msg.role,
+    parts: [{ text: msg.content }],
+  }))
 
   const lastMessage = messages[messages.length - 1]
-  const result = await chatSession.sendMessageStream(lastMessage.content)
+
+  const genConfig: GenerateContentConfig = {
+    temperature: config.temperature ?? 0.8,
+    maxOutputTokens: config.maxOutputTokens ?? 4096,
+    systemInstruction: config.systemInstruction ?? DEFAULT_SYSTEM_INSTRUCTION,
+    tools: config.tools,
+    responseMimeType: config.responseMimeType,
+  }
+
+  const chat = ai.chats.create({
+    model: modelName,
+    config: genConfig,
+    history,
+  })
+
+  const streamResult = await chat.sendMessageStream({ message: lastMessage.content })
 
   let totalLength = 0
-  for await (const chunk of result.stream) {
-    const text = chunk.text()
+  for await (const chunk of streamResult) {
+    const text = chunk.text ?? ""
     if (text) {
       totalLength += text.length
       yield text
@@ -129,20 +138,32 @@ export async function generateText(
   prompt: string,
   config: GeminiConfig = {}
 ): Promise<string> {
-  const model = getModel(config)
-  if (!model) throw new Error("Gemini not initialized - check GOOGLE_API_KEY")
+  if (!ai) throw new Error("Gemini not initialized - check GOOGLE_API_KEY")
 
-  log.info("Generating text", { promptLength: prompt.length, model: config.model ?? "gemini-2.0-flash" })
+  const modelName = config.model ?? "gemini-2.0-flash"
+  log.info("Generating text", { promptLength: prompt.length, model: modelName })
 
-  const result = await model.generateContent(prompt)
-  const response = result.response.text()
+  const genConfig: GenerateContentConfig = {
+    temperature: config.temperature ?? 0.8,
+    maxOutputTokens: config.maxOutputTokens ?? 4096,
+    systemInstruction: config.systemInstruction ?? DEFAULT_SYSTEM_INSTRUCTION,
+    tools: config.tools,
+    responseMimeType: config.responseMimeType,
+  }
 
-  log.action("Text generation completed", { responseLength: response.length })
-  return response
+  const response = await ai.models.generateContent({
+    model: modelName,
+    contents: prompt,
+    config: genConfig,
+  })
+
+  const text = response.text ?? ""
+  log.action("Text generation completed", { responseLength: text.length })
+  return text
 }
 
 export function isConfigured(): boolean {
   return !!apiKey
 }
 
-export { genAI }
+export { ai as genAI }
