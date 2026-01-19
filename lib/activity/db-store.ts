@@ -8,6 +8,7 @@ interface ActivityRow {
     status: string
     level: string
     source: string | null
+    image_url: string | null
     metadata: Record<string, unknown> | null
     created_at: string
 }
@@ -21,6 +22,7 @@ function rowToActivityEvent(row: ActivityRow): ActivityEvent {
         status: row.status as ActivityEvent["status"],
         level: row.level as ActivityLevel,
         source: row.source ?? undefined,
+        imageUrl: row.image_url ?? undefined,
         metadata: row.metadata ?? undefined,
     }
 }
@@ -33,8 +35,8 @@ export async function saveActivity(event: ActivityEvent): Promise<ActivityEvent 
 
     try {
         const rows = await sql<ActivityRow>(
-            `INSERT INTO activities (id, action, details, status, level, source, metadata)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
+            `INSERT INTO activities (id, action, details, status, level, source, image_url, metadata)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
        RETURNING *`,
             [
                 event.id ?? crypto.randomUUID(),
@@ -43,6 +45,7 @@ export async function saveActivity(event: ActivityEvent): Promise<ActivityEvent 
                 event.status ?? "complete",
                 event.level ?? "info",
                 event.source ?? null,
+                event.imageUrl ?? null,
                 event.metadata ? JSON.stringify(event.metadata) : null,
             ]
         )

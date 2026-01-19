@@ -19,6 +19,8 @@ export interface ActivityEvent {
   level?: ActivityLevel
   /** Component or agent that generated this event */
   source?: string
+  /** Snapshot URL if applicable */
+  imageUrl?: string
   /** Additional structured data */
   metadata?: Record<string, unknown>
 }

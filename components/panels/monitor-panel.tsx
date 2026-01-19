@@ -25,6 +25,11 @@ import {
   Share2,
 } from "lucide-react"
 import {
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizableHandle,
+} from "@/components/ui/resizable"
+import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
@@ -87,35 +92,113 @@ export function MonitorPanel() {
   const [isPublic, setIsPublic] = useState(false)
   const [viewerCount] = useState(12)
   const [terminalLines, setTerminalLines] = useState<TerminalLine[]>([])
+  const [latestSnapshot, setLatestSnapshot] = useState<{ url: string; title?: string } | null>(null)
+  const [inputValue, setInputValue] = useState("")
   const scrollRef = useRef<HTMLDivElement>(null)
+  const shouldAutoScrollRef = useRef(true)
 
-  // Subscribe to activity bus for real-time terminal updates
+  // Poll activity logs from API
   useEffect(() => {
-    // Initialize with recent activities
-    const recent = getRecentActivities({ limit: 50 })
-    setTerminalLines(recent.map(activityToTerminalLine))
+    let mounted = true
+    let timeoutId: NodeJS.Timeout
 
-    // Subscribe to new activity events
-    const unsubscribe = subscribeActivity((event) => {
-      if (!isLive) return
+    const fetchActivities = async () => {
+      try {
+        const res = await fetch("/api/activity?limit=50")
+        if (!res.ok) throw new Error("Failed to fetch")
+        const activities: ActivityEvent[] = await res.json()
 
-      setTerminalLines((prev) => {
-        const newLine = activityToTerminalLine(event)
-        const updated = [...prev, newLine]
-        // Keep last 100 lines
-        return updated.slice(-100)
-      })
-    })
+        if (mounted) {
+          // Merge with local input lines if needed, or just display activities
+          // Ideally we should merge based on timestamps
+          const fetchedLines = activities.map(activityToTerminalLine)
+          
+          setTerminalLines(prev => {
+             // specific logic to keep local input lines if they are not in fetched (simplified for now: just replace)
+             // A better real app would merge lists
+             return fetchedLines
+          })
 
-    return () => { unsubscribe() }
+          // Find latest activity with an image
+          const snapshotActivity = activities.find(a => a.imageUrl)
+          if (snapshotActivity && snapshotActivity.imageUrl) {
+            setLatestSnapshot({
+              url: snapshotActivity.imageUrl,
+              title: snapshotActivity.details
+            })
+          }
+        }
+      } catch (err) {
+        console.error("Polling error:", err)
+      } finally {
+        if (mounted && isLive) {
+          timeoutId = setTimeout(fetchActivities, 2000)
+        }
+      }
+    }
+
+    if (isLive) {
+      fetchActivities()
+    }
+
+    return () => {
+      mounted = false
+      clearTimeout(timeoutId)
+    }
   }, [isLive])
+
+  // Handle scroll events to detect user scroll
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = el
+      const isAtBottom = scrollHeight - scrollTop - clientHeight < 50
+      shouldAutoScrollRef.current = isAtBottom
+    }
+
+    el.addEventListener('scroll', handleScroll)
+    return () => el.removeEventListener('scroll', handleScroll)
+  }, [view]) // Re-attach when view changes
 
   // Auto-scroll to bottom when new lines added
   useEffect(() => {
-    if (scrollRef.current && isLive) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+    if (scrollRef.current && isLive && shouldAutoScrollRef.current) {
+      // Small timeout to ensure DOM is updated
+      setTimeout(() => {
+        if (scrollRef.current) {
+          scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+        }
+      }, 0)
     }
   }, [terminalLines, isLive])
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && inputValue.trim()) {
+      const newLine: TerminalLine = {
+        id: crypto.randomUUID(),
+        timestamp: new Date(),
+        type: "input",
+        content: inputValue
+      }
+      // Optimistic update
+      setTerminalLines(prev => [...prev, newLine])
+      
+      // Here you would typically send command to agent
+      // For now, we simulate a system response
+      setTimeout(() => {
+        setTerminalLines(prev => [...prev, {
+          id: crypto.randomUUID(),
+          timestamp: new Date(),
+          type: "system",
+          content: `Command execution not available in preview mode.`
+        }])
+      }, 500)
+
+      setInputValue("")
+    }
+  }
 
   const isConnected = state !== "error"
 
@@ -230,8 +313,13 @@ export function MonitorPanel() {
 
       {/* Monitor Content */}
       <div className="flex-1 flex overflow-hidden">
-        {(view === "browser" || view === "split") && (
-          <div className={cn("flex flex-col", view === "split" ? "w-1/2 border-r border-border" : "w-full")}>
+        <ResizablePanelGroup direction="horizontal">
+          {(view === "browser" || view === "split") && (
+            <ResizablePanel 
+              defaultSize={view === "split" ? 50 : 100} 
+              minSize={20}
+              className={cn("flex flex-col", view === "split" ? "border-r border-border" : "")}
+            >
             {/* Browser Header */}
             <div className="flex items-center gap-2 px-3 py-2 bg-surface-2 border-b border-border">
               <div className="flex gap-1">
@@ -249,27 +337,38 @@ export function MonitorPanel() {
             </div>
 
             {/* Browser View */}
-            <div className="flex-1 bg-surface-0 flex items-center justify-center relative overflow-hidden">
-              {isConnected ? (
-                <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground p-4">
+            <div className="flex-1 bg-surface-0 flex items-center justify-center relative overflow-hidden bg-zinc-950">
+              {latestSnapshot ? (
+                <div className="relative w-full h-full flex items-center justify-center">
+                  <img
+                    src={latestSnapshot.url}
+                    alt="Browser Snapshot"
+                    className="max-w-full max-h-full object-contain"
+                  />
+                  <div className="absolute bottom-4 bg-background/80 backdrop-blur px-3 py-1 rounded text-xs border border-border">
+                    {latestSnapshot.title || "Browser Snapshot"}
+                  </div>
+                </div>
+              ) : isConnected ? (
+                <div className="flex-1 w-full flex flex-col items-center justify-center text-muted-foreground p-4">
                   <div className="w-full max-w-md space-y-4">
                     {/* Mock browser content */}
-                    <div className="h-8 bg-surface-2 rounded animate-pulse" />
+                    <div className="h-8 bg-zinc-800 rounded animate-pulse" />
                     <div className="space-y-2">
-                      <div className="h-4 bg-surface-2 rounded w-3/4 animate-pulse" />
-                      <div className="h-4 bg-surface-2 rounded w-full animate-pulse" />
-                      <div className="h-4 bg-surface-2 rounded w-5/6 animate-pulse" />
+                      <div className="h-4 bg-zinc-800 rounded w-3/4 animate-pulse" />
+                      <div className="h-4 bg-zinc-800 rounded w-full animate-pulse" />
+                      <div className="h-4 bg-zinc-800 rounded w-5/6 animate-pulse" />
                     </div>
                     <div className="grid grid-cols-2 gap-3 pt-2">
-                      <div className="h-20 bg-surface-2 rounded animate-pulse" />
-                      <div className="h-20 bg-surface-2 rounded animate-pulse" />
+                      <div className="h-20 bg-zinc-800 rounded animate-pulse" />
+                      <div className="h-20 bg-zinc-800 rounded animate-pulse" />
                     </div>
                     <div className="space-y-2">
-                      <div className="h-4 bg-surface-2 rounded w-2/3 animate-pulse" />
-                      <div className="h-4 bg-surface-2 rounded w-full animate-pulse" />
+                      <div className="h-4 bg-zinc-800 rounded w-2/3 animate-pulse" />
+                      <div className="h-4 bg-zinc-800 rounded w-full animate-pulse" />
                     </div>
                   </div>
-                  <p className="text-xs mt-4 text-center">Agent browsing arxiv.org...</p>
+                  <p className="text-xs mt-4 text-center">Waiting for browser activity...</p>
                 </div>
               ) : (
                 <div className="text-center">
@@ -277,21 +376,14 @@ export function MonitorPanel() {
                   <p className="text-sm text-muted-foreground">Browser disconnected</p>
                 </div>
               )}
-
-              {/* Expand button */}
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute top-2 right-2 h-6 w-6 bg-background/80 backdrop-blur-sm"
-              >
-                <Maximize2 className="w-3 h-3" />
-              </Button>
             </div>
-          </div>
-        )}
+            </ResizablePanel>
+          )}
 
-        {(view === "terminal" || view === "split") && (
-          <div className={cn("flex flex-col bg-[#0d0d0d]", view === "split" ? "w-1/2" : "w-full")}>
+          {view === "split" && <ResizableHandle withHandle />}
+
+          {(view === "terminal" || view === "split") && (
+            <ResizablePanel defaultSize={view === "split" ? 50 : 100} minSize={20} className="flex flex-col bg-[#0d0d0d] overflow-hidden">
             {/* Terminal Header */}
             <div className="flex items-center justify-between px-3 py-2 bg-[#1a1a1a] border-b border-[#333]">
               <div className="flex items-center gap-2">
@@ -314,7 +406,7 @@ export function MonitorPanel() {
             </div>
 
             {/* Terminal Content */}
-            <ScrollArea className="flex-1">
+            <ScrollArea className="flex-1 min-h-0" ref={scrollRef}>
               <div className="p-3 font-mono text-xs space-y-1">
                 {terminalLines.map((line) => (
                   <div key={line.id} className="flex gap-2">
@@ -343,10 +435,14 @@ export function MonitorPanel() {
                 type="text"
                 placeholder="Enter command..."
                 className="flex-1 bg-transparent text-xs font-mono text-zinc-300 placeholder:text-zinc-600 outline-none"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={handleKeyDown}
               />
             </div>
-          </div>
-        )}
+            </ResizablePanel>
+          )}
+        </ResizablePanelGroup>
       </div>
 
       {/* Connection Status Bar */}

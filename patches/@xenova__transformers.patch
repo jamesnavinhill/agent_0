@@ -1,0 +1,12 @@
+diff --git a/src/env.js b/src/env.js
+index 92fb076a3ea1a9764ec95a3db9190c0b95b2fb39..3f46fcfa724eadd360e7048871c0ef7cc10dc0e9 100644
+--- a/src/env.js
++++ b/src/env.js
+@@ -123,6 +123,6 @@ export const env = {
+  * @private
+  */
+ function isEmpty(obj) {
+-    return Object.keys(obj).length === 0;
++    return !obj || Object.keys(obj).length === 0;
+ }
+ 

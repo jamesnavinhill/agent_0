@@ -3,3 +3,6 @@ onlyBuiltDependencies:
   - protobufjs
   - sharp
   - unrs-resolver
+
+patchedDependencies:
+  '@xenova/transformers': patches/@xenova__transformers.patch

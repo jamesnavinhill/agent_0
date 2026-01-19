@@ -66,8 +66,54 @@ async function executeByCategory(
     case "blog":
     case "research":
       return executeTextTask(task, context)
+    case "browser":
+      return executeBrowserTask(task, context)
     default:
       return executeCustomTask(task, context)
+  }
+}
+
+async function executeBrowserTask(
+  task: ScheduledTask,
+  context: ExecutorContext
+): Promise<TaskResult> {
+  const url = task.parameters?.url as string ?? task.description ?? "https://google.com"
+
+  context.addThought(`Navigating to: ${url}`, "action")
+
+  const response = await fetch("/api/browser", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ url })
+  })
+
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.error || "Browser task failed")
+  }
+
+  const data = await response.json()
+
+  // Log with snapshot
+  context.addActivity(`Browsed: ${data.title}`, data.url, data.snapshotUrl)
+
+  context.addOutput({
+    type: "image", // Treat snapshot as image output
+    content: data.snapshotUrl,
+    title: `Snapshot: ${data.title}`,
+    category: "research",
+    metadata: {
+      url: data.url,
+      taskId: task.id
+    }
+  })
+
+  return {
+    type: "text", // Or image?
+    content: `Visited ${data.url}. Title: ${data.title}`,
+    metadata: {
+      snapshotUrl: data.snapshotUrl
+    }
   }
 }
 

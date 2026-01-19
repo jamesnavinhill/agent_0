@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useAgentStore, type ScheduledTask } from "@/lib/store/agent-store"
 import { useScheduler } from "@/hooks/use-scheduler"
 import { cn } from "@/lib/utils"
@@ -90,7 +90,7 @@ const mockGoals: Goal[] = [
 ]
 
 export function SchedulePanel() {
-  const { scheduledTasks, addScheduledTask, removeScheduledTask, toggleTask } = useAgentStore()
+  const { scheduledTasks, addScheduledTask, removeScheduledTask, toggleTask, fetchTasks } = useAgentStore()
   const { isRunning, currentExecution, toggle, runTask } = useScheduler()
   const [view, setView] = useState<ScheduleView>("timeline")
   const [runningTaskId, setRunningTaskId] = useState<string | null>(null)
@@ -102,6 +102,11 @@ export function SchedulePanel() {
     schedule: "",
     enabled: true,
   })
+
+  // Fetch tasks on mount
+  useEffect(() => {
+    fetchTasks()
+  }, [])
 
   const handleAddTask = () => {
     if (newTask.name && newTask.schedule) {
@@ -306,9 +311,9 @@ export function SchedulePanel() {
               {todayTasks.length > 0 ? (
                 <div className="space-y-1">
                   {todayTasks.map((task) => (
-                    <TaskCard 
-                      key={task.id} 
-                      task={task} 
+                    <TaskCard
+                      key={task.id}
+                      task={task}
                       onDelete={removeScheduledTask}
                       onRunNow={handleRunNow}
                       isRunning={runningTaskId === task.id || currentExecution?.taskId === task.id}
@@ -329,9 +334,9 @@ export function SchedulePanel() {
               {upcomingTasks.length > 0 ? (
                 <div className="space-y-1">
                   {upcomingTasks.map((task) => (
-                    <TaskCard 
-                      key={task.id} 
-                      task={task} 
+                    <TaskCard
+                      key={task.id}
+                      task={task}
                       onDelete={removeScheduledTask}
                       onRunNow={handleRunNow}
                       isRunning={runningTaskId === task.id || currentExecution?.taskId === task.id}
@@ -351,17 +356,17 @@ export function SchedulePanel() {
               </div>
               <div className="space-y-1">
                 {scheduledTasks
-                .filter((t) => t.schedule.includes("*"))
-                .map((task) => (
-                  <TaskCard 
-                    key={task.id} 
-                    task={task} 
-                    onDelete={removeScheduledTask}
-                    onRunNow={handleRunNow}
-                    isRunning={runningTaskId === task.id || currentExecution?.taskId === task.id}
-                    showRecurrence 
-                  />
-                ))}
+                  .filter((t) => t.schedule.includes("*"))
+                  .map((task) => (
+                    <TaskCard
+                      key={task.id}
+                      task={task}
+                      onDelete={removeScheduledTask}
+                      onRunNow={handleRunNow}
+                      isRunning={runningTaskId === task.id || currentExecution?.taskId === task.id}
+                      showRecurrence
+                    />
+                  ))}
               </div>
             </section>
           </div>
@@ -494,9 +499,9 @@ function TaskCard({
         isRunning ? "opacity-50 pointer-events-none" : "opacity-0 group-hover:opacity-100"
       )}>
         {onRunNow && (
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             className="h-6 w-6 text-accent hover:text-accent"
             onClick={() => onRunNow(task.id)}
             title="Run now"

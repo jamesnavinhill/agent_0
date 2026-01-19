@@ -1,19 +1,20 @@
-export type TaskCategory = 
-  | "art" 
-  | "music" 
-  | "code" 
-  | "philosophy" 
-  | "research" 
-  | "blog" 
-  | "game" 
+export type TaskCategory =
+  | "art"
+  | "music"
+  | "code"
+  | "philosophy"
+  | "research"
+  | "blog"
+  | "game"
   | "social"
   | "custom"
+  | "browser"
 
-export type TaskStatus = 
-  | "pending" 
-  | "running" 
-  | "complete" 
-  | "error" 
+export type TaskStatus =
+  | "pending"
+  | "running"
+  | "complete"
+  | "error"
   | "skipped"
 
 export interface ScheduledTask {

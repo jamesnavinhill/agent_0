@@ -1,3 +1,5 @@
+import path from 'path';
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   transpilePackages: ['@xenova/transformers'],
@@ -7,12 +9,11 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  // @xenova/transformers works with dynamic imports
   turbopack: {
     resolveAlias: {
       "onnxruntime-node": "./lib/mock.js",
       "sharp": "./lib/mock.js",
-    },
+    }
   },
   webpack: (config, { isServer }) => {
     config.resolve.alias = {
@@ -20,16 +21,6 @@ const nextConfig = {
       "onnxruntime-node": false,
       sharp: false,
     }
-
-    if (!isServer) {
-      config.resolve.alias = {
-        ...config.resolve.alias,
-        fs: "./lib/mock.js",
-        path: "./lib/mock.js",
-        url: "./lib/mock.js",
-      }
-    }
-
     return config
   },
 }

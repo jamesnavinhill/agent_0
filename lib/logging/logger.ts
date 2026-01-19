@@ -91,6 +91,7 @@ function log(level: LogLevel, source: string, message: string, metadata?: Record
             details: metadata ? JSON.stringify(metadata) : undefined,
             timestamp: entry.timestamp,
             status: level === "error" ? "error" : "complete",
+            source: source,
         }
         pushActivity(activityEvent)
     }

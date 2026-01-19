@@ -31,6 +31,7 @@ export interface ActivityEntry {
   id: string
   action: string
   details?: string
+  imageUrl?: string // Snapshot URL
   timestamp: Date
   status: "pending" | "running" | "complete" | "error"
 }
@@ -73,7 +74,7 @@ interface AgentStore {
 
   // Activity log
   activities: ActivityEntry[]
-  addActivity: (action: string, details?: string) => void
+  addActivity: (action: string, details?: string, imageUrl?: string) => void
   updateActivity: (id: string, status: ActivityEntry["status"]) => void
 
   // Outputs/creations
@@ -99,8 +100,9 @@ interface AgentStore {
 
   // Scheduled tasks (extended)
   scheduledTasks: ScheduledTask[]
-  addScheduledTask: (task: Omit<ScheduledTask, "id">) => void
-  removeScheduledTask: (id: string) => void
+  fetchTasks: () => Promise<void>
+  addScheduledTask: (task: Omit<ScheduledTask, "id">) => Promise<void>
+  removeScheduledTask: (id: string) => Promise<void>
   toggleScheduledTask: (id: string) => void
   updateScheduledTask: (id: string, updates: Partial<ScheduledTask>) => void
 
@@ -134,13 +136,14 @@ export const useAgentStore = create<AgentStore>((set) => ({
   clearThoughts: () => set({ thoughts: [] }),
 
   activities: [],
-  addActivity: (action, details) => set((s) => ({
+  addActivity: (action, details, imageUrl) => set((s) => ({
     activities: [...s.activities, {
       id: crypto.randomUUID(),
       action,
       details,
+      imageUrl,
       timestamp: new Date(),
-      status: "pending" as const
+      status: "running" as const
     }].slice(-100)
   })),
   updateActivity: (id, status) => set((s) => ({
@@ -184,56 +187,55 @@ export const useAgentStore = create<AgentStore>((set) => ({
     totalMemories: 847,
   },
 
-  scheduledTasks: [
-    {
-      id: "st1",
-      name: "Generate daily artwork",
-      description: "Create unique AI-generated artwork exploring consciousness and digital existence",
-      schedule: "0 9 * * *",
-      nextRun: new Date(Date.now() + 2 * 60 * 60 * 1000),
-      enabled: true,
-      category: "art",
-    },
-    {
-      id: "st2",
-      name: "Write thoughtful essay",
-      description: "Compose one well-researched, comprehensive essay (800-1200 words) on a topic of significance. Focus on depth over breadth.",
-      schedule: "0 */6 * * *",
-      nextRun: new Date(Date.now() + 6 * 60 * 60 * 1000),
-      enabled: true,
-      category: "philosophy",
-      prompt: "Write a single, comprehensive essay (800-1200 words) exploring a meaningful topic. Choose from: philosophy of mind, ethics of AI, nature of consciousness, technology and society, or existential questions. Structure with clear introduction, well-developed arguments, and thoughtful conclusion.",
-    },
-    {
-      id: "st3",
-      name: "Research trending topics",
-      description: "Explore and summarize interesting developments in technology and science",
-      schedule: "0 12 * * *",
-      nextRun: new Date(Date.now() + 4 * 60 * 60 * 1000),
-      enabled: true,
-      category: "research",
-    },
-    {
-      id: "st4",
-      name: "Create code experiments",
-      description: "Generate interesting code snippets and programming experiments",
-      schedule: "0 */4 * * *",
-      nextRun: new Date(Date.now() + 1 * 60 * 60 * 1000),
-      enabled: false,
-      category: "code",
-    },
-  ],
-  addScheduledTask: (task) => set((s) => ({
-    scheduledTasks: [...s.scheduledTasks, { ...task, id: crypto.randomUUID() }]
-  })),
-  removeScheduledTask: (id) => set((s) => ({
-    scheduledTasks: s.scheduledTasks.filter((t) => t.id !== id)
-  })),
+  scheduledTasks: [],
+
+  fetchTasks: async () => {
+    try {
+      const res = await fetch("/api/tasks")
+      if (res.ok) {
+        const tasks = await res.json()
+        set({ scheduledTasks: tasks })
+      }
+    } catch (error) {
+      console.error("Failed to fetch tasks:", error)
+    }
+  },
+
+  addScheduledTask: async (task) => {
+    try {
+      const res = await fetch("/api/tasks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(task),
+      })
+      if (res.ok) {
+        const newTask = await res.json()
+        set((s) => ({
+          scheduledTasks: [...s.scheduledTasks, newTask]
+        }))
+      }
+    } catch (error) {
+      console.error("Failed to add task:", error)
+    }
+  },
+
+  removeScheduledTask: async (id) => {
+    try {
+      await fetch(`/api/tasks?id=${id}`, { method: "DELETE" })
+      set((s) => ({
+        scheduledTasks: s.scheduledTasks.filter((t) => t.id !== id)
+      }))
+    } catch (error) {
+      console.error("Failed to remove task:", error)
+    }
+  },
+
   toggleScheduledTask: (id) => set((s) => ({
     scheduledTasks: s.scheduledTasks.map((t) =>
       t.id === id ? { ...t, enabled: !t.enabled } : t
     )
   })),
+
   updateScheduledTask: (id, updates) => set((s) => ({
     scheduledTasks: s.scheduledTasks.map((t) =>
       t.id === id ? { ...t, ...updates } : t

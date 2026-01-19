@@ -1,6 +1,4 @@
-import { neon, neonConfig, NeonQueryFunction } from "@neondatabase/serverless"
-
-
+import { Pool } from "@neondatabase/serverless"
 
 /**
  * Get database connection string from environment
@@ -17,49 +15,37 @@ export function isDatabaseConfigured(): boolean {
 }
 
 /**
- * Type for the SQL client
+ * Single instance of the Pool for reuse
  */
-export type SqlClient = NeonQueryFunction<false, false>
+let _pool: Pool | null = null
 
-/**
- * Create a SQL query function with the configured database
- * Returns null if DATABASE_URL is not set
- */
-export function createSqlClient(): SqlClient | null {
-    const url = getDatabaseUrl()
-    if (!url) return null
-    return neon(url)
-}
-
-/**
- * Single instance of the SQL client for reuse
- */
-let _sql: SqlClient | null = null
-
-export function getSql(): SqlClient | null {
-    if (!_sql) {
-        _sql = createSqlClient()
+export function getPool(): Pool | null {
+    if (!_pool) {
+        const connectionString = getDatabaseUrl()
+        if (connectionString) {
+            console.log("Initializing Pool with URL:", connectionString.substring(0, 15) + "...")
+            _pool = new Pool({ connectionString })
+        } else {
+            console.error("No DATABASE_URL found")
+        }
     }
-    return _sql
+    return _pool
 }
 
 /**
  * Helper to execute parameterized SQL queries
- * Builds a tagged template literal from a query string and parameters
  */
 export async function sql<T = Record<string, unknown>>(
     queryText: string,
     params: unknown[] = []
 ): Promise<T[]> {
-    const client = getSql()
-    if (!client) throw new Error("Database not configured")
+    const pool = getPool()
+    if (!pool) throw new Error("Database not configured")
 
     try {
-        // Build template strings array with placeholders replaced
-        // For neon, we need to use $1, $2 etc. placeholders in the query
-        // and pass the values separately
-        const result = await client(queryText as unknown as TemplateStringsArray, ...params)
-        return result as T[]
+        const result = await pool.query(queryText, params)
+        console.log(`[DB] Query: ${queryText.substring(0, 30)}... Rows: ${result.rows.length}`)
+        return result.rows as T[]
     } catch (error) {
         console.error("Database query error:", error)
         throw error

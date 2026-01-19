@@ -1,0 +1,14 @@
+[dotenv@17.2.3] injecting env (3) from .env.local -- tip: ✅ audit secrets and track compliance: https://dotenvx.com/ops
+Reading schema.sql...
+Applying schema...
+Error applying schema: Error: This function can now be called only as a tagged-template function: sql`SELECT ${value}`, not sql("SELECT $1", [value], options). For a conventional function call with value placeholders ($1, $2, etc.), use sql.query("SELECT $1", [value], options).
+    at templateFn (C:\Users\james\projects\agent_0\node_modules\.pnpm\@neondatabase+serverless@1.0.2\node_modules\@neondatabase\serverless\index.js:1278:25)
+    at main (C:\Users\james\projects\agent_0\scripts\migrate.ts:29:15)
+    at fs (C:\Users\james\projects\agent_0\scripts\migrate.ts:38:1)
+    at Object.<anonymous> (C:\Users\james\projects\agent_0\scripts\migrate.ts:38:6)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object.transformer (C:\Users\james\projects\agent_0\node_modules\.pnpm\tsx@4.21.0\node_modules\tsx\dist\register-D46fvsV_.cjs:3:1104)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
