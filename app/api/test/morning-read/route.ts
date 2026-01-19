@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { performMorningRead } from "@/lib/agent/tools/research"
 import { pushActivity } from "@/lib/activity/bus"
 
@@ -7,9 +7,22 @@ export const maxDuration = 60
 
 /**
  * Test endpoint to manually trigger the Morning Read task
- * POST /api/test/morning-read
+ * Requires CRON_SECRET authorization
+ * POST/GET /api/test/morning-read
+ * 
+ * Usage: 
+ *   curl -H "Authorization: Bearer YOUR_CRON_SECRET" https://agent-zero-alpha.vercel.app/api/test/morning-read
  */
-export async function POST() {
+async function handleRequest(req: NextRequest) {
+    // Verify Cron Secret
+    const cronSecret = process.env.CRON_SECRET
+    if (cronSecret) {
+        const authHeader = req.headers.get("authorization")
+        if (authHeader !== `Bearer ${cronSecret}`) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+        }
+    }
+
     try {
         pushActivity({
             action: "Manually triggering Morning Read",
@@ -47,9 +60,10 @@ export async function POST() {
     }
 }
 
-/**
- * GET endpoint for easy browser testing
- */
-export async function GET() {
-    return POST()
+export async function POST(req: NextRequest) {
+    return handleRequest(req)
+}
+
+export async function GET(req: NextRequest) {
+    return handleRequest(req)
 }
