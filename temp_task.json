@@ -1,6 +1,0 @@
-{
-    "name": "Test Task",
-    "schedule": "* * * * *",
-    "prompt": "Say hello world",
-    "enabled": true
-}
