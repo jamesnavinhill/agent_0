@@ -2,10 +2,10 @@
 
 import { useState, useEffect, useCallback, useRef } from "react"
 import { useAgentStore, type ScheduledTask } from "@/lib/store/agent-store"
-import { 
-  Scheduler, 
-  getScheduler, 
-  type SchedulerState, 
+import {
+  Scheduler,
+  getScheduler,
+  type SchedulerState,
   type TaskExecution,
   getNextRunTime,
 } from "@/lib/scheduler"
@@ -31,12 +31,12 @@ export function useScheduler(): UseSchedulerReturn {
     executions: [],
   })
 
-  const { 
-    tasks,
-    addActivity, 
-    updateActivity, 
-    addThought, 
-    addOutput, 
+  const {
+    scheduledTasks,
+    addActivity,
+    updateActivity,
+    addThought,
+    addOutput,
     setState: setAgentState,
   } = useAgentStore()
 
@@ -52,7 +52,7 @@ export function useScheduler(): UseSchedulerReturn {
       setState: setAgentState,
     })
 
-    const mappedTasks = tasks.map(t => ({
+    const mappedTasks = (scheduledTasks ?? []).map(t => ({
       ...t,
       category: (t.category ?? "custom") as "art" | "music" | "code" | "philosophy" | "research" | "blog" | "game" | "social" | "custom",
       runCount: 0,
@@ -68,15 +68,15 @@ export function useScheduler(): UseSchedulerReturn {
 
   useEffect(() => {
     if (!schedulerRef.current) return
-    
-    const mappedTasks = tasks.map(t => ({
+
+    const mappedTasks = (scheduledTasks ?? []).map(t => ({
       ...t,
       category: (t.category ?? "custom") as "art" | "music" | "code" | "philosophy" | "research" | "blog" | "game" | "social" | "custom",
       runCount: 0,
       nextRun: t.nextRun ?? getNextRunTime(t.schedule) ?? undefined,
     }))
     schedulerRef.current.setTasks(mappedTasks)
-  }, [tasks])
+  }, [scheduledTasks])
 
   const start = useCallback(() => {
     schedulerRef.current?.start()
@@ -100,7 +100,7 @@ export function useScheduler(): UseSchedulerReturn {
 
   const runTask = useCallback(async (taskId: string): Promise<TaskExecution | null> => {
     if (!schedulerRef.current) return null
-    
+
     addThought("Manually triggering scheduled task", "action")
     return schedulerRef.current.runNow(taskId)
   }, [addThought])

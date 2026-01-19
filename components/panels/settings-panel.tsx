@@ -56,7 +56,7 @@ const colorPresets = [
 
 export function SettingsPanel() {
   const { theme, setTheme, accentHue, setAccentHue } = useTheme()
-  const { tasks, toggleTask, removeTask, memories, clearMessages, clearThoughts, outputs } = useAgentStore()
+  const { scheduledTasks, toggleScheduledTask, removeScheduledTask, memories, clearMessages, clearThoughts, outputs } = useAgentStore()
   const { settings, setApiKey, setModel, setTemperature, setSchedulesEnabled, hasApiKey } = useSettings()
   const { exportToJSON: exportMemories } = useMemory()
 
@@ -155,36 +155,35 @@ export function SettingsPanel() {
       icon: Calendar,
       content: (
         <div className="space-y-3">
-          {tasks.length === 0 ? (
+          {(scheduledTasks ?? []).length === 0 ? (
             <p className="text-sm text-muted-foreground">No scheduled tasks</p>
           ) : (
-            tasks.map((task) => (
-              <div
-                key={task.id}
-                className="flex items-center justify-between p-3 rounded-lg bg-surface-2"
-              >
-                <div className="flex items-center gap-3">
-                  <Switch
-                    checked={task.enabled}
-                    onCheckedChange={() => toggleTask(task.id)}
-                  />
-                  <div>
-                    <p className="text-sm font-medium">{task.name}</p>
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <Clock className="w-3 h-3" />
-                      <span>{task.schedule}</span>
-                    </div>
+            (scheduledTasks ?? []).map((task) => (<div
+              key={task.id}
+              className="flex items-center justify-between p-3 rounded-lg bg-surface-2"
+            >
+              <div className="flex items-center gap-3">
+                <Switch
+                  checked={task.enabled}
+                  onCheckedChange={() => toggleScheduledTask(task.id)}
+                />
+                <div>
+                  <p className="text-sm font-medium">{task.name}</p>
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <Clock className="w-3 h-3" />
+                    <span>{task.schedule}</span>
                   </div>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => removeTask(task.id)}
-                  className="w-8 h-8 text-muted-foreground hover:text-destructive"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
               </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => removeScheduledTask(task.id)}
+                className="w-8 h-8 text-muted-foreground hover:text-destructive"
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </div>
             ))
           )}
           <Button variant="outline" className="w-full gap-2 bg-transparent">

@@ -51,11 +51,10 @@ import { Textarea } from "@/components/ui/textarea"
 type ScheduleView = "timeline" | "calendar" | "queue"
 
 export function SchedulePanel() {
-  const { 
-    scheduledTasks, 
-    addScheduledTask, 
-    removeScheduledTask, 
-    toggleTask, 
+  const {
+    scheduledTasks,
+    addScheduledTask,
+    removeScheduledTask,
     fetchTasks,
     goals,
     fetchGoals
@@ -63,7 +62,7 @@ export function SchedulePanel() {
   const { isRunning, currentExecution, toggle, runTask } = useScheduler()
   const [view, setView] = useState<ScheduleView>("timeline")
   const [runningTaskId, setRunningTaskId] = useState<string | null>(null)
-  
+
   const [isAddingTask, setIsAddingTask] = useState(false)
   const [newTask, setNewTask] = useState({
     name: "",
