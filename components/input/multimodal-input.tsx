@@ -2,7 +2,7 @@
 
 import React from "react"
 
-import { useState, useRef, useCallback } from "react"
+import { useState, useRef, useCallback, useEffect } from "react"
 import { useAgentStore } from "@/lib/store/agent-store"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -18,6 +18,7 @@ import {
   File as FileIcon,
   Loader2,
 } from "lucide-react"
+import { getWhisperClient } from "@/lib/voice/whisper-client"
 import {
   Tooltip,
   TooltipContent,
@@ -58,12 +59,36 @@ export function MultimodalInput({ onSend, disabled }: MultimodalInputProps) {
   const [attachments, setAttachments] = useState<AttachedFile[]>([])
   const [isRecording, setIsRecording] = useState(false)
   const [isSending, setIsSending] = useState(false)
+  const [isTranscribing, setIsTranscribing] = useState(false)
+  const [whisperLoading, setWhisperLoading] = useState(false)
+  const [whisperProgress, setWhisperProgress] = useState(0)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const chunksRef = useRef<Blob[]>([])
-  
+  const whisperClientRef = useRef(getWhisperClient())
+
   const { setState } = useAgentStore()
+
+  // Load Whisper model on mount
+  useEffect(() => {
+    const loadWhisper = async () => {
+      const client = whisperClientRef.current
+      if (!client.ready && !client.loading) {
+        setWhisperLoading(true)
+        try {
+          await client.loadModel('whisper-tiny', (progress) => {
+            setWhisperProgress(progress)
+          })
+        } catch (err) {
+          console.error('Failed to load Whisper model:', err)
+        } finally {
+          setWhisperLoading(false)
+        }
+      }
+    }
+    loadWhisper()
+  }, [])
 
   const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
@@ -73,15 +98,15 @@ export function MultimodalInput({ onSend, disabled }: MultimodalInputProps) {
         file,
         type: getFileType(file),
       }
-      
+
       // Create preview for images
       if (attachment.type === "image") {
         attachment.preview = URL.createObjectURL(file)
       }
-      
+
       return attachment
     })
-    
+
     setAttachments((prev) => [...prev, ...newAttachments])
     if (fileInputRef.current) fileInputRef.current.value = ""
   }, [])
@@ -102,24 +127,55 @@ export function MultimodalInput({ onSend, disabled }: MultimodalInputProps) {
       const mediaRecorder = new MediaRecorder(stream)
       mediaRecorderRef.current = mediaRecorder
       chunksRef.current = []
-      
+
       mediaRecorder.ondataavailable = (e) => {
         if (e.data.size > 0) {
           chunksRef.current.push(e.data)
         }
       }
-      
-      mediaRecorder.onstop = () => {
+
+      mediaRecorder.onstop = async () => {
         const blob = new Blob(chunksRef.current, { type: "audio/webm" })
-        const file = new File([blob], `recording-${Date.now()}.webm`, { type: "audio/webm" })
-        setAttachments((prev) => [...prev, {
-          id: crypto.randomUUID(),
-          file,
-          type: "audio"
-        }])
         stream.getTracks().forEach((track) => track.stop())
+
+        // Transcribe audio with Whisper
+        const client = whisperClientRef.current
+        if (client.ready) {
+          setIsTranscribing(true)
+          try {
+            const result = await client.transcribe(blob)
+            // Add transcribed text to input
+            setInput((prev) => prev ? `${prev} ${result.text}` : result.text)
+            // Auto-resize textarea
+            setTimeout(() => {
+              if (textareaRef.current) {
+                textareaRef.current.style.height = "auto"
+                textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 200)}px`
+              }
+            }, 0)
+          } catch (err) {
+            console.error('Transcription failed:', err)
+            // Fallback: attach audio file if transcription fails
+            const file = new File([blob], `recording-${Date.now()}.webm`, { type: "audio/webm" })
+            setAttachments((prev) => [...prev, {
+              id: crypto.randomUUID(),
+              file,
+              type: "audio"
+            }])
+          } finally {
+            setIsTranscribing(false)
+          }
+        } else {
+          // Whisper not ready, attach audio file
+          const file = new File([blob], `recording-${Date.now()}.webm`, { type: "audio/webm" })
+          setAttachments((prev) => [...prev, {
+            id: crypto.randomUUID(),
+            file,
+            type: "audio"
+          }])
+        }
       }
-      
+
       mediaRecorder.start()
       setIsRecording(true)
       setState("listening")
@@ -138,14 +194,14 @@ export function MultimodalInput({ onSend, disabled }: MultimodalInputProps) {
 
   const handleSend = useCallback(async () => {
     if ((!input.trim() && attachments.length === 0) || disabled || isSending) return
-    
+
     setIsSending(true)
     const message = input.trim()
     const files = attachments.map((a) => a.file)
-    
+
     setInput("")
     setAttachments([])
-    
+
     try {
       await onSend(message, files.length > 0 ? files : undefined)
     } finally {
@@ -203,7 +259,7 @@ export function MultimodalInput({ onSend, disabled }: MultimodalInputProps) {
             ))}
           </div>
         )}
-        
+
         {/* Input area */}
         <div className="flex items-end gap-2">
           {/* File upload */}
@@ -229,7 +285,7 @@ export function MultimodalInput({ onSend, disabled }: MultimodalInputProps) {
             onChange={handleFileSelect}
             className="hidden"
           />
-          
+
           {/* Voice recording */}
           <Tooltip>
             <TooltipTrigger asChild>
@@ -240,8 +296,8 @@ export function MultimodalInput({ onSend, disabled }: MultimodalInputProps) {
                 disabled={disabled}
                 className={cn(
                   "shrink-0",
-                  isRecording 
-                    ? "text-destructive hover:text-destructive animate-pulse" 
+                  isRecording
+                    ? "text-destructive hover:text-destructive animate-pulse"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
@@ -250,7 +306,7 @@ export function MultimodalInput({ onSend, disabled }: MultimodalInputProps) {
             </TooltipTrigger>
             <TooltipContent>{isRecording ? "Stop recording" : "Voice input"}</TooltipContent>
           </Tooltip>
-          
+
           {/* Text input */}
           <div className="flex-1 relative">
             <textarea
@@ -271,7 +327,7 @@ export function MultimodalInput({ onSend, disabled }: MultimodalInputProps) {
               )}
             />
           </div>
-          
+
           {/* Send button */}
           <Tooltip>
             <TooltipTrigger asChild>
@@ -291,12 +347,28 @@ export function MultimodalInput({ onSend, disabled }: MultimodalInputProps) {
             <TooltipContent>Send message</TooltipContent>
           </Tooltip>
         </div>
-        
+
         {/* Recording indicator */}
         {isRecording && (
           <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
             <div className="w-2 h-2 rounded-full bg-destructive animate-pulse" />
             <span>Recording audio...</span>
+          </div>
+        )}
+
+        {/* Transcription indicator */}
+        {isTranscribing && (
+          <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            <span>Transcribing...</span>
+          </div>
+        )}
+
+        {/* Whisper loading indicator */}
+        {whisperLoading && (
+          <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            <span>Loading speech model... {whisperProgress}%</span>
           </div>
         )}
       </div>

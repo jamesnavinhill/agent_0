@@ -1,4 +1,7 @@
 import { GoogleGenerativeAI, type GenerativeModel, type GenerationConfig } from "@google/generative-ai"
+import { createLogger } from "@/lib/logging/logger"
+
+const log = createLogger("Gemini")
 
 const apiKey = process.env.GOOGLE_API_KEY
 
@@ -38,14 +41,14 @@ Behavior:
 
 function getModel(config: GeminiConfig = {}): GenerativeModel | null {
   if (!genAI) return null
-  
+
   const modelName = config.model ?? "gemini-2.0-flash"
-  
+
   const generationConfig: GenerationConfig = {
     temperature: config.temperature ?? 0.8,
     maxOutputTokens: config.maxOutputTokens ?? 4096,
   }
-  
+
   return genAI.getGenerativeModel({
     model: modelName,
     generationConfig,
@@ -59,17 +62,24 @@ export async function chat(
 ): Promise<string> {
   const model = getModel(config)
   if (!model) throw new Error("Gemini not initialized - check GOOGLE_API_KEY")
-  
-  const chat = model.startChat({
+
+  log.info("Starting chat", { messageCount: messages.length, model: config.model ?? "gemini-2.0-flash" })
+
+  const chatSession = model.startChat({
     history: messages.slice(0, -1).map(msg => ({
       role: msg.role,
       parts: [{ text: msg.content }],
     })),
   })
-  
+
   const lastMessage = messages[messages.length - 1]
-  const result = await chat.sendMessage(lastMessage.content)
-  return result.response.text()
+  log.debug("Sending message", { contentLength: lastMessage.content.length })
+
+  const result = await chatSession.sendMessage(lastMessage.content)
+  const response = result.response.text()
+
+  log.action("Chat completed", { responseLength: response.length })
+  return response
 }
 
 export async function* chatStream(
@@ -78,21 +88,29 @@ export async function* chatStream(
 ): AsyncGenerator<string, void, unknown> {
   const model = getModel(config)
   if (!model) throw new Error("Gemini not initialized - check GOOGLE_API_KEY")
-  
-  const chat = model.startChat({
+
+  log.info("Starting chat stream", { messageCount: messages.length, model: config.model ?? "gemini-2.0-flash" })
+
+  const chatSession = model.startChat({
     history: messages.slice(0, -1).map(msg => ({
       role: msg.role,
       parts: [{ text: msg.content }],
     })),
   })
-  
+
   const lastMessage = messages[messages.length - 1]
-  const result = await chat.sendMessageStream(lastMessage.content)
-  
+  const result = await chatSession.sendMessageStream(lastMessage.content)
+
+  let totalLength = 0
   for await (const chunk of result.stream) {
     const text = chunk.text()
-    if (text) yield text
+    if (text) {
+      totalLength += text.length
+      yield text
+    }
   }
+
+  log.action("Chat stream completed", { totalResponseLength: totalLength })
 }
 
 export async function generateText(
@@ -101,9 +119,14 @@ export async function generateText(
 ): Promise<string> {
   const model = getModel(config)
   if (!model) throw new Error("Gemini not initialized - check GOOGLE_API_KEY")
-  
+
+  log.info("Generating text", { promptLength: prompt.length, model: config.model ?? "gemini-2.0-flash" })
+
   const result = await model.generateContent(prompt)
-  return result.response.text()
+  const response = result.response.text()
+
+  log.action("Text generation completed", { responseLength: response.length })
+  return response
 }
 
 export function isConfigured(): boolean {

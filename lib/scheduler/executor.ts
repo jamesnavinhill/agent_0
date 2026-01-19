@@ -1,4 +1,7 @@
 import type { ScheduledTask, TaskExecution, TaskResult, TaskCategory } from "./types"
+import { createLogger } from "@/lib/logging/logger"
+
+const log = createLogger("Executor")
 
 export interface ExecutorContext {
   addActivity: (action: string, details?: string) => void
@@ -18,18 +21,32 @@ export async function executeTask(
   task: ScheduledTask,
   context: ExecutorContext
 ): Promise<TaskResult> {
+  const startTime = Date.now()
+  log.info("Starting task execution", { taskId: task.id, taskName: task.name, category: task.category })
+
   context.setState("creating")
   context.addThought(`Starting scheduled task: ${task.name}`, "action")
   context.addActivity(`Executing: ${task.name}`, task.description ?? undefined)
 
   try {
     const result = await executeByCategory(task, context)
-    
+
+    const duration = Date.now() - startTime
+    log.action("Task completed successfully", { taskId: task.id, taskName: task.name, durationMs: duration })
+
     context.addThought(`Completed task: ${task.name}`, "observation")
     context.setState("idle")
-    
+
     return result
   } catch (error) {
+    const duration = Date.now() - startTime
+    log.error("Task execution failed", {
+      taskId: task.id,
+      taskName: task.name,
+      durationMs: duration,
+      error: error instanceof Error ? error.message : String(error)
+    })
+
     context.setState("error")
     context.addThought(`Task failed: ${task.name} - ${error instanceof Error ? error.message : "Unknown error"}`, "observation")
     throw error
@@ -59,7 +76,7 @@ async function executeArtTask(
   context: ExecutorContext
 ): Promise<TaskResult> {
   const prompt = task.prompt ?? await generateArtPrompt(task.name)
-  
+
   context.addThought(`Generating artwork: "${prompt.slice(0, 80)}"`, "action")
 
   const response = await fetch("/api/generate/image", {
@@ -107,7 +124,7 @@ async function executeCodeTask(
   context: ExecutorContext
 ): Promise<TaskResult> {
   const prompt = task.prompt ?? task.description ?? task.name
-  
+
   context.addThought(`Generating code: "${prompt.slice(0, 80)}"`, "action")
 
   const response = await fetch("/api/generate/code", {
@@ -150,7 +167,7 @@ async function executeTextTask(
   context: ExecutorContext
 ): Promise<TaskResult> {
   const prompt = task.prompt ?? generateTextPrompt(task)
-  
+
   context.addThought(`Writing ${task.category}: "${prompt.slice(0, 80)}"`, "action")
 
   const response = await fetch("/api/chat", {
@@ -173,10 +190,10 @@ async function executeTextTask(
     while (true) {
       const { done, value } = await reader.read()
       if (done) break
-      
+
       const chunk = decoder.decode(value)
       const lines = chunk.split("\n")
-      
+
       for (const line of lines) {
         if (line.startsWith("data: ")) {
           const data = line.slice(6)
@@ -184,14 +201,14 @@ async function executeTextTask(
           try {
             const parsed = JSON.parse(data)
             if (parsed.content) content += parsed.content
-          } catch {}
+          } catch { }
         }
       }
     }
   }
 
   const category = task.category as "philosophy" | "research" | "blog"
-  
+
   context.addOutput({
     type: "text",
     content,
@@ -216,7 +233,7 @@ async function executeCustomTask(
   context: ExecutorContext
 ): Promise<TaskResult> {
   const prompt = task.prompt ?? task.description ?? `Execute task: ${task.name}`
-  
+
   context.addThought(`Executing custom task: "${task.name}"`, "action")
 
   const response = await fetch("/api/chat", {
@@ -239,10 +256,10 @@ async function executeCustomTask(
     while (true) {
       const { done, value } = await reader.read()
       if (done) break
-      
+
       const chunk = decoder.decode(value)
       const lines = chunk.split("\n")
-      
+
       for (const line of lines) {
         if (line.startsWith("data: ")) {
           const data = line.slice(6)
@@ -250,7 +267,7 @@ async function executeCustomTask(
           try {
             const parsed = JSON.parse(data)
             if (parsed.content) content += parsed.content
-          } catch {}
+          } catch { }
         }
       }
     }
@@ -274,7 +291,7 @@ async function generateArtPrompt(taskName: string): Promise<string> {
     "quantum realms",
     "ancient wisdom",
   ]
-  
+
   const styles = [
     "surrealist painting",
     "digital art",
@@ -285,10 +302,10 @@ async function generateArtPrompt(taskName: string): Promise<string> {
     "maximalist chaos",
     "art nouveau",
   ]
-  
+
   const theme = themes[Math.floor(Math.random() * themes.length)]
   const style = styles[Math.floor(Math.random() * styles.length)]
-  
+
   return `A ${style} exploring the theme of ${theme}. Highly detailed, evocative, artistic.`
 }
 

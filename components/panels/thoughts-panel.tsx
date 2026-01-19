@@ -5,7 +5,9 @@ import React from "react"
 import { useAgentStore, type ThoughtEntry } from "@/lib/store/agent-store"
 import { cn } from "@/lib/utils"
 import { useEffect, useRef } from "react"
-import { Brain, Lightbulb, GitBranch, Zap } from "lucide-react"
+import { Brain, Lightbulb, GitBranch, Zap, Volume2, VolumeX } from "lucide-react"
+import { useTTS } from "@/hooks/use-tts"
+import { Button } from "@/components/ui/button"
 
 const thoughtIcons: Record<ThoughtEntry["type"], React.ElementType> = {
   observation: Brain,
@@ -24,12 +26,32 @@ const thoughtColors: Record<ThoughtEntry["type"], string> = {
 export function ThoughtsPanel() {
   const { thoughts, state } = useAgentStore()
   const scrollRef = useRef<HTMLDivElement>(null)
+  const { speak, stop, isSpeaking } = useTTS()
+  const currentSpeakingRef = useRef<string | null>(null)
 
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight
     }
   }, [thoughts])
+
+  const handleSpeak = (id: string, text: string) => {
+    if (currentSpeakingRef.current === id && isSpeaking) {
+      stop()
+      currentSpeakingRef.current = null
+    } else {
+      stop()
+      currentSpeakingRef.current = id
+      speak(text, {
+        onEnd: () => {
+          currentSpeakingRef.current = null
+        },
+        onError: () => {
+          currentSpeakingRef.current = null
+        }
+      })
+    }
+  }
 
   return (
     <div className="flex flex-col h-full">
@@ -41,14 +63,14 @@ export function ThoughtsPanel() {
         </div>
         <div className={cn(
           "w-2 h-2 rounded-full",
-          state === "thinking" || state === "creating" 
-            ? "bg-accent animate-pulse" 
+          state === "thinking" || state === "creating"
+            ? "bg-accent animate-pulse"
             : "bg-muted"
         )} />
       </div>
-      
+
       {/* Thoughts stream */}
-      <div 
+      <div
         ref={scrollRef}
         className="flex-1 overflow-y-auto p-4 space-y-3"
       >
@@ -63,7 +85,7 @@ export function ThoughtsPanel() {
             return (
               <div
                 key={thought.id}
-                className="flex gap-3 animate-in slide-in-from-bottom-2 duration-300"
+                className="flex gap-3 animate-in slide-in-from-bottom-2 duration-300 group relative"
               >
                 <div className={cn(
                   "w-7 h-7 rounded-lg flex items-center justify-center shrink-0",
@@ -77,11 +99,25 @@ export function ThoughtsPanel() {
                     {thought.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
                   </span>
                 </div>
+
+                {/* TTS button */}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => handleSpeak(thought.id, thought.content)}
+                  className="absolute right-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7"
+                >
+                  {currentSpeakingRef.current === thought.id && isSpeaking ? (
+                    <VolumeX className="w-3 h-3" />
+                  ) : (
+                    <Volume2 className="w-3 h-3" />
+                  )}
+                </Button>
               </div>
             )
           })
         )}
-        
+
         {/* Active thinking indicator */}
         {state === "thinking" && (
           <div className="flex gap-3 items-center text-muted-foreground">

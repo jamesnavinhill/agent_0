@@ -1,5 +1,8 @@
 import { GoogleGenAI } from "@google/genai"
 import type { ImageGenerationRequest, ImageGenerationResult } from "./types"
+import { createLogger } from "@/lib/logging/logger"
+
+const log = createLogger("Imagen")
 
 const apiKey = process.env.GOOGLE_API_KEY
 
@@ -34,6 +37,7 @@ export async function generateImage(
     throw new Error("Gemini not initialized - check GOOGLE_API_KEY")
   }
 
+  log.info("Generating image", { promptLength: prompt.length, aspectRatio: config.aspectRatio ?? "1:1" })
   const mergedConfig = { ...DEFAULT_CONFIG, ...config }
 
   const response = await genAI.models.generateImages({
@@ -58,6 +62,8 @@ export async function generateImage(
   const base64Data = image.image.imageBytes
   const dataUrl = `data:image/png;base64,${base64Data}`
 
+  log.action("Image generated successfully", { prompt: prompt.slice(0, 50) })
+
   return {
     url: dataUrl,
     prompt,
@@ -73,6 +79,7 @@ export async function generateImages(
     throw new Error("Gemini not initialized - check GOOGLE_API_KEY")
   }
 
+  log.info("Generating multiple images", { promptLength: prompt.length, count: config.numberOfImages ?? 4 })
   const mergedConfig = { ...DEFAULT_CONFIG, ...config, numberOfImages: config.numberOfImages ?? 4 }
 
   const response = await genAI.models.generateImages({
@@ -89,13 +96,16 @@ export async function generateImages(
     throw new Error("No images generated")
   }
 
-  return response.generatedImages
+  const results = response.generatedImages
     .filter(img => img.image?.imageBytes)
     .map(img => ({
       url: `data:image/png;base64,${img.image!.imageBytes}`,
       prompt,
       timestamp: new Date(),
     }))
+
+  log.action("Multiple images generated", { count: results.length })
+  return results
 }
 
 export function isImagenConfigured(): boolean {

@@ -228,6 +228,16 @@ export const useAgentStore = create<AgentStore>((set) => ({
   removeScheduledTask: (id) => set((s) => ({
     scheduledTasks: s.scheduledTasks.filter((t) => t.id !== id)
   })),
+  toggleScheduledTask: (id) => set((s) => ({
+    scheduledTasks: s.scheduledTasks.map((t) => 
+      t.id === id ? { ...t, enabled: !t.enabled } : t
+    )
+  })),
+  updateScheduledTask: (id, updates) => set((s) => ({
+    scheduledTasks: s.scheduledTasks.map((t) =>
+      t.id === id ? { ...t, ...updates } : t
+    )
+  })),
   
   activePanel: "chat",
   setActivePanel: (panel) => set({ activePanel: panel }),

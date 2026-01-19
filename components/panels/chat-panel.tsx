@@ -4,10 +4,15 @@ import { useAgentStore } from "@/lib/store/agent-store"
 import { cn } from "@/lib/utils"
 import { useRef, useEffect } from "react"
 import { AgentOrb } from "@/components/agent/agent-orb"
+import { useTTS } from "@/hooks/use-tts"
+import { Volume2, VolumeX } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
 export function ChatPanel() {
   const { messages, state } = useAgentStore()
   const scrollRef = useRef<HTMLDivElement>(null)
+  const { speak, stop, isSpeaking } = useTTS()
+  const currentSpeakingRef = useRef<number | null>(null)
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -15,10 +20,30 @@ export function ChatPanel() {
     }
   }, [messages])
 
+  const handleSpeak = (index: number, text: string) => {
+    if (currentSpeakingRef.current === index && isSpeaking) {
+      // Stop if already speaking this message
+      stop()
+      currentSpeakingRef.current = null
+    } else {
+      // Speak this message
+      stop() // Stop any current speech
+      currentSpeakingRef.current = index
+      speak(text, {
+        onEnd: () => {
+          currentSpeakingRef.current = null
+        },
+        onError: () => {
+          currentSpeakingRef.current = null
+        }
+      })
+    }
+  }
+
   return (
     <div className="flex flex-col h-full">
       {/* Messages area */}
-      <div 
+      <div
         ref={scrollRef}
         className="flex-1 overflow-y-auto px-4 py-6 space-y-4"
       >
@@ -28,7 +53,7 @@ export function ChatPanel() {
             <div className="space-y-2 max-w-md">
               <h2 className="text-xl font-medium text-foreground">Agent Zero</h2>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                A multimodal AI agent ready for creative exploration, research, and autonomous task execution. 
+                A multimodal AI agent ready for creative exploration, research, and autonomous task execution.
                 Speak, type, or upload files to begin.
               </p>
             </div>
@@ -49,7 +74,7 @@ export function ChatPanel() {
               )}
               <div
                 className={cn(
-                  "px-4 py-3 rounded-2xl",
+                  "px-4 py-3 rounded-2xl relative group",
                   msg.role === "user"
                     ? "bg-accent text-accent-foreground rounded-br-md"
                     : "bg-surface-2 text-foreground rounded-bl-md"
@@ -59,11 +84,27 @@ export function ChatPanel() {
                 <span className="text-[10px] opacity-50 mt-1 block">
                   {msg.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                 </span>
+
+                {/* TTS button for assistant messages */}
+                {msg.role === "assistant" && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleSpeak(i, msg.content)}
+                    className="absolute -right-10 top-2 opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8"
+                  >
+                    {currentSpeakingRef.current === i && isSpeaking ? (
+                      <VolumeX className="w-4 h-4" />
+                    ) : (
+                      <Volume2 className="w-4 h-4" />
+                    )}
+                  </Button>
+                )}
               </div>
             </div>
           ))
         )}
-        
+
         {/* Typing indicator */}
         {(state === "thinking" || state === "creating") && (
           <div className="flex gap-3 max-w-3xl">
@@ -87,3 +128,4 @@ export function ChatPanel() {
     </div>
   )
 }
+
