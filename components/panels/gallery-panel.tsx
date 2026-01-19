@@ -159,7 +159,12 @@ export function GalleryPanel() {
               variant="ghost"
               size="icon"
               onClick={() => setViewMode("grid")}
-              className={cn("w-8 h-8 transition-colors", viewMode === "grid" ? "bg-accent/20 text-accent" : "text-muted-foreground hover:text-foreground")}
+              disabled={navState === "stacks"}
+              className={cn(
+                "w-8 h-8 transition-colors",
+                viewMode === "grid" ? "bg-accent/20 text-accent" : "text-muted-foreground hover:text-foreground",
+                navState === "stacks" && "opacity-30"
+              )}
             >
               <Grid3X3 className="w-4 h-4" />
             </Button>
@@ -167,7 +172,12 @@ export function GalleryPanel() {
               variant="ghost"
               size="icon"
               onClick={() => setViewMode("list")}
-              className={cn("w-8 h-8 transition-colors", viewMode === "list" ? "bg-accent/20 text-accent" : "text-muted-foreground hover:text-foreground")}
+              disabled={navState === "stacks"}
+              className={cn(
+                "w-8 h-8 transition-colors",
+                viewMode === "list" ? "bg-accent/20 text-accent" : "text-muted-foreground hover:text-foreground",
+                navState === "stacks" && "opacity-30"
+              )}
             >
               <List className="w-4 h-4" />
             </Button>
@@ -328,89 +338,142 @@ export function GalleryPanel() {
 
       {/* Detail dialog - Made Wider/Larger */}
       <Dialog open={!!selectedOutput} onOpenChange={() => setSelectedOutput(null)}>
-        <DialogContent className="max-w-4xl h-[85vh] flex flex-col p-0 gap-0 overflow-hidden border-border/50 sm:rounded-2xl shadow-2xl">
-          {selectedOutput && (
-            <>
-              {/* Modal Header */}
-              <div className="px-6 py-4 border-b border-border bg-surface-1 flex items-center justify-between shrink-0">
-                <div className="flex items-center gap-3">
-                  {(() => {
-                    const config = categoryConfig[selectedOutput.category]
-                    return (
-                      <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center", config.color)}>
-                        <config.icon className="w-4 h-4" />
-                      </div>
-                    )
-                  })()}
-                  <div className="space-y-0.5">
-                    <DialogTitle className="text-lg font-semibold tracking-tight">
-                      {selectedOutput.title || "Untitled Creation"}
-                    </DialogTitle>
-                    <p className="text-xs text-muted-foreground flex items-center gap-2">
-                      <span>{selectedOutput.category}</span>
-                      <span>•</span>
-                      <span>{new Date(selectedOutput.timestamp).toLocaleString()}</span>
-                    </p>
-                  </div>
+        {/* Detail dialog - Made Wider/Larger */}
+        <Dialog open={!!selectedOutput} onOpenChange={() => setSelectedOutput(null)}>
+          <DialogContent className="max-w-4xl h-[85vh] flex flex-col p-0 gap-0 overflow-hidden border-border/50 sm:rounded-2xl shadow-2xl">
+            {selectedOutput && (
+              <DetailContent
+                output={selectedOutput}
+                onClose={() => setSelectedOutput(null)}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
+    </div>
+  )
+}
+
+function DetailContent({ output, onClose }: { output: AgentOutput; onClose: () => void }) {
+  const [content, setContent] = useState<string>(output.content || "")
+  const [loading, setLoading] = useState(false)
+  const [copied, setCopied] = useState(false)
+
+  useEffect(() => {
+    if (!output.content && output.url && (output.type === "text" || output.type === "code" || output.type === "research")) {
+      const fetchContent = async () => {
+        setLoading(true)
+        try {
+          const res = await fetch(output.url!)
+          if (res.ok) {
+            const text = await res.text()
+            // If it's a JSON file (legacy), try to parse content
+            if (output.url!.endsWith(".json")) {
+              try {
+                const json = JSON.parse(text)
+                setContent(json.content || text)
+              } catch {
+                setContent(text)
+              }
+            } else {
+              setContent(text)
+            }
+          }
+        } catch (e) {
+          console.error("Failed to load content", e)
+          setContent("Failed to load content.")
+        } finally {
+          setLoading(false)
+        }
+      }
+      fetchContent()
+    }
+  }, [output])
+
+  const handleCopy = async () => {
+    const success = await copyToClipboard(content)
+    if (success) {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
+  }
+
+  const handleDownload = async () => {
+    const filename = sanitizeFilename(output.title || output.category) || "download"
+    downloadFile(`${filename}.txt`, content, "text/plain")
+  }
+
+  const categoryConfigItem = categoryConfig[output.category]
+
+  return (
+    <>
+      <div className="px-6 py-4 border-b border-border bg-surface-1 flex items-center justify-between shrink-0">
+        <div className="flex items-center gap-3">
+          <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center", categoryConfigItem.color)}>
+            <categoryConfigItem.icon className="w-4 h-4" />
+          </div>
+          <div className="space-y-0.5">
+            <DialogTitle className="text-lg font-semibold tracking-tight">
+              {output.title || "Untitled Creation"}
+            </DialogTitle>
+            <p className="text-xs text-muted-foreground flex items-center gap-2">
+              <span>{output.category}</span>
+              <span>•</span>
+              <span>{new Date(output.timestamp).toLocaleString()}</span>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-background">
+        {loading ? (
+          <div className="flex items-center justify-center h-full text-muted-foreground animate-pulse">
+            Loading content...
+          </div>
+        ) : (
+          <>
+            {output.type === "image" ? (
+              <div className="flex justify-center bg-surface-1/50 rounded-xl p-4 border border-border/50">
+                <img
+                  src={output.content || output.url || "/placeholder.svg"}
+                  alt={output.title || "Generated image"}
+                  className="max-h-[60vh] object-contain rounded-lg shadow-sm"
+                />
+              </div>
+            ) : output.type === "code" ? (
+              <pre className="p-6 bg-surface-1 rounded-xl overflow-x-auto text-sm font-mono border border-border/50 shadow-sm">
+                <code>{content}</code>
+              </pre>
+            ) : (
+              <div className="max-w-3xl mx-auto prose prose-sm md:prose-base dark:prose-invert prose-headings:text-foreground prose-p:text-muted-foreground prose-a:text-accent hover:prose-a:underline">
+                <div className="whitespace-pre-wrap leading-relaxed">
+                  {content}
                 </div>
               </div>
+            )}
+          </>
+        )}
+      </div>
 
-              {/* Modal Content - Scrollable */}
-              <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-background">
-                {selectedOutput.type === "image" && (
-                  <div className="flex justify-center bg-surface-1/50 rounded-xl p-4 border border-border/50">
-                    <img
-                      src={selectedOutput.content || "/placeholder.svg"}
-                      alt={selectedOutput.title || "Generated image"}
-                      className="max-h-[60vh] object-contain rounded-lg shadow-sm"
-                    />
-                  </div>
-                )}
-
-                {selectedOutput.type === "code" && (
-                  <div className="relative group">
-                    <pre className="p-6 bg-surface-1 rounded-xl overflow-x-auto text-sm font-mono border border-border/50 shadow-sm">
-                      <code>{selectedOutput.content}</code>
-                    </pre>
-                  </div>
-                )}
-
-                {(selectedOutput.type === "text" || selectedOutput.type === "audio" || selectedOutput.type === "video") && (
-                  <div className="max-w-3xl mx-auto prose prose-sm md:prose-base dark:prose-invert prose-headings:text-foreground prose-p:text-muted-foreground prose-a:text-accent hover:prose-a:underline">
-                    {/* Render raw content with whitespace preservation for now. 
-                        Ideally use a markdown renderer here in future */}
-                    <div className="whitespace-pre-wrap leading-relaxed">
-                      {selectedOutput.content}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Modal Footer */}
-              <div className="p-4 border-t border-border bg-surface-1/50 shrink-0 flex justify-end gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleCopy(selectedOutput.content)}
-                  className="gap-2"
-                >
-                  {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                  {copied ? "Copied" : "Copy"}
-                </Button>
-                <Button
-                  variant="default"
-                  size="sm"
-                  onClick={() => handleDownload(selectedOutput)}
-                  className="gap-2"
-                >
-                  <Download className="w-3 h-3" />
-                  Download
-                </Button>
-              </div>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
-    </div>
+      <div className="p-4 border-t border-border bg-surface-1/50 shrink-0 flex justify-end gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleCopy}
+          className="gap-2"
+        >
+          {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+          {copied ? "Copied" : "Copy"}
+        </Button>
+        <Button
+          variant="default"
+          size="sm"
+          onClick={handleDownload}
+          className="gap-2"
+        >
+          <Download className="w-3 h-3" />
+          Download
+        </Button>
+      </div>
+    </>
   )
 }
