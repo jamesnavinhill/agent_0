@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server"
-import { getSql, sql as dbQuery, isDatabaseConfigured } from "@/lib/db/neon"
+import { sql as dbQuery, isDatabaseConfigured } from "@/lib/db/neon"
 import { uploadFile, deleteFile, isBlobConfigured, getContentType } from "@/lib/storage/blob"
 import fs from "fs/promises"
 import path from "path"

@@ -1,7 +1,19 @@
 import { generateText } from "@/lib/api/gemini"
 import { addKnowledge } from "@/lib/db/knowledge"
+import { saveGalleryItem } from "@/lib/db/gallery"
+import { pushActivity } from "@/lib/activity/bus"
 
 export async function performMorningRead() {
+  const startTime = Date.now()
+
+  pushActivity({
+    action: "Starting Morning Read research",
+    details: "Using Google Search grounding to find today's high-signal news",
+    source: "Research",
+    level: "action",
+    timestamp: Date.now()
+  })
+
   const prompt = `
     You are performing your "Morning Read". 
     Use Google Search to find high-signal tech news, AI breakthroughs, and scientific discoveries from the last 24 hours.
@@ -39,23 +51,96 @@ export async function performMorningRead() {
       responseMimeType: "application/json"
     })
 
-    const data = JSON.parse(response)
-    
-    // Save knowledge items
+    const duration = Date.now() - startTime
+
+    pushActivity({
+      action: "Generated Morning Read report",
+      details: `Response received in ${duration}ms, ${response.length} chars`,
+      source: "Research",
+      level: "info",
+      timestamp: Date.now()
+    })
+
+    let data: { reportMarkdown?: string; knowledgeItems?: Array<{ title: string; url: string; summary: string; tags?: string[] }> }
+    try {
+      data = JSON.parse(response)
+    } catch (parseError) {
+      console.error("[Research] Failed to parse JSON response:", parseError)
+      pushActivity({
+        action: "Morning Read parse error",
+        details: "Response was not valid JSON, using raw response",
+        source: "Research",
+        level: "error",
+        timestamp: Date.now()
+      })
+      // Use raw response as report if JSON parse fails
+      data = { reportMarkdown: response, knowledgeItems: [] }
+    }
+
+    // Save knowledge items with tracking
+    let savedCount = 0
     if (Array.isArray(data.knowledgeItems)) {
       for (const item of data.knowledgeItems) {
-        await addKnowledge({
+        const success = await addKnowledge({
           title: item.title,
           url: item.url,
           summary: item.summary,
           tags: item.tags || ["research"]
         })
+        if (success) savedCount++
       }
+
+      pushActivity({
+        action: `Saved ${savedCount}/${data.knowledgeItems.length} knowledge items`,
+        details: data.knowledgeItems.map(i => i.title).join(", ").slice(0, 200),
+        source: "Research",
+        level: "info",
+        timestamp: Date.now()
+      })
     }
 
-    return data.reportMarkdown || response
+    // Save full report to gallery
+    const reportMarkdown = data.reportMarkdown || response
+    const dateStr = new Date().toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric"
+    })
+
+    const galleryId = await saveGalleryItem({
+      type: "text",
+      content: reportMarkdown,
+      title: `Daily Brief - ${dateStr}`,
+      category: "research",
+      metadata: {
+        source: "morning-read",
+        itemCount: data.knowledgeItems?.length || 0,
+        durationMs: duration
+      }
+    })
+
+    if (galleryId) {
+      pushActivity({
+        action: "Morning Read complete",
+        details: `Report saved to gallery (${galleryId})`,
+        source: "Research",
+        level: "action",
+        timestamp: Date.now()
+      })
+    }
+
+    return reportMarkdown
   } catch (error) {
     console.error("Error performing morning read:", error)
+
+    pushActivity({
+      action: "Morning Read failed",
+      details: error instanceof Error ? error.message : "Unknown error",
+      source: "Research",
+      level: "error",
+      timestamp: Date.now()
+    })
+
     return "Failed to perform Morning Read due to an error."
   }
 }

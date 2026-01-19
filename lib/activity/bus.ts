@@ -15,7 +15,7 @@ export interface ActivityEvent {
   id?: string
   action: string
   details?: string
-  timestamp: number
+  timestamp?: number
   status?: "pending" | "running" | "complete" | "error"
   /** Log level for filtering and display */
   level?: ActivityLevel
@@ -32,6 +32,38 @@ type ActivityCallback = (ev: ActivityEvent) => void
 const subscribers: Set<ActivityCallback> = new Set()
 const RECENT_LIMIT = 200
 const recent: ActivityEvent[] = []
+
+/**
+ * Persist activity to database (server-side only)
+ * Uses dynamic import to avoid bundling DB code in browser
+ */
+async function persistActivityToDb(e: ActivityEvent) {
+  try {
+    // Only run on server
+    if (typeof window !== 'undefined') return
+
+    // Dynamic import to avoid bundling issues
+    const { sql, isDatabaseConfigured } = await import("@/lib/db/neon")
+
+    if (!isDatabaseConfigured()) return
+
+    await sql(`
+      INSERT INTO activities (action, details, status, level, source, image_url, metadata)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
+    `, [
+      e.action,
+      e.details ?? null,
+      e.status ?? 'complete',
+      e.level ?? 'info',
+      e.source ?? null,
+      e.imageUrl ?? null,
+      e.metadata ? JSON.stringify(e.metadata) : null
+    ])
+  } catch (err) {
+    // Silently ignore - in-memory still works
+    console.error('[Activity] DB persist failed:', err)
+  }
+}
 
 /**
  * Push a new activity event to the stream
@@ -56,16 +88,9 @@ export function pushActivity(event: ActivityEvent) {
     }
   })
 
-  // Persist to database via API (fire and forget, only on client with fetch available)
-  if (typeof fetch !== 'undefined') {
-    fetch('/api/activity/push', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(e),
-    }).catch(() => {
-      // Silently ignore - in-memory still works
-    })
-  }
+  // Persist to database directly (works in both client and server context)
+  // Dynamic import to avoid issues in browser context
+  persistActivityToDb(e)
 }
 
 /**
