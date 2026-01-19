@@ -68,6 +68,16 @@ export interface MemoryEntry {
   content: string
   timestamp: Date
   relevance: number
+  relevance: number
+}
+
+export interface KnowledgeEntry {
+  id: string
+  title: string
+  url?: string
+  summary: string
+  tags: string[]
+  created_at: string
 }
 
 interface AgentStore {
@@ -110,8 +120,10 @@ interface AgentStore {
   toggleScheduledTask: (id: string) => void
   updateScheduledTask: (id: string, updates: Partial<ScheduledTask>) => void
 
-  // Memory
+  // Memory & Knowledge
   memories: MemoryEntry[]
+  knowledge: KnowledgeEntry[]
+  fetchMemories: () => Promise<void>
   addMemory: (type: MemoryEntry["type"], content: string, relevance: number) => void
 
   // Memory stats
@@ -310,14 +322,33 @@ export const useAgentStore = create<AgentStore>((set) => ({
   })),
 
   memories: [],
+  knowledge: [],
+
+  fetchMemories: async () => {
+    try {
+      const res = await fetch("/api/agent/memory?limit=50")
+      if (res.ok) {
+        const data = await res.json()
+        set({
+          memories: data.memories || [],
+          knowledge: data.knowledge || []
+        })
+      }
+    } catch (error) {
+      console.error("Failed to fetch memories:", error)
+    }
+  },
+
   addMemory: (type, content, relevance) => set((s) => ({
     memories: [...s.memories, {
       id: crypto.randomUUID(),
-      type,
+      type: type as any,
       content,
       relevance,
-      timestamp: new Date()
-    }].slice(-100) // Keep last 100
+      timestamp: new Date(),
+      tags: [],
+      created_at: new Date()
+    } as any].slice(-100)
   })),
 
   memory: {

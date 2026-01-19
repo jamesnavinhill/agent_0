@@ -2,6 +2,7 @@ import { generateText } from "@/lib/api/gemini"
 import { addKnowledge } from "@/lib/db/knowledge"
 import { saveGalleryItem } from "@/lib/db/gallery"
 import { pushActivity } from "@/lib/activity/bus"
+import { addMemory } from "@/lib/db/memories"
 
 export async function performMorningRead() {
   const startTime = Date.now()
@@ -135,6 +136,15 @@ export async function performMorningRead() {
         source: "Research",
         level: "action",
         timestamp: Date.now()
+      })
+
+      // Add episodic memory of the event
+      await addMemory({
+        layer: "episodic",
+        content: `Completed Morning Read. Generated "Daily Brief - ${dateStr}" with ${data.knowledgeItems?.length || 0} knowledge items.`,
+        source: "morning-read",
+        relevance: 0.8,
+        tags: ["task", "research", "morning-read"]
       })
     }
 

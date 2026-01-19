@@ -14,10 +14,23 @@ export function useMemory() {
     const refresh = useCallback(async () => {
         setLoading(true)
         try {
-            const items = await memoryStore.list()
-            const memoryStats = await memoryStore.getStats?.() ?? { total: 0, byLayer: { shortTerm: 0, longTerm: 0, episodic: 0, semantic: 0 } }
-            setMemories(items)
-            setStats(memoryStats)
+            const res = await fetch("/api/agent/memory?limit=100")
+            if (res.ok) {
+                const data = await res.json()
+                setMemories(data.memories || [])
+                // Calculate stats client side for now or fetch from API
+                const items = data.memories || []
+                const stats = {
+                    total: items.length,
+                    byLayer: {
+                        shortTerm: items.filter((m: any) => m.type === "shortTerm").length,
+                        longTerm: items.filter((m: any) => m.type === "longTerm").length,
+                        episodic: items.filter((m: any) => m.type === "episodic").length,
+                        semantic: items.filter((m: any) => m.type === "semantic").length,
+                    }
+                }
+                setStats(stats)
+            }
         } catch (error) {
             console.error("Failed to load memories:", error)
         } finally {
@@ -34,18 +47,35 @@ export function useMemory() {
         layer: MemoryLayer,
         metadata?: MemoryItem["metadata"]
     ) => {
-        const item = await memoryStore.save({ content, layer, metadata })
-        await refresh()
-        return item
+        try {
+            await fetch("/api/agent/memory", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    action: "add",
+                    item: {
+                        content,
+                        layer,
+                        relevance: metadata?.relevance ?? 0.5,
+                        tags: metadata?.tags ?? [],
+                        source: metadata?.source ?? "manual"
+                    }
+                })
+            })
+            await refresh()
+        } catch (error) {
+            console.error("Failed to save memory:", error)
+        }
     }, [refresh])
 
     const remove = useCallback(async (id: string) => {
-        await memoryStore.delete(id)
+        await fetch(`/api/agent/memory?id=${id}`, { method: "DELETE" })
         await refresh()
     }, [refresh])
 
     const clear = useCallback(async (layer?: MemoryLayer) => {
-        await memoryStore.clear(layer)
+        const url = layer ? `/api/agent/memory?layer=${layer}` : "/api/agent/memory"
+        await fetch(url, { method: "DELETE" })
         await refresh()
     }, [refresh])
 
