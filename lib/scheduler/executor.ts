@@ -4,7 +4,7 @@ import { createLogger } from "@/lib/logging/logger"
 const log = createLogger("Executor")
 
 export interface ExecutorContext {
-  addActivity: (action: string, details?: string) => void
+  addActivity: (action: string, details?: string, imageUrl?: string) => void
   updateActivity: (id: string, status: "pending" | "running" | "complete" | "error") => void
   addThought: (content: string, type: "observation" | "reasoning" | "decision" | "action") => void
   addOutput: (output: {
@@ -62,9 +62,10 @@ async function executeByCategory(
       return executeArtTask(task, context)
     case "code":
       return executeCodeTask(task, context)
+    case "research":
+      return executeResearchTask(task, context)
     case "philosophy":
     case "blog":
-    case "research":
       return executeTextTask(task, context)
     case "browser":
       return executeBrowserTask(task, context)
@@ -205,6 +206,50 @@ async function executeCodeTask(
     type: "code",
     content: data.code,
     metadata: { language: data.language },
+  }
+}
+
+async function executeResearchTask(
+  task: ScheduledTask,
+  context: ExecutorContext
+): Promise<TaskResult> {
+  // Research tasks must be executed server-side to access Google Search Grounding and DB
+  // We trigger the verify/test endpoint which runs proper PerformMorningRead logic
+  context.addThought(`Starting research task: ${task.name}`, "action")
+
+  // Note: We use the test endpoint for now as it exposes the logic directly
+  // In the future we should have a dedicated /api/execute/research endpoint
+  const response = await fetch("/api/test/morning-read", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${process.env.NEXT_PUBLIC_CRON_SECRET || ""}`
+    }
+  })
+
+  if (!response.ok) {
+    const error = await response.text()
+    throw new Error(`Research failed: ${error} (Status: ${response.status})`)
+  }
+
+  const result = await response.json()
+  const report = result.report ?? result.reportMarkdown ?? JSON.stringify(result)
+
+  context.addOutput({
+    type: "text",
+    content: report,
+    title: `${task.name} - ${new Date().toLocaleDateString()}`,
+    category: "research",
+    metadata: {
+      taskId: task.id,
+      scheduled: false // triggered manually via client
+    }
+  })
+
+  return {
+    type: "text",
+    content: "Research completed and saved to gallery.",
+    metadata: { length: report.length }
   }
 }
 
