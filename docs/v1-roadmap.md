@@ -18,10 +18,14 @@ This roadmap outlines the path to a fully autonomous, "live" agent system. It co
 
 The goal is to remove all mocks and ensure "What you see is what exists".
 
-* [x] **Morning Read Pipeline Fix:**
-  * Unified execution path (Client uses generic API endpoint).
-  * Persisted outputs to `gallery_items`.
-  * Persisted knowledge to `knowledge` table.
+* [x] **Unified Execution Architecture:**
+  * Created `lib/agent/runner.ts` as the single source of truth for task logic.
+  * Implemented `/api/agent/execute` for production-grade manual triggering.
+  * Aligned Cron and Manual execution paths.
+* [x] **Morning Read Pipeline:**
+  * Google Search Grounding enabled.
+  * Outputs persisted to `gallery_items`.
+  * Knowledge persisted to `knowledge` table.
 * [ ] **Gallery Persistence:** Ensure Gallery UI fetches from DB (server-side) and displays real items.
 * [ ] **Schedule Panel Real Data:** Refactor Schedule Panel to fetch/manage tasks completely from DB (remove mock goals).
 * [ ] **Memory System:** Ensure `addMemory` connects to DB vector search (pgvector).
@@ -53,6 +57,6 @@ Each task will be a modular file in `lib/agent/tools/`.
 
 ## Immediate Next Steps
 
-1. **Verify Morning Read Fix:** Ensure "Start Now" button works and updates the DB.
-2. **Refactor Schedule Panel:** Remove `mockGoals` and wire up real Task CRUD.
-3. **Clean Code:** Remove unused scripts and verify strict type safety.
+1. **Refactor Schedule Panel:** Remove `mockGoals` from the UI store and wire up real Task CRUD operations.
+2. **Gallery UI Connection:** Connect the Gallery Grid to the real database `gallery_items`.
+3. **Strict Typing:** Continue strictly typing the `Task` and `Activity` interfaces across the stack.
