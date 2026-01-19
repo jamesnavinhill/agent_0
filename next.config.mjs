@@ -12,20 +12,24 @@ const nextConfig = {
     resolveAlias: {
       "onnxruntime-node": "./lib/mock.js",
       "sharp": "./lib/mock.js",
-      "fs": "./lib/mock.js",
-      "path": "./lib/mock.js",
-      "url": "./lib/mock.js",
     },
   },
-  webpack: (config) => {
+  webpack: (config, { isServer }) => {
     config.resolve.alias = {
       ...config.resolve.alias,
       "onnxruntime-node": false,
       sharp: false,
-      fs: false,
-      path: false,
-      url: false,
     }
+
+    if (!isServer) {
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        fs: "./lib/mock.js",
+        path: "./lib/mock.js",
+        url: "./lib/mock.js",
+      }
+    }
+
     return config
   },
 }
