@@ -4,6 +4,7 @@ import { generateText } from "@/lib/api/gemini"
 import { getNextRunTime } from "@/lib/scheduler/cron"
 import { pushActivity } from "@/lib/activity/bus"
 import { performMorningRead } from "@/lib/agent/tools/research"
+import { performDailyArt } from "@/lib/agent/tools/media"
 
 export interface ExecutionResult {
     id: string
@@ -34,6 +35,9 @@ export async function executeTask(task: Task, isManual = false): Promise<Executi
         // Route tasks to specialized handlers
         if (task.name.includes("Morning Read") || task.category === "research") {
             output = await performMorningRead()
+        } else if (task.name.includes("Media") || task.category === "art") {
+            // New Handler for Meaningful Media
+            output = await performDailyArt(task)
         } else if (task.prompt) {
             // Use prompt if available
             output = await generateText(task.prompt)

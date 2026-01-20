@@ -37,9 +37,6 @@ Each task will be a modular file in `lib/agent/tools/`.
 * **Task 1: The Morning Read (Optimization)**
   * *Status:* V1 Executable & Optimized.
   * *Notes:* Prompt refined for high-signal content; Modal UI improved.
-* **Task 2: Code Maintenance**
-  * *Goal:* Agent reads its own repo, runs `tsc`, and logs issues.
-  * *Model:* Gemini 3 Pro (Vibe-coding).
 * **Task 3: AI Art Generation**
   * *Goal:* Daily "Bridge" art piece.
   * *Model:* Imagen / Gemini Image.
