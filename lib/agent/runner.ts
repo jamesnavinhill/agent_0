@@ -32,25 +32,29 @@ export async function executeTask(task: Task, isManual = false): Promise<Executi
         // 2. Execute Logic
         let output = ""
 
+        console.log(`[Runner] Routing task: name="${task.name}", category="${task.category}"`)
+
         // Route tasks to specialized handlers
         if (task.name.includes("Morning Read") || task.category === "research") {
+            console.log("[Runner] -> Research path")
             output = await performMorningRead()
         } else if (task.name.includes("Motion") || task.category === "video") {
-            // Video generation handler
+            console.log("[Runner] -> Video generation path")
             output = await generateVideo(task)
+            console.log("[Runner] Video generation completed:", output)
         } else if (task.name.includes("Edit") && task.parameters?.galleryId) {
-            // Image editing handler
+            console.log("[Runner] -> Image edit path")
             const galleryId = task.parameters.galleryId as string
             const editPrompt = task.parameters.editPrompt as string || "Enhance and refine this artwork"
             output = await editGalleryImage(galleryId, editPrompt)
         } else if (task.name.includes("Media") || task.category === "art") {
-            // Image generation handler
+            console.log("[Runner] -> Image generation path")
             output = await performDailyArt(task)
         } else if (task.prompt) {
-            // Use prompt if available
+            console.log("[Runner] -> Prompt-based path")
             output = await generateText(task.prompt)
         } else {
-            // Fallback based on category
+            console.log("[Runner] -> Fallback path")
             const prompt = `Perform the task: ${task.name}. ${task.description || ""}`
             output = await generateText(prompt)
         }
