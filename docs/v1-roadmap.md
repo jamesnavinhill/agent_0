@@ -37,9 +37,11 @@ Each task will be a modular file in `lib/agent/tools/`.
 * **Task 1: The Morning Read (Optimization)**
   * *Status:* V1 Executable & Optimized.
   * *Notes:* Prompt refined for high-signal content; Modal UI improved.
-* **Task 3: AI Art Generation**
-  * *Goal:* Daily "Bridge" art piece.
-  * *Model:* Imagen / Gemini Image.
+* **Task 3: AI Art Generation (Meaningful Media)**
+  * *Status:* V1 Executable via UI & Terminal.
+  * *Goal:* Daily "Bridge" art piece that visualizes the agent's memory state.
+  * *Model:* `gemini-2.5-flash-image` (default), supports Imagen 4.0 models.
+  * *Notes:* Unified execution path - uses `/api/agent/execute` → `runner.ts` → `performDailyArt()`.
 * **Task 4: Philosophical Essay**
   * *Goal:* Long-form creation saved to Gallery.
 

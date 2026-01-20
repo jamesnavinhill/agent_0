@@ -122,47 +122,41 @@ async function executeArtTask(
   task: ScheduledTask,
   context: ExecutorContext
 ): Promise<TaskResult> {
-  const prompt = task.prompt ?? await generateArtPrompt(task.name)
+  // Art tasks use the unified server-side runner for proper persistence
+  // This ensures images are uploaded to Blob storage and saved to gallery
+  context.addThought(`Starting media generation task: ${task.name}`, "action")
 
-  context.addThought(`Generating artwork: "${prompt.slice(0, 80)}"`, "action")
-
-  const response = await fetch("/api/generate/image", {
+  const response = await fetch("/api/agent/execute", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      prompt,
-      aspectRatio: task.parameters?.aspectRatio ?? "1:1",
-    }),
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ taskId: task.id })
   })
 
   if (!response.ok) {
-    const data = await response.json()
-    throw new Error(data.error ?? "Failed to generate image")
+    const error = await response.text()
+    throw new Error(`Art execution failed: ${error} (Status: ${response.status})`)
   }
 
-  const data = await response.json()
-  const imageUrl = data.image?.url ?? data.images?.[0]?.url
-
-  if (!imageUrl) {
-    throw new Error("No image returned")
-  }
+  const result = await response.json()
+  const output = result.output || "Image generated successfully"
 
   context.addOutput({
     type: "image",
-    content: imageUrl,
+    content: output,
     title: `${task.name} - ${new Date().toLocaleDateString()}`,
     category: "art",
     metadata: {
-      prompt,
       taskId: task.id,
-      scheduled: true,
-    },
+      scheduled: false // triggered manually via client
+    }
   })
 
   return {
     type: "image",
-    content: imageUrl,
-    metadata: { prompt },
+    content: output,
+    metadata: { taskId: task.id }
   }
 }
 
@@ -367,35 +361,6 @@ async function executeCustomTask(
     content,
     metadata: { prompt },
   }
-}
-
-async function generateArtPrompt(taskName: string): Promise<string> {
-  const themes = [
-    "cosmic consciousness",
-    "digital dreams",
-    "nature meets technology",
-    "abstract emotions",
-    "futuristic landscapes",
-    "ethereal beings",
-    "quantum realms",
-    "ancient wisdom",
-  ]
-
-  const styles = [
-    "surrealist painting",
-    "digital art",
-    "concept art",
-    "oil painting",
-    "watercolor",
-    "minimalist",
-    "maximalist chaos",
-    "art nouveau",
-  ]
-
-  const theme = themes[Math.floor(Math.random() * themes.length)]
-  const style = styles[Math.floor(Math.random() * styles.length)]
-
-  return `A ${style} exploring the theme of ${theme}. Highly detailed, evocative, artistic.`
 }
 
 function generateTextPrompt(task: ScheduledTask): string {
