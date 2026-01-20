@@ -32,7 +32,7 @@ const DEFAULT_CONFIG: ImagenConfig = {
   model: "gemini-2.5-flash-image",
   numberOfImages: 1,
   aspectRatio: "9:16",
-  personGeneration: "allow_adult",
+  personGeneration: "allow_all",
 }
 
 export async function generateImage(

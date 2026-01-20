@@ -99,11 +99,19 @@ export async function generateVideoFromText(
             })
         }
 
-        log.info("Video generation complete, downloading...")
+        log.info("Video generation complete, processing response...")
+
+        // Check for content filter block first
+        const response = operation.response as any
+        if (response?.raiMediaFilteredCount && response.raiMediaFilteredCount > 0) {
+            const reasons = response.raiMediaFilteredReasons?.join(", ") || "Content blocked by Google safety filters"
+            log.error("Video blocked by content filter", { reasons })
+            throw new Error(`Video generation blocked: ${reasons}`)
+        }
 
         // Check for generated videos in response
         if (!operation.response?.generatedVideos || operation.response.generatedVideos.length === 0) {
-            throw new Error("No videos in response")
+            throw new Error("No videos in response - generation may have failed silently")
         }
 
         const generatedVideo = operation.response.generatedVideos[0]
