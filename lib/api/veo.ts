@@ -14,6 +14,7 @@ const genAI = apiKey ? new GoogleGenAI({ apiKey }) : null
 // Default model per handoff spec
 export type VeoModel =
     | "veo-3.1-fast-generate-preview"
+    | "veo-3.1-generate-preview"
     | "veo-3.0-generate-preview"
 
 export type VideoAspectRatio = "16:9" | "9:16"
@@ -42,6 +43,10 @@ const DEFAULT_CONFIG: Required<VeoConfig> = {
     durationSeconds: 6,
 }
 
+// Maximum time to wait for video generation (5 minutes)
+const MAX_POLL_TIME_MS = 5 * 60 * 1000
+const POLL_INTERVAL_MS = 10000 // 10 seconds
+
 /**
  * Generate a video from a text prompt
  */
@@ -55,48 +60,84 @@ export async function generateVideoFromText(
 
     const mergedConfig = { ...DEFAULT_CONFIG, ...config }
 
-    log.info("Generating video from text", {
+    log.info("Starting video generation from text", {
         model: mergedConfig.model,
         promptLength: prompt.length,
         aspectRatio: mergedConfig.aspectRatio,
-        resolution: mergedConfig.resolution,
-        duration: mergedConfig.durationSeconds,
     })
 
     try {
-        // Use the Veo video generation API
-        const response = await genAI.models.generateVideos({
+        // Start video generation - this returns an operation object
+        let operation = await genAI.models.generateVideos({
             model: mergedConfig.model,
             prompt,
             config: {
                 aspectRatio: mergedConfig.aspectRatio,
-                // Note: Resolution and duration may need adjustment based on actual API
             },
         })
 
-        // Poll for completion (video generation is async)
-        let operation = response
+        log.info("Video generation started, polling for completion...", {
+            operationName: operation.name
+        })
+
+        // Poll for completion with timeout
+        const startTime = Date.now()
         while (!operation.done) {
-            await new Promise((resolve) => setTimeout(resolve, 5000)) // Poll every 5s
-            // Re-check status - the SDK handles this internally for some methods
-            // For now, we assume the response is synchronous or the SDK handles polling
-            log.info("Waiting for video generation to complete...")
-            break // If SDK doesn't auto-poll, we break after first check
+            if (Date.now() - startTime > MAX_POLL_TIME_MS) {
+                throw new Error("Video generation timed out after 5 minutes")
+            }
+
+            log.info("Waiting for video generation...", {
+                elapsed: `${Math.round((Date.now() - startTime) / 1000)}s`
+            })
+
+            await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS))
+
+            // Refresh operation status
+            operation = await genAI.operations.getVideosOperation({
+                operation: operation,
+            })
         }
 
-        if (!operation.generatedVideos || operation.generatedVideos.length === 0) {
-            throw new Error("No videos generated")
+        log.info("Video generation complete, downloading...")
+
+        // Check for generated videos in response
+        if (!operation.response?.generatedVideos || operation.response.generatedVideos.length === 0) {
+            throw new Error("No videos in response")
         }
 
-        const video = operation.generatedVideos[0]
-        if (!video.video?.videoBytes) {
-            throw new Error("No video data returned")
+        const generatedVideo = operation.response.generatedVideos[0]
+        if (!generatedVideo.video) {
+            throw new Error("No video object in generated result")
         }
 
-        log.action("Video generated successfully", { prompt: prompt.slice(0, 50) })
+        // Download the video file - this returns video data
+        // The video object contains the file reference, we need to read it
+        let videoBytes: string
+
+        if (generatedVideo.video.videoBytes) {
+            // If bytes are directly available
+            videoBytes = generatedVideo.video.videoBytes
+        } else if (generatedVideo.video.uri) {
+            // Download from URI if provided
+            log.info("Downloading video from URI...")
+            const response = await fetch(generatedVideo.video.uri)
+            if (!response.ok) {
+                throw new Error(`Failed to download video: ${response.statusText}`)
+            }
+            const buffer = await response.arrayBuffer()
+            videoBytes = Buffer.from(buffer).toString("base64")
+        } else {
+            throw new Error("No video data or URI in response")
+        }
+
+        log.action("Video generated successfully", {
+            prompt: prompt.slice(0, 50),
+            bytesLength: videoBytes.length
+        })
 
         return {
-            videoBytes: video.video.videoBytes,
+            videoBytes,
             mimeType: "video/mp4",
             prompt,
             durationSeconds: mergedConfig.durationSeconds,
@@ -122,47 +163,70 @@ export async function generateVideoFromImage(
 
     const mergedConfig = { ...DEFAULT_CONFIG, ...config }
 
-    log.info("Generating video from image", {
+    log.info("Starting image-to-video generation", {
         model: mergedConfig.model,
         promptLength: motionPrompt.length,
         aspectRatio: mergedConfig.aspectRatio,
     })
 
     try {
-        // For image-to-video, we include the reference image
-        const response = await genAI.models.generateVideos({
+        // Start image-to-video generation with reference image
+        let operation = await genAI.models.generateVideos({
             model: mergedConfig.model,
             prompt: motionPrompt,
-            referenceImages: [
-                {
-                    referenceImage: {
-                        imageBytes: imageBytes,
-                    },
-                    referenceImageConfig: {
-                        referenceType: "STYLE_IMAGE" as any,
-                    },
-                },
-            ],
+            image: {
+                imageBytes: imageBytes,
+                mimeType: "image/png",
+            },
             config: {
                 aspectRatio: mergedConfig.aspectRatio,
             },
         })
 
-        // Handle async polling similar to text-to-video
-        let operation = response
+        log.info("Image-to-video generation started, polling...")
+
+        // Poll for completion
+        const startTime = Date.now()
         while (!operation.done) {
-            await new Promise((resolve) => setTimeout(resolve, 5000))
-            log.info("Waiting for image-to-video generation to complete...")
-            break
+            if (Date.now() - startTime > MAX_POLL_TIME_MS) {
+                throw new Error("Image-to-video generation timed out")
+            }
+
+            log.info("Waiting for image-to-video generation...", {
+                elapsed: `${Math.round((Date.now() - startTime) / 1000)}s`
+            })
+
+            await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS))
+
+            operation = await genAI.operations.getVideosOperation({
+                operation: operation,
+            })
         }
 
-        if (!operation.generatedVideos || operation.generatedVideos.length === 0) {
+        log.info("Image-to-video complete, downloading...")
+
+        if (!operation.response?.generatedVideos || operation.response.generatedVideos.length === 0) {
             throw new Error("No videos generated from image")
         }
 
-        const video = operation.generatedVideos[0]
-        if (!video.video?.videoBytes) {
-            throw new Error("No video data returned")
+        const generatedVideo = operation.response.generatedVideos[0]
+        if (!generatedVideo.video) {
+            throw new Error("No video object in result")
+        }
+
+        let videoBytes: string
+
+        if (generatedVideo.video.videoBytes) {
+            videoBytes = generatedVideo.video.videoBytes
+        } else if (generatedVideo.video.uri) {
+            const response = await fetch(generatedVideo.video.uri)
+            if (!response.ok) {
+                throw new Error(`Failed to download video: ${response.statusText}`)
+            }
+            const buffer = await response.arrayBuffer()
+            videoBytes = Buffer.from(buffer).toString("base64")
+        } else {
+            throw new Error("No video data or URI in response")
         }
 
         log.action("Image-to-video generated successfully", {
@@ -170,7 +234,7 @@ export async function generateVideoFromImage(
         })
 
         return {
-            videoBytes: video.video.videoBytes,
+            videoBytes,
             mimeType: "video/mp4",
             prompt: motionPrompt,
             durationSeconds: mergedConfig.durationSeconds,
