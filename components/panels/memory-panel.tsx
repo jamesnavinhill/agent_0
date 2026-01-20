@@ -68,7 +68,7 @@ export function MemoryPanel() {
   const { memories: storeMemories, knowledge, stats, loading, remove, clear, refresh, exportToJSON } = useMemory()
   const [filter, setFilter] = useState<MemoryType>("all")
   const [searchQuery, setSearchQuery] = useState("")
-  const [expandedSection, setExpandedSection] = useState<string | null>("context")
+  const [expandedSection, setExpandedSection] = useState<string | null>("memories")
 
   // Use real stats from hook if available, or calculate
   // The hook returns { total: number, byLayer: Record<MemoryLayer, number> }
@@ -158,7 +158,7 @@ export function MemoryPanel() {
         </div>
       </div>
 
-      <ScrollArea className="flex-1">
+      <ScrollArea className="flex-1 min-h-0">
         <div className="p-3 space-y-4">
           {/* Context Window Section */}
           <CollapsibleSection
@@ -218,39 +218,18 @@ export function MemoryPanel() {
             </div>
           </CollapsibleSection>
 
-          {/* Memory Items */}
-          <section>
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <Brain className="w-4 h-4 text-accent" />
-                <h3 className="text-sm font-medium">Memories</h3>
-                <Badge variant="secondary" className="h-5 text-[10px]">
-                  {filteredMemories.length}
-                </Badge>
-              </div>
-              <div className="flex items-center gap-1">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-6 w-6">
-                        <SortAsc className="w-3.5 h-3.5" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Sort memories</TooltipContent>
-                  </Tooltip>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-6 w-6">
-                        <RefreshCw className="w-3.5 h-3.5" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Refresh</TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </div>
-            </div>
 
+          {/* Memories Section */}
+          <CollapsibleSection
+            title="Memories"
+            icon={<Brain className="w-4 h-4" />}
+            badge={`${filteredMemories.length} items`}
+            expanded={expandedSection === "memories"}
+            onToggle={() => setExpandedSection(expandedSection === "memories" ? null : "memories")}
+          >
             <div className="space-y-1">
+              {/* Sort/Action buttons could be moved here or kept simple to match other sections */}
+              {/* For now, we will just list the items to be "uniform to the others" */}
               {filteredMemories.map((item) => (
                 <MemoryCard
                   key={item.id}
@@ -265,7 +244,7 @@ export function MemoryPanel() {
                 </p>
               )}
             </div>
-          </section>
+          </CollapsibleSection>
 
           {/* Knowledge Base */}
           <CollapsibleSection
@@ -503,6 +482,7 @@ function KnowledgeSourceCard({
 }
 
 function formatTimeAgo(date: Date): string {
+  if (!date || isNaN(date.getTime())) return "Unknown"
   const seconds = Math.floor((Date.now() - date.getTime()) / 1000)
 
   if (seconds < 60) return "just now"
