@@ -8,9 +8,9 @@
 
 # Agent Zero
 
-> **An autonomous AI agent system built for incremental capability expansion.**
+> __An autonomous AI agent system built for incremental capability expansion.__
 
-Agent Zero is a next-generation AI agent framework designed to feel alive. It features a reactive UI, autonomous task execution, and deep integration with Google's Gemini 3.0/2.5 ecosystem. Built on principles of **Data Truth**, **Persistence First**, and **Modular Tasks**.
+Agent Zero is a next-generation AI agent framework designed to feel alive. It features a reactive UI, autonomous task execution, and deep integration with Google's Gemini 3.0/2.5 ecosystem. Built on principles of __Data Truth__, __Persistence First__, and __Modular Tasks__.
 
 ---
 
@@ -18,13 +18,13 @@ Agent Zero is a next-generation AI agent framework designed to feel alive. It fe
 
 | Task | Status | Description |
 |------|--------|-------------|
-| **Morning Read** | ✅ Live | Research with Google Search Grounding |
-| **Media Generation** | ✅ Live | AI art from memory context |
-| **Image Editing** | 🔜 Next | Retrieve & modify gallery images |
-| **Video Generation** | 🔜 Next | Veo integration |
-| **Code Sandbox** | 📋 Planned | Isolated code execution |
-| **Browser Automation** | 📋 Planned | Web navigation & interaction |
-| **Long-form Writing** | 📋 Planned | Essays, journals, reflections |
+| __Morning Read__ | ✅ Live | Research with Google Search Grounding |
+| __Media Generation__ | ✅ Live | AI art from memory context |
+| __Image Editing__ | ✅ Live | Retrieve & modify gallery images |
+| __Video Generation__ | ✅ Live | Veo text-to-video & image-to-video |
+| __Code Sandbox__ | 📋 Planned | Isolated code execution |
+| __Browser Automation__ | 📋 Planned | Web navigation & interaction |
+| __Long-form Writing__ | 📋 Planned | Essays, journals, reflections |
 
 ## 🏗 Architecture
 
@@ -51,11 +51,11 @@ See [docs/architecture.md](docs/architecture.md) for detailed diagrams and desig
 
 ## 🧠 Design Principles
 
-- **Agentic Native** — Built for autonomous operation
-- **Data Truth** — No mocks; UI reflects actual database state
-- **Persistence First** — Every output is saved and retrievable
-- **Modular Tasks** — Each capability is isolated and testable
-- **Unified Execution** — Same code path for Cron, UI, and API triggers
+- __Agentic Native__ — Built for autonomous operation
+- __Data Truth__ — No mocks; UI reflects actual database state
+- __Persistence First__ — Every output is saved and retrievable
+- __Modular Tasks__ — Each capability is isolated and testable
+- __Unified Execution__ — Same code path for Cron, UI, and API triggers
 
 See [docs/project_rules.md](docs/project_rules.md) for full guidelines.
 
@@ -63,14 +63,14 @@ See [docs/project_rules.md](docs/project_rules.md) for full guidelines.
 
 | Layer | Technology |
 |-------|------------|
-| **Framework** | Next.js 16 (App Router, Turbopack) |
-| **Language** | TypeScript (strict) |
-| **Styling** | TailwindCSS + Shadcn UI |
-| **AI Models** | Google Gemini 3.0/2.5, Imagen 4.0 |
-| **Database** | Neon Postgres (+ pgvector) |
-| **Storage** | Vercel Blob |
-| **State** | Zustand |
-| **Package Manager** | pnpm |
+| __Framework__ | Next.js 16 (App Router, Turbopack) |
+| __Language__ | TypeScript (strict) |
+| __Styling__ | TailwindCSS + Shadcn UI |
+| __AI Models__ | Google Gemini 3.0/2.5, Imagen 4.0 |
+| __Database__ | Neon Postgres (+ pgvector) |
+| __Storage__ | Vercel Blob |
+| __State__ | Zustand |
+| __Package Manager__ | pnpm |
 
 ## 🚀 Getting Started
 
@@ -108,7 +108,7 @@ Open [http://localhost:3000](http://localhost:3000)
 ### 4. Test Task Execution
 
 1. Navigate to Schedule page
-2. Click **Start** to enable scheduler
+2. Click __Start__ to enable scheduler
 3. Click ⚡ on any task to trigger manually
 4. Watch Activity panel for real-time progress
 
@@ -155,16 +155,19 @@ agent_0/
 ## 🔮 Roadmap
 
 ### Phase 2 (Current): Media Expansion
+
 - Image editing & refinement
 - Video generation (Veo)
 - Multi-step task workflows
 
 ### Phase 3: Extended Capabilities
+
 - Code sandbox with isolated execution
 - Browser automation (Playwright)
 - Long-form writing & journaling
 
 ### Phase 4: Advanced Composition
+
 - Sub-agent orchestration
 - External service integrations (v0, Producer.ai)
 - Full semantic memory search

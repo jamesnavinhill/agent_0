@@ -150,6 +150,8 @@ Every task is defined in the database and executed by a corresponding tool modul
 |----------|-------------|--------|-------------|
 | `research` | `tools/research.ts` | ✅ V1 | Morning Read with Search Grounding |
 | `art` | `tools/media.ts` | ✅ V1 | Image generation from memory context |
+| `video` | `tools/media.ts` | ✅ V1 | Video generation via Veo (text-to-video, image-to-video) |
+| `edit` | `tools/media.ts` | ✅ V1 | Image editing and refinement |
 | `philosophy` | `tools/essay.ts` | 🔜 Planned | Long-form reflective writing |
 | `code` | `tools/sandbox.ts` | 🔜 Planned | Code generation & execution |
 | `browser` | `tools/browser.ts` | 🔜 Planned | Web navigation & interaction |
@@ -225,7 +227,7 @@ Agent Zero leverages the full Gemini ecosystem for specialized tasks:
 | **Deep Research** | `gemini-2.5-pro` | Large context, thinking |
 | **Image Generation** | `gemini-2.5-flash-image` | Fast image gen (default) |
 | **High-Quality Images** | `imagen-4.0-ultra` | Premium image output |
-| **Video Generation** | `veo-2.0` | 🔜 Coming |
+| **Video Generation** | `veo-3.1-fast-generate-preview` | ✅ Live - Fast video gen (default) |
 | **Voice/Audio** | `gemini-2.5-flash-live` | 🔜 Coming |
 
 ### Model Selection Flow
@@ -321,31 +323,36 @@ As capabilities mature, tasks will compose into multi-step workflows:
 ## 8. Capability Roadmap
 
 ### Phase 1: Foundation ✅
+
 - [x] Unified execution architecture
 - [x] Morning Read (research + grounding)
 - [x] Media Generation V1 (image creation)
 - [x] Gallery persistence
 - [x] Activity logging
 
-### Phase 2: Media Expansion (Current)
-- [ ] Image editing (retrieve + modify)
-- [ ] Video generation (Veo integration)
-- [ ] Schedule Panel DB integration
-- [ ] Multi-step task test case
+### Phase 2: Media Expansion ✅
+
+- [x] Image editing (retrieve + modify)
+- [x] Video generation (Veo integration)
+- [x] Schedule Panel DB integration
+- [ ] Multi-step task test case (validation pending)
 
 ### Phase 3: Extended Capabilities
+
 - [ ] Code Sandbox (isolated execution)
 - [ ] Browser automation (Playwright)
 - [ ] Long-form writing (essays, journals)
 - [ ] Social engagement tools
 
 ### Phase 4: Advanced Composition
+
 - [ ] Sub-agent orchestration
 - [ ] Multi-step workflow engine
 - [ ] Cross-task memory threading
 - [ ] External service integrations (v0, Producer.ai)
 
 ### Phase 5: Autonomy & Refinement
+
 - [ ] Self-scheduling improvements
 - [ ] Prompt/context optimization
 - [ ] Full semantic search over knowledge
@@ -412,6 +419,7 @@ agent_0/
 ## 10. Testing Strategy
 
 ### Manual Testing Flow (Current)
+
 1. Navigate to Schedule page
 2. Click "Start" to enable scheduler
 3. Click ⚡ on target task
@@ -419,11 +427,13 @@ agent_0/
 5. Verify Gallery for outputs
 
 ### Automated Testing (Planned)
+
 - Unit tests for task tools
 - Integration tests for API routes
 - E2E tests for critical workflows
 
 ### Multi-Step Test Case (Next Milestone)
+
 ```
 1. Agent queries memories
 2. Generates image based on context

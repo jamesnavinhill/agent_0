@@ -1,6 +1,6 @@
 # Media Generation System
 
-**Last Updated:** January 19, 2026
+**Last Updated:** January 20, 2026
 
 This document describes the agent's media generation capabilities and architecture.
 
@@ -23,16 +23,14 @@ UI (Schedule Panel)
                                     │
                                     └── runner.executeTask()
                                             │
-                                            └── performDailyArt() [lib/agent/tools/media.ts]
-                                                    │
-                                                    ├── Fetch recent memories for context
-                                                    ├── Generate image via Gemini/Imagen
-                                                    ├── Upload to Vercel Blob storage
-                                                    ├── Save to gallery_items DB
-                                                    └── Add episodic memory of creation
+                                            ├── performDailyArt() → Image generation
+                                            ├── editGalleryImage() → Image editing
+                                            └── generateVideo() → Video generation (Veo)
 ```
 
 ## Supported Models
+
+### Image Generation
 
 | Model | Type | Notes |
 |-------|------|-------|
@@ -41,6 +39,19 @@ UI (Schedule Panel)
 | `imagen-4.0-generate-001` | Imagen | Standard Imagen |
 | `imagen-4.0-ultra-generate-001` | Imagen | Ultra quality |
 | `imagen-4.0-fast-generate-001` | Imagen | Speed optimized |
+
+### Video Generation
+
+| Model | Type | Notes |
+|-------|------|-------|
+| `veo-3.1-fast-generate-preview` | Veo | **Default** - Fast video generation |
+| `veo-3.0-generate-preview` | Veo | Standard quality |
+
+Video supports:
+
+- **Resolutions:** 720p, 1080p, 4K
+- **Aspect Ratios:** 16:9, 9:16
+- **Duration:** 4, 6, or 8 seconds
 
 ## Task Configuration
 
@@ -54,13 +65,33 @@ Tasks in the database can specify model and aspect ratio via `parameters` JSONB:
 }
 ```
 
+### Video Task Parameters
+
+```json
+{
+  "mode": "text-to-video",
+  "aspectRatio": "16:9",
+  "prompt": "Cinematic scene description"
+}
+```
+
+Or for image-to-video:
+
+```json
+{
+  "mode": "image-to-video",
+  "sourceGalleryId": "uuid-of-source-image",
+  "prompt": "Motion description"
+}
+```
+
 ## Triggering Media Generation
 
 ### Via UI (Recommended Testing Flow)
 
 1. Go to Schedule page
 2. Click "Start" to enable scheduler
-3. Click the ⚡ lightning icon on the "Meaningful Media" task
+3. Click the ⚡ lightning icon on the target task
 
 ### Via Terminal (Direct API)
 
@@ -70,29 +101,39 @@ curl -X POST http://localhost:3000/api/agent/execute \
   -d '{"taskId": "YOUR_TASK_ID"}'
 ```
 
-## Future Capabilities (Roadmap)
+---
 
-- [ ] **Image Editing (Nano Banana):** Retrieve existing gallery image and apply edits
-- [ ] **Video Generation (Veo):** Generate short videos from prompts
-- [ ] **Multi-modal Memory:** Store video/audio in gallery with proper typing
-- [ ] **Image-to-Image:** Use reference images to guide generation
+## Capabilities
+
+### ✅ Image Generation (`performDailyArt`)
+
+- Generates images from memory context or manual prompts
+- Uploads to Vercel Blob, saves to gallery_items
+- Creates episodic memory of creation
+
+### ✅ Image Editing (`editGalleryImage`)
+
+- Retrieves existing gallery image by ID
+- Applies edit prompt to create new version
+- Saves as new gallery item with parent reference
+
+### ✅ Video Generation (`generateVideo`)
+
+- **Text-to-Video:** Generate from text prompt
+- **Image-to-Video:** Animate an existing gallery image
+- Uploads to Vercel Blob, saves with type: "video"
 
 ---
 
-## Audit Notes (January 19, 2026)
+## Key Files
 
-### Fixed Issues
+| File | Purpose |
+|------|---------|
+| `lib/agent/tools/media.ts` | Image/video generation functions |
+| `lib/api/imagen.ts` | Gemini/Imagen API wrapper |
+| `lib/api/veo.ts` | Veo video generation API wrapper |
+| `lib/db/gallery.ts` | Gallery persistence (getGalleryItemById) |
 
-- Art tasks now use unified server-side execution path (previously bypassed runner.ts)
-- Images properly uploaded to Vercel Blob storage
-- Gallery items correctly persisted to database
+---
 
-### Removed Dead Code
-
-- `generateArtPrompt()` in executor.ts (no longer used)
-
-### Known Issues / Future Work
-
-- Schedule Panel still has `mockGoals` - needs DB integration
-- No retry logic on failed generations
-- Video generation not yet implemented
+*Updated: Phase 2 complete - Image Editing & Video Generation added*

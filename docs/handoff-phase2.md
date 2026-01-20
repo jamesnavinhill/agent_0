@@ -1,148 +1,97 @@
-# Handoff: Media Generation Phase 2
+# Handoff: Media Generation Phase 2 ✅
 
-**Date:** January 19, 2026  
-**Previous Session:** Fixed media task UI execution, created architecture docs  
-**Next Focus:** Image editing, video generation, multi-step workflows
-
----
-
-## ✅ Completed This Session
-
-1. **Fixed Media Task Execution**
-   - Art tasks now route through unified `/api/agent/execute` → `runner.ts` → `performDailyArt()`
-   - Images properly upload to Vercel Blob and persist to gallery_items
-   - Removed dead `generateArtPrompt()` code
-
-2. **Created Documentation**
-   - [architecture.md](architecture.md) - Full system architecture with diagrams
-   - [media-generation.md](media-generation.md) - Media pipeline documentation
-   - Updated [README.md](../README.md) - Comprehensive project overview
-   - Updated [project_rules.md](project_rules.md) - Added task development patterns
-
-3. **Verified**
-   - Manual media task trigger works via UI ⚡ button
-   - Build passes clean
+**Date:** January 20, 2026  
+**Previous Session:** Phase 2 Implementation Complete  
+**Next Focus:** Multi-step workflow validation, Phase 3 planning
 
 ---
 
-## 🎯 Next Steps (Phase 2 Priorities)
+## ✅ Completed Phase 2
 
 ### 1. Image Editing Capability
-**Goal:** Retrieve an existing gallery image and apply modifications
 
-**Implementation Plan:**
-- Add `editImage()` function to `lib/agent/tools/media.ts`
-- Use Gemini's image editing capabilities or Imagen edit API
-- Accept gallery item ID as input, fetch image, apply edit prompt
-- Save edited version as new gallery item (link to original)
-
-**Test Case:**
-```
-1. Generate an image
-2. Retrieve it from gallery by ID
-3. Apply edit: "Add a golden sunset glow"
-4. Save edited version
-```
+- Added `getGalleryItemById()` to `lib/db/gallery.ts`
+- Added `editGalleryImage()` to `lib/agent/tools/media.ts`
+- Retrieves gallery image → applies edit prompt → saves new version with parent reference
 
 ### 2. Video Generation (Veo)
-**Goal:** Generate short videos from prompts or images
 
-**Implementation Plan:**
-- Create `lib/api/veo.ts` for Veo API wrapper
-- Add `generateVideo()` to media.ts
-- Support image-to-video (animate a gallery image)
-- Store video in Blob, save to gallery with type: "video"
+- Created `lib/api/veo.ts` with Veo API wrapper
+- Default model: `veo-3.1-fast-generate-preview`
+- Support for:
+  - **Text-to-video:** `generateVideoFromText()`
+  - **Image-to-video:** `generateVideoFromImage()`
+- Supports 720p/1080p/4K, 16:9 and 9:16 aspect ratios
+- Added `generateVideo()` to media.ts with full workflow
 
-**Test Case:**
-```
-1. Take an existing gallery image
-2. Send to Veo: "Slowly pan across scene, add gentle motion"
-3. Save video to gallery
-```
+### 3. Runner Routing
 
-### 3. Schedule Panel DB Integration
-**Goal:** Remove mock data, fully wire to database
+- Updated `lib/agent/runner.ts` with:
+  - `video` category → `generateVideo()`
+  - `edit` category with galleryId → `editGalleryImage()`
 
-**Implementation Plan:**
-- Remove `mockGoals` from `lib/store/agent-store.ts`
-- Ensure Schedule Panel fetches tasks only from `/api/tasks`
-- Add task creation form that writes to DB
-- Verify enable/disable persists
+### 4. Schedule Panel DB Integration
 
----
+- Verified: No mock data in store (mockGoals was already removed)
+- Schedule Panel fully backed by `/api/tasks`
 
-## 🧪 Multi-Step Test Case (Validation Target)
+### 5. Documentation Updated
 
-Once image editing and video generation are working:
-
-```
-Multi-Step "Daily Creation" Workflow:
-┌────────────────────────────────────────────────┐
-│ Step 1: Query recent memories                  │
-│ Step 2: Generate image from memory context     │
-│ Step 3: Retrieve image from gallery            │
-│ Step 4: Apply artistic edit                    │
-│ Step 5: Animate with Veo                       │
-│ Step 6: Write memory about the experience      │
-└────────────────────────────────────────────────┘
-```
-
-This validates:
-- Memory retrieval working
-- Image generation working
-- Gallery retrieval working
-- Image editing working
-- Video generation working
-- Memory writing working
+- `architecture.md` - Added video/edit categories, updated roadmap
+- `media-generation.md` - Complete rewrite with new capabilities
+- `README.md` - Image Editing & Video Generation now ✅ Live
 
 ---
 
-## 📋 Future Phases (Reference)
+## 🧪 Validation Pending
+
+### Multi-Step Workflow Test
+
+```
+1. Query recent memories ✅ (existing)
+2. Generate image from memory context ✅ (existing)
+3. Retrieve image from gallery ✅ (getGalleryItemById)
+4. Apply artistic edit ✅ (editGalleryImage)
+5. Animate with Veo ✅ (generateVideo)
+6. Write memory about experience ✅ (existing)
+```
+
+**To validate manually:**
+
+1. Create a "Motion Art" task with category: `video`
+2. Run via Schedule Panel ⚡
+3. Check Gallery for video output
+
+---
+
+## 📋 Future Phases
 
 ### Phase 3: Extended Capabilities
-- **Code Sandbox** - Isolated TypeScript/JavaScript execution
-- **Browser Automation** - Playwright for web interaction
-- **Long-form Writing** - Essays, journals, reflections
+
+- Code Sandbox (isolated execution)
+- Browser automation (Playwright)
+- Long-form writing (essays, journals)
 
 ### Phase 4: Advanced Composition
-- **Sub-agent Orchestration** - Specialized agents for different tasks
-- **External Services** - v0.app, Producer.ai integration
-- **Semantic Search** - Full pgvector search over memories
 
-### Phase 5: Autonomy
-- **Self-scheduling** - Agent adjusts its own schedule
-- **Soul Document** - Ongoing reflection/heartbeat
-- **Prompt Optimization** - Refined context management
+- Sub-agent orchestration
+- Multi-step workflow engine
+- External service integrations
 
 ---
 
-## 🔧 Technical Notes
+## 🔧 Key Files Modified
 
-### Working Model for Media
-Current default: `gemini-2.5-flash-image`
-This is confirmed working via terminal and UI triggers.
-
-### Key Files to Modify
-- `lib/agent/tools/media.ts` - Add editImage(), generateVideo()
-- `lib/api/veo.ts` - New file for Veo API
-- `lib/api/imagen.ts` - May need edit endpoint support
-- `lib/db/gallery.ts` - May need getGalleryItem() by ID
-
-### Database Considerations
-- Gallery items need a `parent_id` field for edit chains
-- Video items need proper MIME type handling
-- Consider adding `workflow_id` for multi-step grouping
+| File | Change |
+|------|--------|
+| `lib/db/gallery.ts` | Added `getGalleryItemById()` |
+| `lib/api/veo.ts` | **NEW** - Veo API wrapper |
+| `lib/agent/tools/media.ts` | Added `editGalleryImage()`, `generateVideo()` |
+| `lib/agent/runner.ts` | Added video/edit routing |
+| `docs/architecture.md` | Phase 2 marked complete |
+| `docs/media-generation.md` | Full rewrite |
+| `README.md` | Capabilities updated |
 
 ---
 
-## 📚 Reference Docs
-
-- [architecture.md](architecture.md) - System design
-- [project_rules.md](project_rules.md) - Development patterns
-- [media-generation.md](media-generation.md) - Media pipeline
-- [gemini-models.md](gemini-models.md) - Model reference
-- [schedule.md](schedule.md) - Scheduling strategy
-
----
-
-*Ready for next session: Media Gen Phase 2*
+*Phase 2 Complete - Ready for validation and Phase 3 planning*

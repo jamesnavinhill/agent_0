@@ -62,6 +62,50 @@ export async function saveGalleryItem(item: GalleryItemInput): Promise<string | 
 }
 
 /**
+ * Get a single gallery item by ID
+ */
+export async function getGalleryItemById(id: string): Promise<{
+    id: string
+    type: string
+    blob_url: string
+    title: string | null
+    prompt: string | null
+    category: string
+    metadata: Record<string, unknown> | null
+    created_at: string
+} | null> {
+    if (!isDatabaseConfigured()) return null
+
+    try {
+        const rows = await sql<{
+            id: string
+            type: string
+            blob_url: string
+            title: string | null
+            prompt: string | null
+            category: string
+            metadata: string | null
+            created_at: string
+        }>(`
+            SELECT id, type, blob_url, title, prompt, category, metadata, created_at
+            FROM gallery_items
+            WHERE id = $1
+        `, [id])
+
+        if (rows.length === 0) return null
+
+        const row = rows[0]
+        return {
+            ...row,
+            metadata: row.metadata ? JSON.parse(row.metadata) : null
+        }
+    } catch (error) {
+        console.error("[Gallery] Failed to get item by ID:", id, error)
+        return null
+    }
+}
+
+/**
  * Get gallery items from database
  */
 export async function getGalleryItems(filter?: {
