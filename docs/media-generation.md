@@ -57,11 +57,13 @@ Tasks in the database can specify model and aspect ratio via `parameters` JSONB:
 ## Triggering Media Generation
 
 ### Via UI (Recommended Testing Flow)
+
 1. Go to Schedule page
 2. Click "Start" to enable scheduler
 3. Click the ⚡ lightning icon on the "Meaningful Media" task
 
 ### Via Terminal (Direct API)
+
 ```bash
 curl -X POST http://localhost:3000/api/agent/execute \
   -H "Content-Type: application/json" \
@@ -80,14 +82,17 @@ curl -X POST http://localhost:3000/api/agent/execute \
 ## Audit Notes (January 19, 2026)
 
 ### Fixed Issues
+
 - Art tasks now use unified server-side execution path (previously bypassed runner.ts)
 - Images properly uploaded to Vercel Blob storage
 - Gallery items correctly persisted to database
 
 ### Removed Dead Code
+
 - `generateArtPrompt()` in executor.ts (no longer used)
 
 ### Known Issues / Future Work
+
 - Schedule Panel still has `mockGoals` - needs DB integration
 - No retry logic on failed generations
 - Video generation not yet implemented

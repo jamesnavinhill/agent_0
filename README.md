@@ -8,72 +8,167 @@
 
 # Agent Zero
 
-> __Bringing the UI shell online with a living, autonomous AI agent.__
+> **An autonomous AI agent system built for incremental capability expansion.**
 
-Agent Zero is a next-generation AI agent framework designed to feel alive. It features a reactive UI breathing with the agent's state, autonomous tasks, and deep integration with Google's Gemini 2.0 models.
+Agent Zero is a next-generation AI agent framework designed to feel alive. It features a reactive UI, autonomous task execution, and deep integration with Google's Gemini 3.0/2.5 ecosystem. Built on principles of **Data Truth**, **Persistence First**, and **Modular Tasks**.
 
-## Features
+---
 
-- __Living UI__: The agent "breathes" and reacts visually to its internal state (thinking, creating, idle).
-- __Autonomous capabilities__: Can schedule and execute tasks without constant user input.
-- __Creation Pipeline__: Generates images (Imagen 3), code, and potentially music/video purely through conversation.
-- __Persistent Memory__: Remembers past interactions and context.
-- __Browser Tools__: Capable of interacting with external web tools (e.g., v0.app, producer.ai).
+## ✨ Current Capabilities
 
-## Tech Stack
+| Task | Status | Description |
+|------|--------|-------------|
+| **Morning Read** | ✅ Live | Research with Google Search Grounding |
+| **Media Generation** | ✅ Live | AI art from memory context |
+| **Image Editing** | 🔜 Next | Retrieve & modify gallery images |
+| **Video Generation** | 🔜 Next | Veo integration |
+| **Code Sandbox** | 📋 Planned | Isolated code execution |
+| **Browser Automation** | 📋 Planned | Web navigation & interaction |
+| **Long-form Writing** | 📋 Planned | Essays, journals, reflections |
 
-- __Framework__: Next.js 15 (App Router)
-- __Styling__: TailwindCSS + Shadcn UI
-- __AI__: Google Gemini API (@google/genai)
-- __State Management__: Zustand
-- __Package Manager__: pnpm (recommended) or npm/yarn
+## 🏗 Architecture
 
-## Getting Started
+```
+Triggers (Cron/UI/API)
+        │
+        ▼
+  /api/agent/execute  ──▶  runner.ts  ──▶  Task Tools
+        │                                      │
+        ▼                                      ▼
+   Unified Path                         research | media | code
+        │                                      │
+        └──────────────────────────────────────┘
+                          │
+                          ▼
+              ┌─────────────────────┐
+              │   Neon Postgres     │
+              │   Vercel Blob       │
+              │   Memory System     │
+              └─────────────────────┘
+```
 
-1. __Clone the repository__:
+See [docs/architecture.md](docs/architecture.md) for detailed diagrams and design.
 
-   ```bash
-   git clone https://github.com/jamesnavinhill/agent_0.git
-   cd agent_0
-   ```
+## 🧠 Design Principles
 
-2. __Install dependencies__:
+- **Agentic Native** — Built for autonomous operation
+- **Data Truth** — No mocks; UI reflects actual database state
+- **Persistence First** — Every output is saved and retrievable
+- **Modular Tasks** — Each capability is isolated and testable
+- **Unified Execution** — Same code path for Cron, UI, and API triggers
 
-   ```bash
-   npm install
-   # or
-   pnpm install
-   ```
+See [docs/project_rules.md](docs/project_rules.md) for full guidelines.
 
-3. __Configure Environment__:
-   Copy the example environment file:
+## 🛠 Tech Stack
 
-   ```bash
-   cp .env.local.example .env.local
-   ```
+| Layer | Technology |
+|-------|------------|
+| **Framework** | Next.js 16 (App Router, Turbopack) |
+| **Language** | TypeScript (strict) |
+| **Styling** | TailwindCSS + Shadcn UI |
+| **AI Models** | Google Gemini 3.0/2.5, Imagen 4.0 |
+| **Database** | Neon Postgres (+ pgvector) |
+| **Storage** | Vercel Blob |
+| **State** | Zustand |
+| **Package Manager** | pnpm |
 
-   Add your Google API Key to `.env.local`:
+## 🚀 Getting Started
 
-   ```env
-   GOOGLE_API_KEY=your_key_here
-   ```
+### 1. Clone & Install
 
-4. __Run Development Server__:
+```bash
+git clone https://github.com/jamesnavinhill/agent_0.git
+cd agent_0
+pnpm install
+```
 
-   ```bash
-   pnpm run dev
-   ```
+### 2. Configure Environment
 
-   Open [http://localhost:3000](http://localhost:3000) to see the agent in action.
+```bash
+cp .env.local.example .env.local
+```
 
-## Project Structure
+Required environment variables:
 
-- `app/`: Next.js app router pages and API routes.
-- `components/`: UI components (agent orb, panels, shadcn ui).
-- `lib/api/`: Wrappers for Gemini, Imagen, and other AI services.
-- `lib/memory/`: Memory management systems.
-- `lib/scheduler/`: Autonomous task scheduling.
+```env
+GOOGLE_API_KEY=your_gemini_api_key
+DATABASE_URL=your_neon_postgres_url
+BLOB_READ_WRITE_TOKEN=your_vercel_blob_token
+CRON_SECRET=your_cron_secret
+```
 
-## License
+### 3. Run Development Server
+
+```bash
+pnpm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000)
+
+### 4. Test Task Execution
+
+1. Navigate to Schedule page
+2. Click **Start** to enable scheduler
+3. Click ⚡ on any task to trigger manually
+4. Watch Activity panel for real-time progress
+
+## 📁 Project Structure
+
+```
+agent_0/
+├── app/                    # Next.js pages & API routes
+│   └── api/
+│       ├── agent/execute/  # Unified task execution
+│       ├── gallery/        # Gallery CRUD
+│       ├── tasks/          # Task CRUD
+│       └── cron/           # Scheduled triggers
+│
+├── lib/
+│   ├── agent/
+│   │   ├── runner.ts       # Central task executor
+│   │   └── tools/          # Task implementations
+│   ├── api/                # AI service wrappers
+│   ├── db/                 # Database queries
+│   ├── scheduler/          # Scheduling logic
+│   └── storage/            # Blob storage
+│
+├── components/             # UI components
+│
+└── docs/                   # Documentation
+    ├── architecture.md     # System architecture
+    ├── project_rules.md    # Core principles
+    ├── v1-roadmap.md       # Development roadmap
+    └── media-generation.md # Media system docs
+```
+
+## 📚 Documentation
+
+| Document | Description |
+|----------|-------------|
+| [architecture.md](docs/architecture.md) | System design & diagrams |
+| [project_rules.md](docs/project_rules.md) | Core principles & guidelines |
+| [v1-roadmap.md](docs/v1-roadmap.md) | Feature roadmap |
+| [media-generation.md](docs/media-generation.md) | Media pipeline details |
+| [schedule.md](docs/schedule.md) | Scheduling strategy |
+| [gemini-models.md](docs/gemini-models.md) | Model reference |
+
+## 🔮 Roadmap
+
+### Phase 2 (Current): Media Expansion
+- Image editing & refinement
+- Video generation (Veo)
+- Multi-step task workflows
+
+### Phase 3: Extended Capabilities
+- Code sandbox with isolated execution
+- Browser automation (Playwright)
+- Long-form writing & journaling
+
+### Phase 4: Advanced Composition
+- Sub-agent orchestration
+- External service integrations (v0, Producer.ai)
+- Full semantic memory search
+
+## 📄 License
 
 MIT
