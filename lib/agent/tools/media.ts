@@ -120,10 +120,11 @@ Style: Cinematic, 8k, Detailed, Avant-Garde.
         return `Generated image based on: ${contextDescription}`
 
     } catch (error: any) {
-        console.error("Media generation failed:", error)
+        const errorMessage = error?.message || String(error)
+        console.error("Media generation failed:", errorMessage)
         pushActivity({
             action: "Media Generation Failed",
-            details: error.message,
+            details: errorMessage,
             source: "Media",
             level: "error"
         })
