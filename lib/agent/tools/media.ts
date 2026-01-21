@@ -124,7 +124,7 @@ Style: Cinematic, 8k, Detailed, Avant-Garde.
             details: `Created art piece based on: ${contextDescription}`,
             source: "Media",
             level: "action",
-            image_url: blobUrl,
+            imageUrl: blobUrl,
             metadata: { galleryId }
         })
 
@@ -217,7 +217,7 @@ Style: Cinematic, high-fidelity, 8k.
             details: `Created edited version of ${galleryId}`,
             source: "Media",
             level: "action",
-            image_url: blobUrl,
+            imageUrl: blobUrl,
             metadata: { originalId: galleryId, newId: newGalleryId }
         })
 
@@ -255,11 +255,15 @@ export interface VideoGenerationOptions {
 
 /**
  * Generate a video using Veo - supports text-to-video and image-to-video
+ * Uses async job dispatcher pattern to handle Vercel timeout constraints
  */
 export async function generateVideo(
     task?: Task,
     options?: Partial<VideoGenerationOptions>
 ): Promise<string> {
+    // Import dispatcher dynamically to avoid circular deps
+    const { dispatchVideoJob, dispatchImageToVideoJob } = await import("@/lib/jobs/dispatcher")
+
     // Resolve options from task parameters or direct options
     const mode = options?.mode || task?.parameters?.mode as VideoGenerationOptions["mode"] || "text-to-video"
     const sourceGalleryId = options?.sourceGalleryId || task?.parameters?.sourceGalleryId as string
@@ -275,7 +279,6 @@ export async function generateVideo(
 
     try {
         let prompt = options?.prompt || task?.parameters?.prompt as string
-        let videoResult
 
         if (mode === "image-to-video") {
             // Image-to-video: animate an existing gallery image
@@ -303,10 +306,20 @@ export async function generateVideo(
                 level: "action"
             })
 
-            videoResult = await generateVideoFromImage(imageBase64, prompt, {
-                aspectRatio,
-                ...options?.config
-            })
+            // Dispatch async job instead of waiting
+            const result = await dispatchImageToVideoJob(
+                imageBase64,
+                prompt,
+                { aspectRatio, ...options?.config },
+                task?.id
+            )
+
+            if (result.status === "error") {
+                throw new Error(result.message)
+            }
+
+            return `Image-to-video job dispatched (${result.jobId.slice(0, 8)}...). Video will be available in gallery when complete.`
+
         } else {
             // Text-to-video: generate from prompt
             if (!prompt) {
@@ -329,49 +342,19 @@ Style: Abstract, atmospheric, flowing motion, 4K quality.`
                 level: "action"
             })
 
-            videoResult = await generateVideoFromText(prompt, {
-                aspectRatio,
-                ...options?.config
-            })
-        }
+            // Dispatch async job instead of waiting
+            const result = await dispatchVideoJob(
+                prompt,
+                { aspectRatio, ...options?.config },
+                task?.id
+            )
 
-        // Upload video to blob storage
-        const blobUrl = await uploadGeneratedVideo(videoResult.videoBytes, videoResult.mimeType)
-
-        // Save to gallery
-        const galleryId = await saveGalleryItem({
-            type: "video",
-            content: blobUrl,
-            category: "art",
-            title: `Motion Art: ${new Date().toLocaleDateString()}`,
-            prompt: prompt,
-            metadata: {
-                mode,
-                sourceGalleryId: mode === "image-to-video" ? sourceGalleryId : undefined,
-                aspectRatio,
-                durationSeconds: videoResult.durationSeconds,
-                generated_at: new Date().toISOString()
+            if (result.status === "error") {
+                throw new Error(result.message)
             }
-        })
 
-        pushActivity({
-            action: "Video Generation Complete",
-            details: `Created ${mode} video`,
-            source: "Media",
-            level: "action",
-            metadata: { galleryId, mode }
-        })
-
-        // Memory of the video creation
-        await addMemory({
-            layer: "episodic",
-            content: `Generated a ${mode} video with prompt: ${prompt.slice(0, 100)}`,
-            source: "video_generation",
-            relevance: 0.6,
-            tags: ["video", "creative", mode]
-        })
-
-        return `Generated ${mode} video saved to gallery`
+            return `Video generation job dispatched (${result.jobId.slice(0, 8)}...). Video will be available in gallery when complete.`
+        }
 
     } catch (error: any) {
         const errorMessage = error?.message || String(error)
@@ -385,4 +368,5 @@ Style: Abstract, atmospheric, flowing motion, 4K quality.`
         throw error
     }
 }
+
 
