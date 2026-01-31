@@ -49,12 +49,21 @@ export async function generateImage(
     aspectRatio: config.aspectRatio ?? DEFAULT_CONFIG.aspectRatio
   })
 
-  const mergedConfig = { ...DEFAULT_CONFIG, ...config }
+  // Filter out undefined values from config before merging
+  const cleanConfig = Object.fromEntries(
+    Object.entries(config).filter(([_, v]) => v !== undefined)
+  )
+  const mergedConfig = { ...DEFAULT_CONFIG, ...cleanConfig }
+
+  // Ensure required fields are present
+  if (!mergedConfig.model) {
+    throw new Error("Model is required for image generation")
+  }
 
   try {
     const imageConfig: Record<string, any> = {
-      numberOfImages: mergedConfig.numberOfImages,
-      aspectRatio: mergedConfig.aspectRatio,
+      numberOfImages: mergedConfig.numberOfImages ?? 1,
+      aspectRatio: mergedConfig.aspectRatio ?? "9:16",
     }
     
     // Only add personGeneration if it's defined
@@ -63,7 +72,7 @@ export async function generateImage(
     }
 
     const response = await genAI.models.generateImages({
-      model: mergedConfig.model!,
+      model: mergedConfig.model,
       prompt,
       config: imageConfig,
     })
@@ -101,10 +110,19 @@ export async function generateImages(
     throw new Error("Gemini not initialized - check GOOGLE_API_KEY")
   }
 
+  // Filter out undefined values from config before merging
+  const cleanConfig = Object.fromEntries(
+    Object.entries(config).filter(([_, v]) => v !== undefined)
+  )
   const mergedConfig = {
     ...DEFAULT_CONFIG,
-    ...config,
+    ...cleanConfig,
     numberOfImages: config.numberOfImages ?? 4
+  }
+
+  // Ensure required fields are present
+  if (!mergedConfig.model) {
+    throw new Error("Model is required for image generation")
   }
 
   log.info("Generating multiple images", {
@@ -114,8 +132,8 @@ export async function generateImages(
 
   try {
     const imageConfig: Record<string, any> = {
-      numberOfImages: mergedConfig.numberOfImages,
-      aspectRatio: mergedConfig.aspectRatio,
+      numberOfImages: mergedConfig.numberOfImages ?? 4,
+      aspectRatio: mergedConfig.aspectRatio ?? "9:16",
     }
     
     // Only add personGeneration if it's defined
@@ -124,7 +142,7 @@ export async function generateImages(
     }
 
     const response = await genAI.models.generateImages({
-      model: mergedConfig.model!,
+      model: mergedConfig.model,
       prompt,
       config: imageConfig,
     })
