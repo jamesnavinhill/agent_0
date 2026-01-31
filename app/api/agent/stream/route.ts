@@ -74,6 +74,13 @@ export async function POST(req: Request) {
                   input: toolCall.input,
                   status: toolCall.status,
                 })
+
+                if (toolCall.name === "delegate") {
+                  sendEvent("delegate", {
+                    id: toolCall.id,
+                    input: toolCall.input,
+                  })
+                }
               },
               onSubAgentEvent: (event: SubAgentEvent) => {
                 sendEvent("subagent", {
@@ -122,6 +129,13 @@ export async function POST(req: Request) {
                   input: toolCall.input,
                   status: toolCall.status,
                 })
+
+                if (toolCall.name === "delegate") {
+                  sendEvent("delegate", {
+                    id: toolCall.id,
+                    input: toolCall.input,
+                  })
+                }
               },
             })
 
