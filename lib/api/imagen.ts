@@ -13,11 +13,9 @@ if (!apiKey) {
 const genAI = apiKey ? new GoogleGenAI({ apiKey }) : null
 
 export type ImagenModel =
-  | "gemini-2.5-flash-image"
-  | "gemini-3-pro-image-preview"
-  | "imagen-4.0-generate-001"
-  | "imagen-4.0-ultra-generate-001"
-  | "imagen-4.0-fast-generate-001"
+  | "imagen-3.0-generate-002"
+  | "imagen-3.0-generate-001"
+  | "imagen-3.0-fast-generate-001"
 
 export type AspectRatio = "1:1" | "3:4" | "4:3" | "9:16" | "16:9"
 
@@ -29,7 +27,7 @@ export interface ImagenConfig {
 }
 
 const DEFAULT_CONFIG: ImagenConfig = {
-  model: "gemini-2.5-flash-image",
+  model: "imagen-3.0-generate-002",
   numberOfImages: 1,
   aspectRatio: "9:16",
   personGeneration: "allow_all",
@@ -49,17 +47,32 @@ export async function generateImage(
     aspectRatio: config.aspectRatio ?? DEFAULT_CONFIG.aspectRatio
   })
 
-  const mergedConfig = { ...DEFAULT_CONFIG, ...config }
+  // Filter out undefined values from config before merging
+  const cleanConfig = Object.fromEntries(
+    Object.entries(config).filter(([_, v]) => v !== undefined)
+  )
+  const mergedConfig = { ...DEFAULT_CONFIG, ...cleanConfig }
+
+  // Ensure required fields are present
+  if (!mergedConfig.model) {
+    throw new Error("Model is required for image generation")
+  }
 
   try {
+    const imageConfig: Record<string, any> = {
+      numberOfImages: mergedConfig.numberOfImages ?? 1,
+      aspectRatio: mergedConfig.aspectRatio ?? "9:16",
+    }
+    
+    // Only add personGeneration if it's defined
+    if (mergedConfig.personGeneration) {
+      imageConfig.personGeneration = mergedConfig.personGeneration.toUpperCase()
+    }
+
     const response = await genAI.models.generateImages({
-      model: mergedConfig.model!,
+      model: mergedConfig.model,
       prompt,
-      config: {
-        numberOfImages: mergedConfig.numberOfImages,
-        aspectRatio: mergedConfig.aspectRatio,
-        personGeneration: mergedConfig.personGeneration?.toUpperCase() as any,
-      },
+      config: imageConfig,
     })
 
     if (!response.generatedImages || response.generatedImages.length === 0) {
@@ -95,10 +108,19 @@ export async function generateImages(
     throw new Error("Gemini not initialized - check GOOGLE_API_KEY")
   }
 
+  // Filter out undefined values from config before merging
+  const cleanConfig = Object.fromEntries(
+    Object.entries(config).filter(([_, v]) => v !== undefined)
+  )
   const mergedConfig = {
     ...DEFAULT_CONFIG,
-    ...config,
+    ...cleanConfig,
     numberOfImages: config.numberOfImages ?? 4
+  }
+
+  // Ensure required fields are present
+  if (!mergedConfig.model) {
+    throw new Error("Model is required for image generation")
   }
 
   log.info("Generating multiple images", {
@@ -107,14 +129,20 @@ export async function generateImages(
   })
 
   try {
+    const imageConfig: Record<string, any> = {
+      numberOfImages: mergedConfig.numberOfImages ?? 4,
+      aspectRatio: mergedConfig.aspectRatio ?? "9:16",
+    }
+    
+    // Only add personGeneration if it's defined
+    if (mergedConfig.personGeneration) {
+      imageConfig.personGeneration = mergedConfig.personGeneration.toUpperCase()
+    }
+
     const response = await genAI.models.generateImages({
-      model: mergedConfig.model!,
+      model: mergedConfig.model,
       prompt,
-      config: {
-        numberOfImages: mergedConfig.numberOfImages,
-        aspectRatio: mergedConfig.aspectRatio,
-        personGeneration: mergedConfig.personGeneration?.toUpperCase() as any,
-      },
+      config: imageConfig,
     })
 
     if (!response.generatedImages || response.generatedImages.length === 0) {

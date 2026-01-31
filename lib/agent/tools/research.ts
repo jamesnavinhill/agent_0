@@ -27,8 +27,12 @@ export async function performMorningRead() {
     Avoid mainstream fluff. Focus on density, technical depth, and "new" information.
 
     Return the result as a JSON object with two fields:
-    1. "reportMarkdown": A comprehensive Markdown report.
-    2. "knowledgeItems": Array of key findings for memory.
+    1. "reportMarkdown": A comprehensive Markdown report (string).
+    2. "knowledgeItems": Array of objects, each with these REQUIRED fields:
+       - "title": string (concise headline)
+       - "summary": string (2-3 sentence explanation of why this matters)
+       - "url": string (source URL)
+       - "tags": string[] (relevant categories like "ai", "science", "research")
 
     # Format for "reportMarkdown":
     
@@ -89,15 +93,38 @@ export async function performMorningRead() {
 
     // Save knowledge items with tracking
     let savedCount = 0
+    let skippedCount = 0
     if (Array.isArray(data.knowledgeItems)) {
-      for (const item of data.knowledgeItems) {
+      for (const rawItem of data.knowledgeItems) {
+        // Handle case where AI returns strings instead of objects
+        const item = typeof rawItem === 'string' 
+          ? { title: rawItem, summary: rawItem, url: null, tags: ["research"] }
+          : rawItem
+        
+        // Validate required fields before saving
+        if (!item || typeof item !== 'object') {
+          console.warn("[Research] Skipping invalid knowledge item:", rawItem)
+          skippedCount++
+          continue
+        }
+        
+        if (!item.title || !item.summary) {
+          console.warn("[Research] Skipping knowledge item with missing title or summary:", item)
+          skippedCount++
+          continue
+        }
+        
         const success = await addKnowledge({
-          title: item.title,
-          url: item.url,
-          summary: item.summary,
-          tags: item.tags || ["research"]
+          title: String(item.title).trim(),
+          url: item.url || null,
+          summary: String(item.summary).trim(),
+          tags: Array.isArray(item.tags) ? item.tags : ["research"]
         })
         if (success) savedCount++
+      }
+      
+      if (skippedCount > 0) {
+        console.warn(`[Research] Skipped ${skippedCount} knowledge items due to missing required fields`)
       }
 
       pushActivity({

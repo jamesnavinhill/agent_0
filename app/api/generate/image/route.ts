@@ -21,10 +21,11 @@ export async function POST(req: Request) {
       return Response.json({ error: "GOOGLE_API_KEY not configured" }, { status: 500 })
     }
 
-    const config: ImagenConfig = {
-      aspectRatio: body.aspectRatio,
-      model: body.model,
-    }
+    // Only include config properties that are explicitly provided
+    // to avoid undefined values overriding defaults in generateImage
+    const config: ImagenConfig = {}
+    if (body.aspectRatio) config.aspectRatio = body.aspectRatio
+    if (body.model) config.model = body.model
 
     if (body.count && body.count > 1) {
       config.numberOfImages = Math.min(body.count, 4)
