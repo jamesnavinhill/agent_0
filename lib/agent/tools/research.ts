@@ -89,15 +89,27 @@ export async function performMorningRead() {
 
     // Save knowledge items with tracking
     let savedCount = 0
+    let skippedCount = 0
     if (Array.isArray(data.knowledgeItems)) {
       for (const item of data.knowledgeItems) {
+        // Validate required fields before saving
+        if (!item.title || !item.summary) {
+          console.warn("[Research] Skipping knowledge item with missing title or summary:", item)
+          skippedCount++
+          continue
+        }
+        
         const success = await addKnowledge({
           title: item.title,
-          url: item.url,
+          url: item.url || null,
           summary: item.summary,
           tags: item.tags || ["research"]
         })
         if (success) savedCount++
+      }
+      
+      if (skippedCount > 0) {
+        console.warn(`[Research] Skipped ${skippedCount} knowledge items due to missing required fields`)
       }
 
       pushActivity({
