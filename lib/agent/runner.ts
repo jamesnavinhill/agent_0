@@ -5,6 +5,8 @@ import { getNextRunTime } from "@/lib/scheduler/cron"
 import { pushActivity } from "@/lib/activity/bus"
 import { performMorningRead } from "@/lib/agent/tools/research"
 import { performDailyArt, generateVideo, editGalleryImage } from "@/lib/agent/tools/media"
+import { executeAutonomousTask, executeSubAgentTask } from "@/lib/agents/agent-executor"
+import { SpawnSubAgentConfig } from "@/lib/agents/types"
 
 export interface ExecutionResult {
     id: string
@@ -35,7 +37,37 @@ export async function executeTask(task: Task, isManual = false): Promise<Executi
         console.log(`[Runner] Routing task: name="${task.name}", category="${task.category}"`)
 
         // Route tasks to specialized handlers
-        if (task.name.includes("Morning Read") || task.category === "research") {
+        // NEW: AI SDK Agent execution for "agent" category tasks
+        if (task.category === "agent" || task.parameters?.useAgent) {
+            console.log("[Runner] -> AI SDK Agent path")
+            const agentResult = await executeAutonomousTask(
+                task.prompt || task.description || `Execute task: ${task.name}`,
+                {
+                    maxSteps: (task.parameters?.maxSteps as number) || 15,
+                    allowSubAgents: (task.parameters?.allowSubAgents as boolean) ?? true,
+                }
+            )
+            output = agentResult.success
+                ? agentResult.result || "Task completed successfully"
+                : `Task failed: ${agentResult.error}`
+        }
+        // NEW: Sub-agent specific execution
+        else if (task.category === "subagent" && task.parameters?.role) {
+            console.log("[Runner] -> Sub-agent path")
+            const subAgentConfig: SpawnSubAgentConfig = {
+                name: task.name,
+                role: task.parameters.role as "researcher" | "creator" | "reviewer",
+                task: task.prompt || task.description || task.name,
+            }
+            const subAgentResult = await executeSubAgentTask(
+                subAgentConfig,
+                (task.parameters?.context as Record<string, unknown>) || {}
+            )
+            output = subAgentResult.success
+                ? (subAgentResult.result as string) || "Sub-agent task completed"
+                : `Sub-agent failed: ${subAgentResult.error}`
+        }
+        else if (task.name.includes("Morning Read") || task.category === "research") {
             console.log("[Runner] -> Research path")
             output = await performMorningRead()
         } else if (task.name.includes("Motion") || task.category === "video") {
