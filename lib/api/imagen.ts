@@ -52,14 +52,20 @@ export async function generateImage(
   const mergedConfig = { ...DEFAULT_CONFIG, ...config }
 
   try {
+    const imageConfig: Record<string, any> = {
+      numberOfImages: mergedConfig.numberOfImages,
+      aspectRatio: mergedConfig.aspectRatio,
+    }
+    
+    // Only add personGeneration if it's defined
+    if (mergedConfig.personGeneration) {
+      imageConfig.personGeneration = mergedConfig.personGeneration.toUpperCase()
+    }
+
     const response = await genAI.models.generateImages({
       model: mergedConfig.model!,
       prompt,
-      config: {
-        numberOfImages: mergedConfig.numberOfImages,
-        aspectRatio: mergedConfig.aspectRatio,
-        personGeneration: mergedConfig.personGeneration?.toUpperCase() as any,
-      },
+      config: imageConfig,
     })
 
     if (!response.generatedImages || response.generatedImages.length === 0) {
@@ -107,14 +113,20 @@ export async function generateImages(
   })
 
   try {
+    const imageConfig: Record<string, any> = {
+      numberOfImages: mergedConfig.numberOfImages,
+      aspectRatio: mergedConfig.aspectRatio,
+    }
+    
+    // Only add personGeneration if it's defined
+    if (mergedConfig.personGeneration) {
+      imageConfig.personGeneration = mergedConfig.personGeneration.toUpperCase()
+    }
+
     const response = await genAI.models.generateImages({
       model: mergedConfig.model!,
       prompt,
-      config: {
-        numberOfImages: mergedConfig.numberOfImages,
-        aspectRatio: mergedConfig.aspectRatio,
-        personGeneration: mergedConfig.personGeneration?.toUpperCase() as any,
-      },
+      config: imageConfig,
     })
 
     if (!response.generatedImages || response.generatedImages.length === 0) {
