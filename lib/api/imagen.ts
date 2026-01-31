@@ -13,11 +13,9 @@ if (!apiKey) {
 const genAI = apiKey ? new GoogleGenAI({ apiKey }) : null
 
 export type ImagenModel =
-  | "gemini-2.5-flash-image"
-  | "gemini-3-pro-image-preview"
-  | "imagen-4.0-generate-001"
-  | "imagen-4.0-ultra-generate-001"
-  | "imagen-4.0-fast-generate-001"
+  | "imagen-3.0-generate-002"
+  | "imagen-3.0-generate-001"
+  | "imagen-3.0-fast-generate-001"
 
 export type AspectRatio = "1:1" | "3:4" | "4:3" | "9:16" | "16:9"
 
@@ -29,7 +27,7 @@ export interface ImagenConfig {
 }
 
 const DEFAULT_CONFIG: ImagenConfig = {
-  model: "gemini-2.5-flash-image",
+  model: "imagen-3.0-generate-002",
   numberOfImages: 1,
   aspectRatio: "9:16",
   personGeneration: "allow_all",
