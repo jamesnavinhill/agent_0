@@ -60,6 +60,8 @@ async function executeByCategory(
   switch (task.category) {
     case "art":
       return executeArtTask(task, context)
+    case "video":
+      return executeVideoTask(task, context)
     case "code":
       return executeCodeTask(task, context)
     case "research":
@@ -157,6 +159,49 @@ async function executeArtTask(
     type: "image",
     content: output,
     metadata: { taskId: task.id }
+  }
+}
+
+async function executeVideoTask(
+  task: ScheduledTask,
+  context: ExecutorContext
+): Promise<TaskResult> {
+  // Video tasks use the unified server-side runner with async job dispatch
+  // The runner dispatches a job that will be finalized by the job checker cron
+  context.addThought(`Starting video generation task: ${task.name}`, "action")
+
+  const response = await fetch("/api/agent/execute", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ taskId: task.id })
+  })
+
+  if (!response.ok) {
+    const error = await response.text()
+    throw new Error(`Video execution failed: ${error} (Status: ${response.status})`)
+  }
+
+  const result = await response.json()
+  const output = result.output || "Video generation job dispatched"
+
+  context.addOutput({
+    type: "video",
+    content: output,
+    title: `${task.name} - ${new Date().toLocaleDateString()}`,
+    category: "art",
+    metadata: {
+      taskId: task.id,
+      scheduled: false,
+      async: true // Indicates this is an async job, video will appear in gallery later
+    }
+  })
+
+  return {
+    type: "video",
+    content: output,
+    metadata: { taskId: task.id, async: true }
   }
 }
 

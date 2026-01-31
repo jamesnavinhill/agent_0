@@ -1,5 +1,1 @@
-{
-    "env": {
-        "CRON_SECRET": "your_secret_here"
-    }
-}
+{}

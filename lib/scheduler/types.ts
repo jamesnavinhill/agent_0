@@ -9,6 +9,7 @@ export type TaskCategory =
   | "social"
   | "custom"
   | "browser"
+  | "video"
 
 export type TaskStatus =
   | "pending"
