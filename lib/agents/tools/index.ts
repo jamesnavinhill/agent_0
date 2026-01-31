@@ -8,7 +8,7 @@ import { z } from "zod"
 import { generateImage as imagenGenerateImage } from "@/lib/api/imagen"
 import { generateText } from "@/lib/api/gemini"
 import { addKnowledge } from "@/lib/db/knowledge"
-import { addGalleryItem } from "@/lib/db/gallery"
+import { saveGalleryItem } from "@/lib/db/gallery"
 import { pushActivity } from "@/lib/activity/bus"
 
 /**
@@ -82,7 +82,7 @@ export const imageGenerationTool = tool({
 
       // Save to gallery
       if (result.url) {
-        await addGalleryItem({
+        await saveGalleryItem({
           type: "image",
           content: result.url,
           title: prompt.slice(0, 100),
