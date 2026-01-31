@@ -1,7 +1,10 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { cn } from "@/lib/utils"
+import { useSandbox } from "@/hooks/use-sandbox"
+import { getModelsByCapability, MODEL_PRESETS } from "@/lib/api/models"
+import { getRecentActivities, subscribeActivity, type ActivityEvent } from "@/lib/activity/bus"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -19,6 +22,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
+import { Switch } from "@/components/ui/switch"
 import {
   Tooltip,
   TooltipContent,
@@ -43,8 +47,11 @@ import {
   Package,
   Terminal,
   History,
-  Settings2,
+  Radio,
   Trash2,
+  Activity,
+  PencilLine,
+  Scissors,
 } from "lucide-react"
 
 // Types matching the database schema
@@ -94,29 +101,42 @@ const statusConfig = {
 }
 
 export function SandboxPanel() {
-  // Project state
-  const [projects, setProjects] = useState<SandboxProject[]>([])
-  const [selectedProject, setSelectedProject] = useState<SandboxProject | null>(null)
-  const [isLoadingProjects, setIsLoadingProjects] = useState(true)
+  const {
+    projects,
+    selectedProject,
+    isLoading,
+    isRunning,
+    error,
+    streamingOutput,
+    streamingHistory,
+    fetchProjects,
+    selectProject,
+    createProject,
+    writeFile,
+    deleteFile,
+    setDependencies,
+    runCode,
+    runCodeStreaming,
+    refresh,
+  } = useSandbox()
 
-  // Files state
-  const [files, setFiles] = useState<SandboxFile[]>([])
   const [selectedFile, setSelectedFile] = useState<SandboxFile | null>(null)
-  const [isLoadingFiles, setIsLoadingFiles] = useState(false)
-
-  // Executions state
-  const [executions, setExecutions] = useState<SandboxExecution[]>([])
   const [selectedExecution, setSelectedExecution] = useState<SandboxExecution | null>(null)
-
-  // Dependencies
-  const [dependencies, setDependencies] = useState<SandboxDependency[]>([])
+  const [selectedStreamingEntryId, setSelectedStreamingEntryId] = useState<string | null>(null)
+  const [sandboxActivity, setSandboxActivity] = useState<ActivityEvent[]>([])
+  const [selectedSnippet, setSelectedSnippet] = useState("")
+  const [editingSelection, setEditingSelection] = useState(false)
+  const [selectionSourceContent, setSelectionSourceContent] = useState("")
+  const [selectionNotice, setSelectionNotice] = useState<string | null>(null)
 
   // UI state
   const [showNewProjectForm, setShowNewProjectForm] = useState(false)
   const [showFilesSection, setShowFilesSection] = useState(true)
   const [showExecutionsSection, setShowExecutionsSection] = useState(true)
+  const [showStreamingHistorySection, setShowStreamingHistorySection] = useState(true)
+  const [showSandboxFeedSection, setShowSandboxFeedSection] = useState(false)
   const [showDepsSection, setShowDepsSection] = useState(false)
-  const [isRunning, setIsRunning] = useState(false)
+  const [useStreaming, setUseStreaming] = useState(true)
 
   // New project form
   const [newProjectName, setNewProjectName] = useState("")
@@ -125,113 +145,184 @@ export function SandboxPanel() {
 
   // Run command
   const [runCommand, setRunCommand] = useState("")
+  const [selectedModel, setSelectedModel] = useState<string>(MODEL_PRESETS.codeExecution.default)
+  const [streamingStatus, setStreamingStatus] = useState<string | null>(null)
 
-  // Fetch projects
-  const fetchProjects = useCallback(async () => {
-    setIsLoadingProjects(true)
-    try {
-      const res = await fetch("/api/sandbox/projects")
-      if (res.ok) {
-        const data = await res.json()
-        setProjects(data.projects || [])
-      }
-    } catch (error) {
-      console.error("Failed to fetch projects:", error)
-    } finally {
-      setIsLoadingProjects(false)
+  const [showFileEditor, setShowFileEditor] = useState(false)
+  const [filePath, setFilePath] = useState("")
+  const [fileContent, setFileContent] = useState("")
+  const [depsInput, setDepsInput] = useState("")
+
+  const availableModels = useMemo(
+    () => getModelsByCapability("code-execution"),
+    []
+  )
+
+  const files = selectedProject?.files ?? []
+  const dependencies = selectedProject?.dependencies ?? []
+  const executions = selectedProject?.recentExecutions ?? []
+
+  const isLoadingProjects = isLoading && projects.length === 0
+  const isLoadingFiles = isLoading && selectedProject !== null
+
+  useEffect(() => {
+    setSelectedFile(null)
+    setSelectedExecution(null)
+    setStreamingStatus(null)
+    setSelectedSnippet("")
+    setEditingSelection(false)
+    setSelectionSourceContent("")
+    setSelectionNotice(null)
+    if (selectedProject) {
+      const depString = (selectedProject.dependencies || [])
+        .map((dep) => `${dep.name}${dep.version ? `@${dep.version}` : ""}${dep.dev_dependency ? " (dev)" : ""}`)
+        .join("\n")
+      setDepsInput(depString)
+    } else {
+      setDepsInput("")
+    }
+  }, [selectedProject?.id])
+
+  useEffect(() => {
+    if (!selectedFile) {
+      setSelectedSnippet("")
+      setSelectionSourceContent("")
+      setEditingSelection(false)
+      setSelectionNotice(null)
+    }
+  }, [selectedFile])
+
+  useEffect(() => {
+    const isSandboxActivity = (activity: ActivityEvent) =>
+      activity.source?.includes("sandbox")
+
+    const recent = getRecentActivities({ limit: 200 }).filter(isSandboxActivity)
+    setSandboxActivity(recent)
+
+    const unsubscribe = subscribeActivity((event) => {
+      if (!isSandboxActivity(event)) return
+      setSandboxActivity((prev) => [...prev, event].slice(-200))
+    })
+
+    return () => {
+      unsubscribe()
     }
   }, [])
 
-  // Fetch project details
-  const fetchProjectDetails = useCallback(async (projectId: string) => {
-    setIsLoadingFiles(true)
-    try {
-      const res = await fetch(`/api/sandbox/projects/${projectId}`)
-      if (res.ok) {
-        const data = await res.json()
-        setFiles(data.files || [])
-        setDependencies(data.dependencies || [])
-        setExecutions(data.recentExecutions || [])
-      }
-    } catch (error) {
-      console.error("Failed to fetch project details:", error)
-    } finally {
-      setIsLoadingFiles(false)
-    }
-  }, [])
-
-  // Create project
-  const createProject = async () => {
+  const handleCreateProject = async () => {
     if (!newProjectName.trim()) return
 
-    try {
-      const res = await fetch("/api/sandbox/projects", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: newProjectName,
-          framework: newProjectFramework,
-          language: newProjectLanguage,
-        }),
-      })
+    const project = await createProject({
+      name: newProjectName,
+      framework: newProjectFramework,
+      language: newProjectLanguage,
+    })
 
-      if (res.ok) {
-        const project = await res.json()
-        setProjects((prev) => [project, ...prev])
-        setSelectedProject(project)
-        setShowNewProjectForm(false)
-        setNewProjectName("")
-      }
-    } catch (error) {
-      console.error("Failed to create project:", error)
+    if (project) {
+      await selectProject(project.id)
+      setShowNewProjectForm(false)
+      setNewProjectName("")
     }
   }
 
-  // Run code
-  const runCode = async () => {
+  const handleRun = async () => {
     if (!selectedProject || !runCommand.trim()) return
 
-    setIsRunning(true)
-    try {
-      const res = await fetch(`/api/sandbox/projects/${selectedProject.id}/executions`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          command: runCommand,
-          executionType: "run",
-        }),
-      })
+    setStreamingStatus(null)
+    setSelectedExecution(null)
+    setSelectedStreamingEntryId(null)
 
-      if (res.ok) {
-        const execution = await res.json()
-        setExecutions((prev) => [execution, ...prev])
-        setSelectedExecution(execution)
-      }
-    } catch (error) {
-      console.error("Failed to run code:", error)
-    } finally {
-      setIsRunning(false)
+    if (useStreaming) {
+      await runCodeStreaming(selectedProject.id, runCommand, {
+        model: selectedModel,
+        onStatus: (status) => setStreamingStatus(`${status.phase}: ${status.message}`),
+        onComplete: (result) => {
+          setStreamingStatus(`Complete: ${result.status} (exit ${result.exitCode})`)
+        },
+      })
+      return
+    }
+
+    const execution = await runCode(selectedProject.id, runCommand, {
+      model: selectedModel,
+    })
+    if (execution) {
+      setSelectedExecution(execution)
     }
   }
 
-  // Initial load
-  useEffect(() => {
-    fetchProjects()
-  }, [fetchProjects])
-
-  // Load project details when selected
-  useEffect(() => {
-    if (selectedProject) {
-      fetchProjectDetails(selectedProject.id)
+  const handleSaveFile = async () => {
+    if (!selectedProject || !filePath.trim()) return
+    setSelectionNotice(null)
+    if (editingSelection && selectedFile) {
+      if (!selectionSourceContent.includes(selectedSnippet)) {
+        setSelectionNotice("Selected text no longer matches the file content.")
+        return
+      }
+      const updatedContent = selectionSourceContent.replace(selectedSnippet, fileContent)
+      await writeFile(selectedProject.id, filePath.trim(), updatedContent)
     } else {
-      setFiles([])
-      setDependencies([])
-      setExecutions([])
+      await writeFile(selectedProject.id, filePath.trim(), fileContent)
+    }
+    await refresh()
+    setShowFileEditor(false)
+    setEditingSelection(false)
+    setSelectionSourceContent("")
+    setSelectedSnippet("")
+  }
+
+  const handleDeleteFile = async (path: string) => {
+    if (!selectedProject) return
+    await deleteFile(selectedProject.id, path)
+    await refresh()
+    if (selectedFile?.path === path) {
       setSelectedFile(null)
     }
-  }, [selectedProject, fetchProjectDetails])
+  }
 
-  // Build file tree structure
+  const handleEditFile = () => {
+    if (!selectedFile) return
+    setFilePath(selectedFile.path)
+    setFileContent(selectedFile.content)
+    setEditingSelection(false)
+    setSelectionSourceContent("")
+    setSelectionNotice(null)
+    setShowFileEditor(true)
+  }
+
+  const handleEditSelection = () => {
+    if (!selectedFile || !selectedSnippet.trim()) return
+    setFilePath(selectedFile.path)
+    setFileContent(selectedSnippet)
+    setSelectionSourceContent(selectedFile.content)
+    setEditingSelection(true)
+    setSelectionNotice(null)
+    setShowFileEditor(true)
+  }
+
+  const handleApplyDependencies = async () => {
+    if (!selectedProject) return
+
+    const parsed = depsInput
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .map((line) => {
+        const dev = line.toLowerCase().includes("(dev)")
+        const cleaned = line.replace(/\(dev\)/gi, "").trim()
+        const [name, version] = cleaned.split("@")
+        return {
+          name: name.trim(),
+          version: version?.trim() || undefined,
+          dev,
+        }
+      })
+      .filter((dep) => dep.name.length > 0)
+
+    await setDependencies(selectedProject.id, parsed)
+    await refresh()
+  }
+
   const fileTree = buildFileTree(files)
 
   return (
@@ -325,7 +416,7 @@ export function SandboxPanel() {
             </Button>
             <Button
               size="sm"
-              onClick={createProject}
+              onClick={handleCreateProject}
               disabled={!newProjectName.trim()}
               className="flex-1 h-7 text-xs"
             >
@@ -339,10 +430,7 @@ export function SandboxPanel() {
       <div className="p-2 border-b border-border">
         <Select
           value={selectedProject?.id || ""}
-          onValueChange={(id) => {
-            const project = projects.find((p) => p.id === id)
-            setSelectedProject(project || null)
-          }}
+          onValueChange={(id) => selectProject(id || null)}
         >
           <SelectTrigger className="h-8 text-xs">
             <div className="flex items-center gap-2">
@@ -378,8 +466,67 @@ export function SandboxPanel() {
             </div>
           )}
 
+          {error && !selectedProject && (
+            <div className="text-xs text-destructive">{error}</div>
+          )}
+
           {selectedProject && (
             <>
+              {/* File Editor */}
+              <Collapsible open={showFileEditor} onOpenChange={setShowFileEditor}>
+                <CollapsibleTrigger className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wide w-full">
+                  {showFileEditor ? (
+                    <ChevronDown className="w-3 h-3" />
+                  ) : (
+                    <ChevronRight className="w-3 h-3" />
+                  )}
+                  <File className="w-3 h-3" />
+                  Write File
+                </CollapsibleTrigger>
+                <CollapsibleContent className="mt-2 space-y-2">
+                  <Input
+                    placeholder="src/index.ts"
+                    value={filePath}
+                    onChange={(e) => setFilePath(e.target.value)}
+                    className="h-8 text-xs font-mono"
+                  />
+                  <Textarea
+                    placeholder="File contents..."
+                    value={fileContent}
+                    onChange={(e) => setFileContent(e.target.value)}
+                    className="min-h-[140px] text-xs font-mono"
+                  />
+                  {editingSelection && (
+                    <div className="text-[11px] text-muted-foreground">
+                      Editing selection ({selectedSnippet.length} chars). Saving will replace the selected text in the file.
+                    </div>
+                  )}
+                  {selectionNotice && (
+                    <div className="text-[11px] text-destructive">
+                      {selectionNotice}
+                    </div>
+                  )}
+                  <div className="flex justify-end gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowFileEditor(false)}
+                      className="h-7 text-xs"
+                    >
+                      Close
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={handleSaveFile}
+                      disabled={!filePath.trim()}
+                      className="h-7 text-xs"
+                    >
+                      Save File
+                    </Button>
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+
               {/* Files Section */}
               <Collapsible open={showFilesSection} onOpenChange={setShowFilesSection}>
                 <CollapsibleTrigger className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wide w-full">
@@ -419,17 +566,60 @@ export function SandboxPanel() {
                         v{selectedFile.version}
                       </Badge>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6"
-                      onClick={() => setSelectedFile(null)}
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </Button>
+                    <div className="flex items-center gap-1">
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6"
+                              onClick={handleEditFile}
+                            >
+                              <PencilLine className="w-3 h-3" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Edit file</TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                      {selectedSnippet.trim().length > 0 && (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6"
+                                onClick={handleEditSelection}
+                              >
+                                <Scissors className="w-3 h-3" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Edit selection</TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        onClick={() => handleDeleteFile(selectedFile.path)}
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
                   </div>
                   <ScrollArea className="h-48">
-                    <pre className="p-3 text-[11px] font-mono">{selectedFile.content}</pre>
+                    <pre
+                      className="p-3 text-[11px] font-mono whitespace-pre-wrap"
+                      onMouseUp={() => {
+                        const selection = window.getSelection()?.toString() ?? ""
+                        setSelectedSnippet(selection.trim())
+                        setSelectionNotice(null)
+                      }}
+                    >
+                      {selectedFile.content}
+                    </pre>
                   </ScrollArea>
                 </div>
               )}
@@ -467,6 +657,19 @@ export function SandboxPanel() {
                       ))}
                     </div>
                   )}
+                  <div className="mt-2 space-y-2">
+                    <Textarea
+                      placeholder="react@18\nnext@14\n@types/node@20 (dev)"
+                      value={depsInput}
+                      onChange={(e) => setDepsInput(e.target.value)}
+                      className="min-h-[120px] text-xs font-mono"
+                    />
+                    <div className="flex justify-end">
+                      <Button size="sm" onClick={handleApplyDependencies} className="h-7 text-xs">
+                        Apply Dependencies
+                      </Button>
+                    </div>
+                  </div>
                 </CollapsibleContent>
               </Collapsible>
 
@@ -476,19 +679,38 @@ export function SandboxPanel() {
                   <Terminal className="w-3 h-3" />
                   Run
                 </div>
+                <div className="flex flex-wrap gap-2">
+                  <Select value={selectedModel} onValueChange={setSelectedModel}>
+                    <SelectTrigger className="h-8 text-xs min-w-[180px]">
+                      <SelectValue placeholder="Select model" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableModels.map((model) => (
+                        <SelectItem key={model.id} value={model.id}>
+                          {model.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Radio className="w-3 h-3" />
+                    <span>Streaming</span>
+                    <Switch checked={useStreaming} onCheckedChange={setUseStreaming} />
+                  </div>
+                </div>
                 <div className="flex gap-2">
                   <Input
                     placeholder="node index.js"
                     value={runCommand}
                     onChange={(e) => setRunCommand(e.target.value)}
                     className="h-8 text-xs font-mono flex-1"
-                    onKeyDown={(e) => e.key === "Enter" && runCode()}
+                    onKeyDown={(e) => e.key === "Enter" && handleRun()}
                     disabled={isRunning}
                   />
                   <Button
                     size="icon"
                     className="h-8 w-8"
-                    onClick={runCode}
+                    onClick={handleRun}
                     disabled={isRunning || !runCommand.trim()}
                   >
                     {isRunning ? (
@@ -498,7 +720,146 @@ export function SandboxPanel() {
                     )}
                   </Button>
                 </div>
+                {(streamingStatus || streamingOutput) && (
+                  <div className="border border-border rounded-lg bg-surface-1">
+                    {streamingStatus && (
+                      <div className="px-3 py-2 text-[11px] text-muted-foreground border-b border-border">
+                        {streamingStatus}
+                      </div>
+                    )}
+                    <ScrollArea className="h-28">
+                      <pre className="p-3 text-[11px] font-mono whitespace-pre-wrap">
+                        {streamingOutput || "Waiting for output..."}
+                      </pre>
+                    </ScrollArea>
+                  </div>
+                )}
+                {error && (
+                  <div className="text-xs text-destructive">{error}</div>
+                )}
               </div>
+
+              {/* Streaming History Section */}
+              <Collapsible open={showStreamingHistorySection} onOpenChange={setShowStreamingHistorySection}>
+                <CollapsibleTrigger className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wide w-full">
+                  {showStreamingHistorySection ? (
+                    <ChevronDown className="w-3 h-3" />
+                  ) : (
+                    <ChevronRight className="w-3 h-3" />
+                  )}
+                  <Radio className="w-3 h-3" />
+                  Streaming History ({streamingHistory.length})
+                </CollapsibleTrigger>
+                <CollapsibleContent className="mt-2 space-y-2">
+                  {streamingHistory.length === 0 ? (
+                    <p className="text-xs text-muted-foreground py-2">
+                      No streaming runs yet. Enable streaming and run a command.
+                    </p>
+                  ) : (
+                    streamingHistory.slice(0, 10).map((entry) => {
+                      const StatusIcon = statusConfig[entry.status]?.icon || Clock
+                      const statusColor = statusConfig[entry.status]?.color || "text-muted-foreground"
+                      const statusBg = statusConfig[entry.status]?.bg || "bg-muted/50"
+                      const isSelected = selectedStreamingEntryId === entry.id
+
+                      return (
+                        <div
+                          key={entry.id}
+                          className={cn(
+                            "p-2 rounded-lg border border-border cursor-pointer transition-colors",
+                            isSelected ? statusBg : "hover:bg-surface-1"
+                          )}
+                          onClick={() =>
+                            setSelectedStreamingEntryId(isSelected ? null : entry.id)
+                          }
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <StatusIcon
+                                className={cn(
+                                  "w-3.5 h-3.5 shrink-0",
+                                  statusColor,
+                                  entry.status === "running" && "animate-spin"
+                                )}
+                              />
+                              <span className="text-xs font-mono truncate">{entry.command}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                              {entry.durationMs && <span>{entry.durationMs}ms</span>}
+                              {entry.exitCode !== undefined && (
+                                <Badge
+                                  variant="outline"
+                                  className={cn(
+                                    "h-4 text-[9px]",
+                                    entry.exitCode === 0
+                                      ? "text-green-500 border-green-500/30"
+                                      : "text-destructive border-destructive/30"
+                                  )}
+                                >
+                                  exit {entry.exitCode}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                          {isSelected && (
+                            <ScrollArea className="mt-2 h-32 rounded border border-border bg-surface-1">
+                              <pre className="p-2 text-[10px] font-mono whitespace-pre-wrap">
+                                {entry.output || "Waiting for output..."}
+                              </pre>
+                            </ScrollArea>
+                          )}
+                        </div>
+                      )
+                    })
+                  )}
+                </CollapsibleContent>
+              </Collapsible>
+
+              {/* Sandbox Activity Feed */}
+              <Collapsible open={showSandboxFeedSection} onOpenChange={setShowSandboxFeedSection}>
+                <CollapsibleTrigger className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wide w-full">
+                  {showSandboxFeedSection ? (
+                    <ChevronDown className="w-3 h-3" />
+                  ) : (
+                    <ChevronRight className="w-3 h-3" />
+                  )}
+                  <Activity className="w-3 h-3" />
+                  Sandbox Feed ({sandboxActivity.length})
+                </CollapsibleTrigger>
+                <CollapsibleContent className="mt-2 space-y-2">
+                  {sandboxActivity.length === 0 ? (
+                    <p className="text-xs text-muted-foreground py-2">
+                      No sandbox activity yet.
+                    </p>
+                  ) : (
+                    sandboxActivity.slice(-20).map((event) => (
+                      <div
+                        key={event.id}
+                        className="p-2 rounded-lg border border-border bg-surface-1"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0">
+                            <p className="text-xs font-medium text-foreground">
+                              {event.action}
+                            </p>
+                            {event.details && (
+                              <p className="text-[11px] text-muted-foreground mt-0.5 truncate">
+                                {event.details}
+                              </p>
+                            )}
+                          </div>
+                          <span className="text-[10px] text-muted-foreground shrink-0">
+                            {new Date(event.timestamp ?? Date.now()).toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </span>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </CollapsibleContent>
+              </Collapsible>
 
               {/* Executions Section */}
               <Collapsible open={showExecutionsSection} onOpenChange={setShowExecutionsSection}>

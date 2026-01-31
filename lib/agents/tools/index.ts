@@ -126,7 +126,7 @@ export const knowledgeTool = tool({
       level: "info",
     })
 
-    const success = await addKnowledge({ title, summary, url: url || null, tags })
+    const success = await addKnowledge({ title, summary, url: url ?? undefined, tags })
 
     return {
       success,

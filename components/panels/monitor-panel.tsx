@@ -79,7 +79,7 @@ function activityToTerminalLine(event: ActivityEvent): TerminalLine {
 
   return {
     id: event.id ?? crypto.randomUUID(),
-    timestamp: new Date(event.timestamp),
+    timestamp: new Date(event.timestamp ?? Date.now()),
     type: levelToTerminalType(event.level),
     content,
   }

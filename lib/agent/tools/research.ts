@@ -116,7 +116,7 @@ export async function performMorningRead() {
         
         const success = await addKnowledge({
           title: String(item.title).trim(),
-          url: item.url || null,
+          url: item.url ?? undefined,
           summary: String(item.summary).trim(),
           tags: Array.isArray(item.tags) ? item.tags : ["research"]
         })

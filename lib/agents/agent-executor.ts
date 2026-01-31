@@ -134,7 +134,7 @@ export async function executeOrchestrator(
         const toolRecord: ToolCallRecord = {
           id: toolCall.toolCallId,
           name: toolCall.toolName,
-          input: toolCall.args,
+          input: "args" in toolCall ? toolCall.args : toolCall,
           status: "complete",
           timestamp: new Date(),
         }
@@ -145,7 +145,7 @@ export async function executeOrchestrator(
           stepNumber,
           type: "tool-call",
           toolName: toolCall.toolName,
-          toolInput: toolCall.args,
+          toolInput: "args" in toolCall ? toolCall.args : toolCall,
           timestamp: new Date(),
         }
         steps.push(toolStep)
@@ -158,7 +158,7 @@ export async function executeOrchestrator(
           stepNumber,
           type: "tool-result",
           toolName: toolResult.toolName,
-          toolOutput: toolResult.result,
+          toolOutput: "result" in toolResult ? toolResult.result : toolResult,
           timestamp: new Date(),
         }
         steps.push(resultStep)
@@ -167,7 +167,7 @@ export async function executeOrchestrator(
         // Update the tool call record with output
         const call = toolCalls.find(tc => tc.id === toolResult.toolCallId)
         if (call) {
-          call.output = toolResult.result
+          call.output = "result" in toolResult ? toolResult.result : toolResult
         }
       }
     }

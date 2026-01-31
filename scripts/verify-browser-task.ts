@@ -34,7 +34,7 @@ async function run() {
     await new Promise(r => setTimeout(r, 5000))
 
     const activityRes = await fetch(`${BASE_URL}/api/activity?limit=5`)
-    const activities = await activityRes.json()
+    const activities = await activityRes.json() as Array<{ imageUrl?: string; action?: string }>
 
     // Find the browser activity
     const browserActivity = activities.find((a: any) => a.imageUrl)

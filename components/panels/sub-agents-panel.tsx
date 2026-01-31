@@ -289,11 +289,11 @@ export function SubAgentsPanel() {
                                                 {step.content}
                                             </p>
                                         )}
-                                        {step.toolInput && (
+                                        {step.toolInput ? (
                                             <pre className="text-[10px] text-muted-foreground mt-1 p-1 bg-muted/30 rounded overflow-x-auto">
-                                                {JSON.stringify(step.toolInput, null, 2).slice(0, 200)}
+                                                {JSON.stringify(step.toolInput, null, 2).slice(0, 200) as string}
                                             </pre>
-                                        )}
+                                        ) : null}
                                     </div>
                                 ))}
                             </CollapsibleContent>
@@ -439,7 +439,7 @@ export function SubAgentsPanel() {
                                                 {agent.error}
                                             </p>
                                         )}
-                                        {agent.completedAt && (
+                                        {"completedAt" in agent && agent.completedAt && (
                                             <p className="text-[10px] text-muted-foreground mt-1">
                                                 {new Date(agent.completedAt).toLocaleTimeString()}
                                             </p>

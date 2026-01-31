@@ -6,7 +6,7 @@ import { Task } from "@/app/api/tasks/route"
 import { uploadFile } from "@/lib/storage/blob"
 import { generateVideoFromText, generateVideoFromImage, VeoConfig, VideoAspectRatio } from "@/lib/api/veo"
 
-const DEFAULT_MODEL: ImagenModel = "gemini-2.5-flash-image"
+const DEFAULT_MODEL: ImagenModel = "imagen-3.0-generate-002"
 const DEFAULT_ASPECT: AspectRatio = "9:16"
 
 // Helper to handle base64 upload for images
@@ -124,7 +124,7 @@ Style: Cinematic, 8k, Detailed, Avant-Garde.
             details: `Created art piece based on: ${contextDescription}`,
             source: "Media",
             level: "action",
-            image_url: blobUrl,
+            imageUrl: blobUrl,
             metadata: { galleryId }
         })
 
@@ -217,7 +217,7 @@ Style: Cinematic, high-fidelity, 8k.
             details: `Created edited version of ${galleryId}`,
             source: "Media",
             level: "action",
-            image_url: blobUrl,
+            imageUrl: blobUrl,
             metadata: { originalId: galleryId, newId: newGalleryId }
         })
 

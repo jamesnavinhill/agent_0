@@ -68,7 +68,6 @@ export interface MemoryEntry {
   content: string
   timestamp: Date
   relevance: number
-  relevance: number
 }
 
 export interface KnowledgeEntry {
@@ -177,7 +176,6 @@ export const useAgentStore = create<AgentStore>((set) => ({
     activities: s.activities.map((a) => a.id === id ? { ...a, status } : a)
   })),
 
-  outputs: [],
   outputs: [],
 
   fetchGallery: async () => {

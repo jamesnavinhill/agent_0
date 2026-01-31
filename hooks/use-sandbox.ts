@@ -5,6 +5,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import { pushActivity } from "@/lib/activity/bus"
 
 // Types matching the database schema
 export interface SandboxProject {
@@ -35,6 +36,18 @@ export interface SandboxExecution {
   exit_code: number | null
   duration_ms: number | null
   created_at: string
+}
+
+export interface SandboxStreamingHistoryEntry {
+  id: string
+  executionId?: string
+  command: string
+  status: "running" | "success" | "error"
+  output: string
+  startedAt: number
+  completedAt?: number
+  durationMs?: number
+  exitCode?: number
 }
 
 export interface SandboxDependency {
@@ -97,6 +110,7 @@ export interface UseSandboxReturn {
     }
   ) => Promise<void>
   streamingOutput: string
+  streamingHistory: SandboxStreamingHistoryEntry[]
   refresh: () => Promise<void>
 }
 
@@ -107,6 +121,7 @@ export function useSandbox(): UseSandboxReturn {
   const [isRunning, setIsRunning] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [streamingOutput, setStreamingOutput] = useState("")
+  const [streamingHistory, setStreamingHistory] = useState<SandboxStreamingHistoryEntry[]>([])
 
   const fetchProjects = useCallback(async () => {
     setIsLoading(true)
@@ -215,6 +230,14 @@ export function useSandbox(): UseSandboxReturn {
         if (!res.ok) throw new Error("Failed to write file")
         const file = await res.json()
 
+        pushActivity({
+          action: "Sandbox: File written",
+          details: path,
+          source: "sandbox-ui",
+          level: "action",
+          metadata: { projectId, path, version: file.version },
+        })
+
         // Update selected project files
         if (selectedProject?.id === projectId) {
           setSelectedProject((prev) => {
@@ -247,6 +270,14 @@ export function useSandbox(): UseSandboxReturn {
           { method: "DELETE" }
         )
         if (!res.ok) throw new Error("Failed to delete file")
+
+        pushActivity({
+          action: "Sandbox: File deleted",
+          details: path,
+          source: "sandbox-ui",
+          level: "info",
+          metadata: { projectId, path },
+        })
 
         // Update selected project files
         if (selectedProject?.id === projectId) {
@@ -285,6 +316,14 @@ export function useSandbox(): UseSandboxReturn {
         )
         if (!res.ok) throw new Error("Failed to set dependencies")
         const data = await res.json()
+
+        pushActivity({
+          action: "Sandbox: Dependencies updated",
+          details: `${data.dependencies?.length ?? 0} packages`,
+          source: "sandbox-ui",
+          level: "info",
+          metadata: { projectId, count: data.dependencies?.length ?? 0 },
+        })
 
         // Update selected project deps
         if (selectedProject?.id === projectId) {
@@ -326,6 +365,14 @@ export function useSandbox(): UseSandboxReturn {
         if (!res.ok) throw new Error("Failed to run code")
         const execution = await res.json()
 
+        pushActivity({
+          action: "Sandbox: Execution started",
+          details: command,
+          source: "sandbox-ui",
+          level: "action",
+          metadata: { projectId, executionId: execution.id },
+        })
+
         // Update selected project executions
         if (selectedProject?.id === projectId) {
           setSelectedProject((prev) =>
@@ -343,6 +390,13 @@ export function useSandbox(): UseSandboxReturn {
         setError(err instanceof Error ? err.message : "Unknown error")
         return null
       } finally {
+        pushActivity({
+          action: "Sandbox: Execution finished",
+          details: command,
+          source: "sandbox-ui",
+          level: "info",
+          metadata: { projectId },
+        })
         setIsRunning(false)
       }
     },
@@ -363,6 +417,26 @@ export function useSandbox(): UseSandboxReturn {
       setIsRunning(true)
       setStreamingOutput("")
       setError(null)
+
+      const localId = crypto.randomUUID()
+      setStreamingHistory((prev) => [
+        {
+          id: localId,
+          command,
+          status: "running" as const,
+          output: "",
+          startedAt: Date.now(),
+        },
+        ...prev,
+      ].slice(0, 20))
+
+      pushActivity({
+        action: "Sandbox: Streaming execution started",
+        details: command,
+        source: "sandbox-ui",
+        level: "action",
+        metadata: { projectId },
+      })
 
       try {
         const res = await fetch(
@@ -393,38 +467,105 @@ export function useSandbox(): UseSandboxReturn {
           const lines = buffer.split("\n")
           buffer = lines.pop() || ""
 
-          for (const line of lines) {
-            if (line.startsWith("event: ")) {
-              const event = line.slice(7)
-              const dataLine = lines[lines.indexOf(line) + 1]
-              if (dataLine?.startsWith("data: ")) {
-                const data = JSON.parse(dataLine.slice(6))
+          for (let i = 0; i < lines.length; i += 1) {
+            const line = lines[i]
+            if (!line.startsWith("event: ")) continue
 
-                switch (event) {
-                  case "chunk":
-                    setStreamingOutput((prev) => prev + data.text)
-                    options?.onChunk?.(data.text)
-                    break
-                  case "status":
-                    options?.onStatus?.(data)
-                    break
-                  case "complete":
-                    options?.onComplete?.(data)
-                    // Refresh project to get updated executions
-                    if (selectedProject?.id === projectId) {
-                      selectProject(projectId)
-                    }
-                    break
-                  case "error":
-                    setError(data.error)
-                    break
+            const event = line.slice(7).trim()
+            const dataLine = lines[i + 1]
+            if (!dataLine?.startsWith("data: ")) continue
+
+            const data = JSON.parse(dataLine.slice(6))
+            i += 1
+
+            switch (event) {
+              case "execution":
+                setStreamingHistory((prev) =>
+                  prev.map((entry) =>
+                    entry.id === localId
+                      ? { ...entry, executionId: data.id }
+                      : entry
+                  )
+                )
+                break
+              case "chunk":
+                setStreamingOutput((prev) => prev + data.text)
+                setStreamingHistory((prev) =>
+                  prev.map((entry) =>
+                    entry.id === localId
+                      ? { ...entry, output: entry.output + data.text }
+                      : entry
+                  )
+                )
+                options?.onChunk?.(data.text)
+                break
+              case "status":
+                options?.onStatus?.(data)
+                break
+              case "complete":
+                setStreamingHistory((prev) =>
+                  prev.map((entry) =>
+                    entry.id === localId
+                      ? {
+                          ...entry,
+                          status: data.status === "success" ? "success" : "error",
+                          completedAt: Date.now(),
+                          durationMs: data.durationMs,
+                          exitCode: data.exitCode,
+                          executionId: data.executionId ?? entry.executionId,
+                        }
+                      : entry
+                  )
+                )
+                options?.onComplete?.(data)
+                pushActivity({
+                  action: "Sandbox: Streaming execution complete",
+                  details: `${command} (${data.durationMs}ms)`,
+                  source: "sandbox-ui",
+                  level: data.status === "success" ? "info" : "error",
+                  metadata: { projectId, executionId: data.executionId, exitCode: data.exitCode },
+                })
+                // Refresh project to get updated executions
+                if (selectedProject?.id === projectId) {
+                  selectProject(projectId)
                 }
-              }
+                break
+              case "error":
+                setError(data.error)
+                setStreamingHistory((prev) =>
+                  prev.map((entry) =>
+                    entry.id === localId
+                      ? { ...entry, status: "error", completedAt: Date.now() }
+                      : entry
+                  )
+                )
+                pushActivity({
+                  action: "Sandbox: Streaming execution error",
+                  details: data.error,
+                  source: "sandbox-ui",
+                  level: "error",
+                  metadata: { projectId },
+                })
+                break
             }
           }
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Unknown error")
+        setStreamingHistory((prev) =>
+          prev.map((entry) =>
+            entry.id === localId
+              ? { ...entry, status: "error", completedAt: Date.now() }
+              : entry
+          )
+        )
+        pushActivity({
+          action: "Sandbox: Streaming execution failed",
+          details: err instanceof Error ? err.message : "Unknown error",
+          source: "sandbox-ui",
+          level: "error",
+          metadata: { projectId },
+        })
       } finally {
         setIsRunning(false)
       }
@@ -451,6 +592,7 @@ export function useSandbox(): UseSandboxReturn {
     isRunning,
     error,
     streamingOutput,
+    streamingHistory,
     fetchProjects,
     selectProject,
     createProject,

@@ -59,7 +59,7 @@ export function GalleryPanel() {
   // Ensure fresh data on mount
   useEffect(() => {
     fetchGallery()
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [])
 
   const handleCopy = async (content: string) => {
     const success = await copyToClipboard(content)
@@ -357,7 +357,11 @@ function DetailContent({ output, onClose }: { output: AgentOutput; onClose: () =
   const [copied, setCopied] = useState(false)
 
   useEffect(() => {
-    if (!output.content && output.url && (output.type === "text" || output.type === "code" || output.type === "research")) {
+    if (
+      !output.content &&
+      output.url &&
+      (output.type === "text" || output.type === "code" || output.category === "research")
+    ) {
       const fetchContent = async () => {
         setLoading(true)
         try {
