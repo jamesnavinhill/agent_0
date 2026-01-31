@@ -60,6 +60,7 @@ const roleIcons: Record<string, React.ElementType> = {
     executor: Code,
     reviewer: ClipboardCheck,
     orchestrator: Brain,
+    coder: Code,
 }
 
 /**
@@ -181,6 +182,12 @@ export function SubAgentsPanel() {
                                 <div className="flex items-center gap-1.5">
                                     <ClipboardCheck className="w-3 h-3" />
                                     <span>Reviewer</span>
+                                </div>
+                            </SelectItem>
+                            <SelectItem value="coder">
+                                <div className="flex items-center gap-1.5">
+                                    <Code className="w-3 h-3" />
+                                    <span>Coder</span>
                                 </div>
                             </SelectItem>
                         </SelectContent>

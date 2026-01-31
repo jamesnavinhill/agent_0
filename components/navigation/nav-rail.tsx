@@ -13,6 +13,7 @@ import {
   Radio,
   Sparkles,
   Users,
+  Code2,
 } from "lucide-react"
 import { AgentOrb } from "@/components/agent/agent-orb"
 import {
@@ -30,6 +31,7 @@ const navItems = [
   { id: "subagents" as const, icon: Users, label: "Sub-Agents" },
   { id: "gallery" as const, icon: ImageIcon, label: "Gallery" },
   { id: "monitor" as const, icon: Radio, label: "Live Monitor" },
+  { id: "sandbox" as const, icon: Code2, label: "Sandbox" },
 ]
 
 const bottomItems = [

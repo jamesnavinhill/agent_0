@@ -14,6 +14,7 @@ import { SchedulePanel } from "@/components/panels/schedule-panel"
 import { MemoryPanel } from "@/components/panels/memory-panel"
 import { CreatePanel } from "@/components/panels/create-panel"
 import { SubAgentsPanel } from "@/components/panels/sub-agents-panel"
+import { SandboxPanel } from "@/components/panels/sandbox-panel"
 import { MultimodalInput } from "@/components/input/multimodal-input"
 import { StatusBar } from "@/components/agent/status-bar"
 import { DemoInitializer } from "@/components/demo/demo-initializer"
@@ -72,6 +73,8 @@ export default function AgentInterface() {
           return <MemoryPanel />
         case "settings":
           return <SettingsPanel />
+        case "sandbox":
+          return <SandboxPanel />
         default:
           return <ChatPanel />
       }

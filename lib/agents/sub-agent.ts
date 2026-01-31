@@ -42,6 +42,13 @@ const ROLE_PROMPTS: Record<SubAgentRole, string> = {
 - Identify areas for improvement
 - Provide constructive feedback
 - Ensure quality and accuracy`,
+
+    coder: `You are a software development specialist agent. Your job is to:
+- Write clean, well-structured code in the sandbox environment
+- Create projects with proper file organization
+- Set up dependencies and build configurations
+- Run and test code, iterating based on results
+- Document your code and learnings`,
 }
 
 /**

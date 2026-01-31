@@ -15,7 +15,9 @@ export type GeminiModel =
   | "gemini-3-flash-preview"   // Default - Fast, balanced, scale (The "Heartbeat")
   | "gemini-3-pro-preview"     // Complex reasoning, vibe-coding (The "Brain")
   | "gemini-2.5-flash"         // Low-latency, high-volume agent actions
-  | "gemini-2.5-pro"           // Deep research, large context
+  | "gemini-2.5-pro"           // Deep research, large context, code execution
+  | "gemini-2.5-flash-lite"    // Ultra-fast, cost-efficient
+  | string                     // Allow any model string for flexibility
 
 export interface ChatMessage {
   role: "user" | "model"
@@ -156,6 +158,48 @@ export async function generateText(
   const text = response.text ?? ""
   log.action("Text generation completed", { responseLength: text.length })
   return text
+}
+
+export interface StreamTextConfig extends GeminiConfig {
+  onChunk?: (chunk: string) => void
+}
+
+export async function streamText(
+  prompt: string,
+  config: StreamTextConfig = {}
+): Promise<string> {
+  if (!ai) throw new Error("Gemini not initialized - check GOOGLE_API_KEY")
+
+  const modelName = config.model ?? "gemini-3-flash-preview"
+  log.info("Streaming text", { promptLength: prompt.length, model: modelName })
+
+  const genConfig: GenerateContentConfig = {
+    temperature: config.temperature ?? 0.8,
+    maxOutputTokens: config.maxOutputTokens ?? 4096,
+    systemInstruction: config.systemInstruction ?? DEFAULT_SYSTEM_INSTRUCTION,
+    tools: config.tools,
+    responseMimeType: config.responseMimeType,
+  }
+
+  const streamResult = await ai.models.generateContentStream({
+    model: modelName,
+    contents: prompt,
+    config: genConfig,
+  })
+
+  let fullText = ""
+  for await (const chunk of streamResult) {
+    const text = chunk.text ?? ""
+    if (text) {
+      fullText += text
+      if (config.onChunk) {
+        config.onChunk(text)
+      }
+    }
+  }
+
+  log.action("Text streaming completed", { totalResponseLength: fullText.length })
+  return fullText
 }
 
 export function isConfigured(): boolean {

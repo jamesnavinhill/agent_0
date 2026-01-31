@@ -10,6 +10,7 @@ import { generateText } from "@/lib/api/gemini"
 import { addKnowledge } from "@/lib/db/knowledge"
 import { saveGalleryItem } from "@/lib/db/gallery"
 import { pushActivity } from "@/lib/activity/bus"
+import { sandboxTool } from "./sandbox"
 
 /**
  * Research Tool - Web search and knowledge gathering
@@ -219,10 +220,15 @@ export const analysisTool = tool({
  * Task Delegation Tool - Spawn a sub-agent for a specific task
  */
 export const delegateTool = tool({
-  description: "Delegate a task to a specialized sub-agent. Use this for complex tasks that benefit from focused execution.",
+  description: `Delegate a task to a specialized sub-agent. Use this for complex tasks that benefit from focused execution.
+Available roles:
+- researcher: Information gathering, web search, knowledge synthesis
+- creator: Content generation - images, code, reports
+- coder: Sandbox development, iterative coding, testing (use for coding projects)
+- reviewer: Quality assurance, analysis, feedback`,
   inputSchema: z.object({
     taskDescription: z.string().describe("Clear description of the task to delegate"),
-    agentRole: z.enum(["researcher", "creator", "executor", "reviewer"]).describe("The type of specialized agent to spawn"),
+    agentRole: z.enum(["researcher", "creator", "executor", "reviewer", "coder"]).describe("The type of specialized agent to spawn"),
     priority: z.enum(["high", "normal", "low"]).default("normal"),
     context: z.record(z.unknown()).optional().describe("Additional context to pass to the sub-agent"),
   }),
@@ -287,6 +293,7 @@ export const orchestratorTools = {
   analyze: analysisTool,
   delegate: delegateTool,
   generateReport: reportTool,
+  sandbox: sandboxTool,
 } as const
 
 /**
@@ -302,9 +309,23 @@ export const creatorTools = {
   generateImage: imageGenerationTool,
   generateCode: codeGenerationTool,
   generateReport: reportTool,
+  sandbox: sandboxTool,
 } as const
 
 export const reviewerTools = {
   analyze: analysisTool,
   saveKnowledge: knowledgeTool,
 } as const
+
+/**
+ * Coder sub-agent tools - specialized for sandbox development
+ */
+export const coderTools = {
+  sandbox: sandboxTool,
+  generateCode: codeGenerationTool,
+  analyze: analysisTool,
+  saveKnowledge: knowledgeTool,
+} as const
+
+// Re-export sandbox tool for direct imports
+export { sandboxTool } from "./sandbox"

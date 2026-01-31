@@ -128,7 +128,7 @@ export async function GET() {
         id: "creator",
         name: "Creator",
         description: "Specialized for content generation - images, code, reports",
-        tools: ["generateImage", "generateCode", "generateReport"],
+        tools: ["generateImage", "generateCode", "generateReport", "sandbox"],
         maxSteps: 8,
       },
       {
@@ -137,6 +137,13 @@ export async function GET() {
         description: "Specialized for quality assurance and analysis",
         tools: ["analyze", "saveKnowledge"],
         maxSteps: 6,
+      },
+      {
+        id: "coder",
+        name: "Coder",
+        description: "Specialized for sandbox development, iterative coding, and testing",
+        tools: ["sandbox", "generateCode", "analyze", "saveKnowledge"],
+        maxSteps: 15,
       },
     ],
     actions: ["spawn", "parallel", "autonomous"],

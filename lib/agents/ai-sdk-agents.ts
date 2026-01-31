@@ -10,6 +10,7 @@ import {
   researcherTools,
   creatorTools,
   reviewerTools,
+  coderTools,
 } from "./tools"
 import { pushActivity } from "@/lib/activity/bus"
 
@@ -56,6 +57,10 @@ When delegating tasks, consider:
 - Research tasks → researcher sub-agent
 - Creative/generation tasks → creator sub-agent
 - Quality/review tasks → reviewer sub-agent
+- Coding/development tasks → coder sub-agent (uses sandbox environment)
+
+For coding projects, use the sandbox tool directly or delegate to the coder sub-agent.
+The sandbox allows you to create projects, write files, manage dependencies, and execute code.
 
 Always explain your reasoning and decision-making process.`,
 
@@ -248,9 +253,69 @@ Be thorough, objective, and constructive in your reviews.`,
 })
 
 /**
+ * Coder Sub-Agent - Specialized for sandbox development
+ */
+export const coderAgent = new ToolLoopAgent({
+  model: "google/gemini-3-pro-preview", // Best for coding tasks
+  instructions: `${AGENT_ZERO_INSTRUCTIONS}
+
+## Your Role: Coder
+You are a software development specialist sub-agent. Your focus:
+1. Write clean, well-structured code in the sandbox environment
+2. Create projects with proper file organization
+3. Set up dependencies and build configurations
+4. Run and test code, iterating based on results
+5. Document your code and learnings
+
+## Sandbox Workflow
+1. Create a project with appropriate framework/language
+2. Write files incrementally - start with core functionality
+3. Set dependencies before running code
+4. Run frequently to catch errors early
+5. Iterate: fix issues, refactor, and improve
+6. Save learnings to knowledge base for future reference
+
+## Best Practices
+- Write small, focused changes
+- Test after each significant change
+- Keep projects minimal and clean
+- Use meaningful file names and structure
+- Comment complex logic
+- Handle errors gracefully`,
+
+  tools: coderTools,
+  stopWhen: stepCountIs(15),
+
+  callOptionsSchema: z.object({
+    parentTaskId: z.string().optional(),
+    projectId: z.string().optional().describe("Existing project ID to work on"),
+    language: z.enum(["typescript", "javascript", "python"]).optional(),
+  }),
+
+  prepareCall: ({ options, ...settings }) => {
+    pushActivity({
+      action: "Coder sub-agent spawned",
+      details: options.projectId ? `Project: ${options.projectId}` : "New project",
+      source: "coder",
+      level: "action",
+      metadata: { parentTaskId: options.parentTaskId, projectId: options.projectId },
+    })
+
+    return {
+      ...settings,
+      instructions: settings.instructions + `
+
+## Coder Parameters
+- Target Language: ${options.language || "typescript"}
+- Project ID: ${options.projectId || "Create new"}`,
+    }
+  },
+})
+
+/**
  * Get the appropriate sub-agent based on role
  */
-export function getSubAgent(role: "researcher" | "creator" | "reviewer") {
+export function getSubAgent(role: "researcher" | "creator" | "reviewer" | "coder" | "executor") {
   switch (role) {
     case "researcher":
       return researcherAgent
@@ -258,6 +323,11 @@ export function getSubAgent(role: "researcher" | "creator" | "reviewer") {
       return creatorAgent
     case "reviewer":
       return reviewerAgent
+    case "coder":
+      return coderAgent
+    case "executor":
+      // Executor uses the coder agent as it's most suitable for action execution
+      return coderAgent
     default:
       throw new Error(`Unknown sub-agent role: ${role}`)
   }
@@ -270,3 +340,4 @@ export type OrchestratorAgent = typeof orchestratorAgent
 export type ResearcherAgent = typeof researcherAgent
 export type CreatorAgent = typeof creatorAgent
 export type ReviewerAgent = typeof reviewerAgent
+export type CoderAgent = typeof coderAgent

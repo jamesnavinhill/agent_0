@@ -11,6 +11,7 @@ export type SubAgentRole =
     | "creator"      // Generates content, art, code, or other creative outputs
     | "executor"     // Performs actions, runs tasks, interacts with external systems
     | "reviewer"     // Validates, critiques, and improves outputs from other agents
+    | "coder"        // Specialized for sandbox development, iterative coding, and testing
 
 /**
  * Current status of a sub-agent
