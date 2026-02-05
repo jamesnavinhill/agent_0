@@ -20,6 +20,7 @@ import {
 } from "./types"
 import { pushActivity } from "@/lib/activity/bus"
 import { logger } from "@/lib/logging/logger"
+import { createId } from "@/lib/utils/id"
 
 const VALID_SUBAGENT_ROLES: SubAgentRole[] = [
   "researcher",
@@ -106,7 +107,7 @@ export interface ToolCallRecord {
  */
 function createSubAgentRecord(config: SpawnSubAgentConfig): SubAgent {
   return {
-    id: crypto.randomUUID(),
+    id: createId(),
     name: config.name,
     role: config.role,
     status: "idle",
@@ -132,7 +133,7 @@ export async function executeOrchestrator(
   const startTime = Date.now()
   const steps: AgentStep[] = []
   const toolCalls: ToolCallRecord[] = []
-  const agentId = crypto.randomUUID()
+  const agentId = createId()
 
   pushActivity({
     action: "Orchestrator execution started",

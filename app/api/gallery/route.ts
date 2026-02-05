@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server"
 import { sql as dbQuery, isDatabaseConfigured } from "@/lib/db/neon"
 import { uploadFile, deleteFile, isBlobConfigured } from "@/lib/storage/local"
+import { createId } from "@/lib/utils/id"
 import fs from "fs/promises"
 import path from "path"
 
@@ -185,7 +186,7 @@ export async function POST(req: Request) {
       return Response.json({ error: "Type and content are required" }, { status: 400 })
     }
 
-    const id = crypto.randomUUID()
+    const id = createId()
     const timestamp = new Date().toISOString()
 
     // Try local storage + database first if both are configured

@@ -1,4 +1,5 @@
 import { sql, isDatabaseConfigured } from "../db/neon"
+import { createId } from "@/lib/utils/id"
 import type { ActivityEvent, ActivityLevel } from "./bus"
 
 interface ActivityRow {
@@ -39,7 +40,7 @@ export async function saveActivity(event: ActivityEvent): Promise<ActivityEvent 
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
        RETURNING *`,
             [
-                event.id ?? crypto.randomUUID(),
+                event.id ?? createId(),
                 event.action,
                 event.details ?? null,
                 event.status ?? "complete",

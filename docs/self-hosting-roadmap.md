@@ -53,10 +53,10 @@ Checklist:
 **Phase 1: Hosting Baseline**
 
 Checklist:
-- [ ] Create `.env.production` (or set OS-level env vars) with:
-- [ ] `GOOGLE_API_KEY`
-- [ ] `DATABASE_URL`
-- [ ] `CRON_SECRET`
+- [x] Create `.env.local` (or set OS-level env vars) with:
+- [x] `GOOGLE_API_KEY`
+- [x] `DATABASE_URL`
+- [x] `CRON_SECRET`
 - [ ] Run `pnpm run build`
 - [ ] Run `pnpm run start`
 - [ ] Open `http://localhost:3000`

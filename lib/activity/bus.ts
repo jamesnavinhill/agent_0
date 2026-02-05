@@ -2,6 +2,7 @@
  * Browser-compatible activity event bus
  * Uses a simple subscriber pattern instead of Node.js EventEmitter
  */
+import { createId } from "@/lib/utils/id"
 
 /**
  * Log levels for activity events
@@ -72,7 +73,7 @@ async function persistActivityToDb(e: ActivityEvent) {
 export function pushActivity(event: ActivityEvent) {
   const e: ActivityEvent = {
     ...event,
-    id: event.id ?? (typeof crypto !== 'undefined' ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`),
+    id: event.id ?? createId(),
     timestamp: event.timestamp ?? Date.now(),
     level: event.level ?? "info",
   }

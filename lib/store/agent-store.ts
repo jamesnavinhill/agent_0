@@ -1,4 +1,5 @@
 import { create } from "zustand"
+import { createId } from "@/lib/utils/id"
 
 export type AgentState =
   | "idle"
@@ -153,7 +154,7 @@ export const useAgentStore = create<AgentStore>((set) => ({
   thoughts: [],
   addThought: (content, type) => set((s) => ({
     thoughts: [...s.thoughts, {
-      id: crypto.randomUUID(),
+      id: createId(),
       content,
       type,
       timestamp: new Date()
@@ -164,7 +165,7 @@ export const useAgentStore = create<AgentStore>((set) => ({
   activities: [],
   addActivity: (action, details, imageUrl) => set((s) => ({
     activities: [...s.activities, {
-      id: crypto.randomUUID(),
+      id: createId(),
       action,
       details,
       imageUrl,
@@ -196,7 +197,7 @@ export const useAgentStore = create<AgentStore>((set) => ({
   },
 
   addOutput: (output) => set((s) => ({
-    outputs: [{ ...output, id: crypto.randomUUID(), timestamp: new Date() }, ...s.outputs]
+    outputs: [{ ...output, id: createId(), timestamp: new Date() }, ...s.outputs]
   })),
 
   goals: [],
@@ -339,7 +340,7 @@ export const useAgentStore = create<AgentStore>((set) => ({
 
   addMemory: (type, content, relevance) => set((s) => ({
     memories: [...s.memories, {
-      id: crypto.randomUUID(),
+      id: createId(),
       type: type as any,
       content,
       relevance,

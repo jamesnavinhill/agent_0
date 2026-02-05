@@ -1,5 +1,6 @@
 import { sql, isDatabaseConfigured } from "./neon"
 import { uploadFile, isBlobConfigured } from "@/lib/storage/local"
+import { createId } from "@/lib/utils/id"
 
 interface GalleryItemInput {
     type: "image" | "code" | "text" | "audio" | "video"
@@ -25,7 +26,7 @@ export async function saveGalleryItem(item: GalleryItemInput): Promise<string | 
 
         // For text content, store to local media or inline as a data URL
         if (item.type === "text" && isBlobConfigured()) {
-            const id = crypto.randomUUID()
+            const id = createId()
             const buffer = Buffer.from(item.content, "utf-8")
             blobUrl = await uploadFile(buffer, `research/${id}.md`, { contentType: "text/markdown" })
         } else if (item.type === "text") {

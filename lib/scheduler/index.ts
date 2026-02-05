@@ -1,5 +1,6 @@
 import { getNextRunTime, matchesCron, parseCron } from "./cron"
 import { executeTask, type ExecutorContext } from "./executor"
+import { createId } from "@/lib/utils/id"
 import type { 
   ScheduledTask, 
   TaskExecution, 
@@ -155,7 +156,7 @@ export class Scheduler {
     }
 
     const execution: TaskExecution = {
-      id: crypto.randomUUID(),
+      id: createId(),
       taskId: task.id,
       taskName: task.name,
       startTime: new Date(),

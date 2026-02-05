@@ -1,4 +1,5 @@
 import type { AgentOutput, OutputType } from "@/lib/store/agent-store"
+import { createId } from "@/lib/utils/id"
 
 export interface GalleryItem {
   id: string
@@ -71,7 +72,7 @@ export class LocalGalleryStore implements GalleryStore {
 
     const galleryItem: GalleryItem = {
       ...item,
-      id: crypto.randomUUID(),
+      id: createId(),
       timestamp: new Date(),
     }
 

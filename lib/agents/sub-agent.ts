@@ -14,6 +14,7 @@ import {
 } from "./types"
 import { generateText as geminiGenerateText } from "@/lib/api/gemini"
 import { logger } from "@/lib/logging/logger"
+import { createId } from "@/lib/utils/id"
 
 /**
  * Role-specific system prompts for sub-agents
@@ -56,7 +57,7 @@ const ROLE_PROMPTS: Record<SubAgentRole, string> = {
  */
 export function createSubAgent(config: SpawnSubAgentConfig): SubAgent {
     return {
-        id: crypto.randomUUID(),
+        id: createId(),
         name: config.name,
         role: config.role,
         status: "idle",

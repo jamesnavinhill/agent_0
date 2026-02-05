@@ -1,4 +1,5 @@
 import type { MemoryStore, MemoryItem, MemoryLayer } from "./index"
+import { createId } from "@/lib/utils/id"
 
 const STORAGE_KEY = "agent_zero_memory"
 
@@ -41,7 +42,7 @@ export class LocalMemoryStore implements MemoryStore {
     
     const memory: MemoryItem = {
       ...item,
-      id: crypto.randomUUID(),
+      id: createId(),
       timestamp: new Date(),
     }
     

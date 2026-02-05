@@ -5,6 +5,7 @@ import { addMemory, getRecentMemories } from "@/lib/db/memories"
 import { Task } from "@/app/api/tasks/route"
 import { uploadFile } from "@/lib/storage/local"
 import { generateVideoFromText, generateVideoFromImage, VeoConfig, VideoAspectRatio } from "@/lib/api/veo"
+import { createId } from "@/lib/utils/id"
 import fs from "fs/promises"
 import path from "path"
 
@@ -19,7 +20,7 @@ async function uploadGeneratedImage(dataUrl: string): Promise<string> {
     }
     const ext = matches[1] === "jpeg" ? "jpg" : matches[1];
     const buffer = Buffer.from(matches[2], "base64");
-    const filename = `generated/${crypto.randomUUID()}.${ext}`;
+    const filename = `generated/${createId()}.${ext}`;
 
     return await uploadFile(buffer, filename, { contentType: `image/${matches[1]}` });
 }
@@ -28,7 +29,7 @@ async function uploadGeneratedImage(dataUrl: string): Promise<string> {
 async function uploadGeneratedVideo(videoBytes: string, mimeType: string): Promise<string> {
     const buffer = Buffer.from(videoBytes, "base64");
     const ext = mimeType.includes("mp4") ? "mp4" : "webm";
-    const filename = `generated/${crypto.randomUUID()}.${ext}`;
+    const filename = `generated/${createId()}.${ext}`;
 
     return await uploadFile(buffer, filename, { contentType: mimeType });
 }

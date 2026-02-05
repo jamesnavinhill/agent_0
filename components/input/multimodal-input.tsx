@@ -5,6 +5,7 @@ import React from "react"
 import { useState, useRef, useCallback, useEffect } from "react"
 import { useAgentStore } from "@/lib/store/agent-store"
 import { cn } from "@/lib/utils"
+import { createId } from "@/lib/utils/id"
 import { Button } from "@/components/ui/button"
 import {
   Mic,
@@ -94,7 +95,7 @@ export function MultimodalInput({ onSend, disabled }: MultimodalInputProps) {
     const files = Array.from(e.target.files || [])
     const newAttachments: AttachedFile[] = files.map((file) => {
       const attachment: AttachedFile = {
-        id: crypto.randomUUID(),
+        id: createId(),
         file,
         type: getFileType(file),
       }
@@ -158,7 +159,7 @@ export function MultimodalInput({ onSend, disabled }: MultimodalInputProps) {
             // Fallback: attach audio file if transcription fails
             const file = new File([blob], `recording-${Date.now()}.webm`, { type: "audio/webm" })
             setAttachments((prev) => [...prev, {
-              id: crypto.randomUUID(),
+              id: createId(),
               file,
               type: "audio"
             }])
@@ -169,7 +170,7 @@ export function MultimodalInput({ onSend, disabled }: MultimodalInputProps) {
           // Whisper not ready, attach audio file
           const file = new File([blob], `recording-${Date.now()}.webm`, { type: "audio/webm" })
           setAttachments((prev) => [...prev, {
-            id: crypto.randomUUID(),
+            id: createId(),
             file,
             type: "audio"
           }])

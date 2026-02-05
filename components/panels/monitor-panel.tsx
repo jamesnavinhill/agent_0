@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { useAgentStore } from "@/lib/store/agent-store"
 import { cn } from "@/lib/utils"
+import { createId } from "@/lib/utils/id"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -78,7 +79,7 @@ function activityToTerminalLine(event: ActivityEvent): TerminalLine {
     : `${prefix}${event.action}${event.details ? `: ${event.details}` : ""}`
 
   return {
-    id: event.id ?? crypto.randomUUID(),
+    id: event.id ?? createId(),
     timestamp: new Date(event.timestamp ?? Date.now()),
     type: levelToTerminalType(event.level),
     content,
@@ -177,7 +178,7 @@ export function MonitorPanel() {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && inputValue.trim()) {
       const newLine: TerminalLine = {
-        id: crypto.randomUUID(),
+        id: createId(),
         timestamp: new Date(),
         type: "input",
         content: inputValue
@@ -189,7 +190,7 @@ export function MonitorPanel() {
       // For now, we simulate a system response
       setTimeout(() => {
         setTerminalLines(prev => [...prev, {
-          id: crypto.randomUUID(),
+          id: createId(),
           timestamp: new Date(),
           type: "system",
           content: `Command execution not available in preview mode.`
