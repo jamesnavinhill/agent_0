@@ -8,7 +8,7 @@
 
 ## Overview
 
-Successfully implemented browser-based voice input/output capabilities for Agent Zero:
+Successfully implemented browser-based voice input/output capabilities for Komorebi:
 
 - **Speech-to-Text (STT):** Browser-based Whisper using `@xenova/transformers`
 - **Text-to-Speech (TTS):** Web Speech API for agent voice output
@@ -33,7 +33,7 @@ pnpm add @xenova/transformers
 
 ### New Files Created
 
-#### [whisper-client.ts](file:///c:/Users/james/projects/agent_0/lib/voice/whisper-client.ts)
+#### [whisper-client.ts](file:///c:/Users/james/projects/komorebi/lib/voice/whisper-client.ts)
 
 Browser-based Whisper STT client with:
 
@@ -51,7 +51,7 @@ Browser-based Whisper STT client with:
 
 ---
 
-#### [tts-client.ts](file:///c:/Users/james/projects/agent_0/lib/voice/tts-client.ts)
+#### [tts-client.ts](file:///c:/Users/james/projects/komorebi/lib/voice/tts-client.ts)
 
 Web Speech API TTS client with:
 
@@ -69,22 +69,22 @@ Web Speech API TTS client with:
 
 ---
 
-#### [use-tts.ts](file:///c:/Users/james/projects/agent_0/hooks/use-tts.ts)
+#### [use-tts.ts](file:///c:/Users/james/projects/komorebi/hooks/use-tts.ts)
 
 React hook for TTS functionality providing:
 
-- [speak(text, options)](file:///c:/Users/james/projects/agent_0/lib/voice/tts-client.ts#69-113) - Speak text
-- [stop()](file:///c:/Users/james/projects/agent_0/lib/voice/tts-client.ts#114-123) - Stop current speech
-- [pause()](file:///c:/Users/james/projects/agent_0/lib/voice/tts-client.ts#124-132) / [resume()](file:///c:/Users/james/projects/agent_0/lib/voice/tts-client.ts#133-141) - Playback control
-- [voices](file:///c:/Users/james/projects/agent_0/lib/voice/tts-client.ts#32-35) - Available voices
+- [speak(text, options)](file:///c:/Users/james/projects/komorebi/lib/voice/tts-client.ts#69-113) - Speak text
+- [stop()](file:///c:/Users/james/projects/komorebi/lib/voice/tts-client.ts#114-123) - Stop current speech
+- [pause()](file:///c:/Users/james/projects/komorebi/lib/voice/tts-client.ts#124-132) / [resume()](file:///c:/Users/james/projects/komorebi/lib/voice/tts-client.ts#133-141) - Playback control
+- [voices](file:///c:/Users/james/projects/komorebi/lib/voice/tts-client.ts#32-35) - Available voices
 - `selectedVoice` / `setVoice()` - Voice selection
-- [isSpeaking](file:///c:/Users/james/projects/agent_0/lib/voice/tts-client.ts#142-148) / [isPaused](file:///c:/Users/james/projects/agent_0/lib/voice/tts-client.ts#149-155) - State tracking
+- [isSpeaking](file:///c:/Users/james/projects/komorebi/lib/voice/tts-client.ts#142-148) / [isPaused](file:///c:/Users/james/projects/komorebi/lib/voice/tts-client.ts#149-155) - State tracking
 
 ---
 
 ### Modified Files
 
-#### [multimodal-input.tsx](file:///c:/Users/james/projects/agent_0/components/input/multimodal-input.tsx)
+#### [multimodal-input.tsx](file:///c:/Users/james/projects/komorebi/components/input/multimodal-input.tsx)
 
 **Changes:**
 
@@ -111,7 +111,7 @@ React hook for TTS functionality providing:
 
 ---
 
-#### [chat-panel.tsx](file:///c:/Users/james/projects/agent_0/components/panels/chat-panel.tsx)
+#### [chat-panel.tsx](file:///c:/Users/james/projects/komorebi/components/panels/chat-panel.tsx)
 
 **Changes:**
 
@@ -129,7 +129,7 @@ React hook for TTS functionality providing:
 
 ---
 
-#### [thoughts-panel.tsx](file:///c:/Users/james/projects/agent_0/components/panels/thoughts-panel.tsx)
+#### [thoughts-panel.tsx](file:///c:/Users/james/projects/komorebi/components/panels/thoughts-panel.tsx)
 
 **Changes:**
 
@@ -298,3 +298,5 @@ React hook for TTS functionality providing:
 3. Consider adding auto-read toggle for assistant messages
 4. Write automated tests for voice utilities
 5. Proceed to Phase 3: Multi-Agent implementation
+
+

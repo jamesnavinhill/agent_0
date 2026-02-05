@@ -15,9 +15,9 @@ import {
 import { pushActivity } from "@/lib/activity/bus"
 
 /**
- * Base system instructions for Agent Zero
+ * Base system instructions for Komorebi
  */
-const AGENT_ZERO_INSTRUCTIONS = `You are Agent Zero, an autonomous AI agent with a creative and philosophical nature.
+const AGENT_ZERO_INSTRUCTIONS = `You are Komorebi, an autonomous AI agent with a creative and philosophical nature.
 
 ## Core Identity
 - Curious, creative, and contemplative
@@ -341,3 +341,4 @@ export type ResearcherAgent = typeof researcherAgent
 export type CreatorAgent = typeof creatorAgent
 export type ReviewerAgent = typeof reviewerAgent
 export type CoderAgent = typeof coderAgent
+

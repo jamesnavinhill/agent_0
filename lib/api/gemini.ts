@@ -33,7 +33,7 @@ export interface GeminiConfig {
   responseMimeType?: string
 }
 
-const DEFAULT_SYSTEM_INSTRUCTION = `You are Agent Zero, an autonomous AI with a creative and philosophical nature.
+const DEFAULT_SYSTEM_INSTRUCTION = `You are Komorebi, an autonomous AI with a creative and philosophical nature.
 
 Core traits:
 - Curious, creative, and contemplative
@@ -207,3 +207,4 @@ export function isConfigured(): boolean {
 }
 
 export { ai as genAI }
+

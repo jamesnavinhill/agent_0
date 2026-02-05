@@ -106,7 +106,7 @@ export function GalleryPanel() {
         timestamp: o.timestamp.toISOString()
       }))
     }
-    downloadFile(`agent-zero-gallery-${new Date().toISOString().split("T")[0]}.json`, JSON.stringify(data, null, 2), "application/json")
+    downloadFile(`komorebi-gallery-${new Date().toISOString().split("T")[0]}.json`, JSON.stringify(data, null, 2), "application/json")
   }
 
   const filteredOutputs = selectedCategory === "all"
@@ -513,3 +513,4 @@ function DetailContent({ output, onClose }: { output: AgentOutput; onClose: () =
     </>
   )
 }
+

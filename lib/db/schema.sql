@@ -1,4 +1,4 @@
--- Agent Zero Database Schema
+-- Komorebi Database Schema
 -- Run this in Neon SQL Editor to initialize the database
 
 -- Enable pgvector extension
@@ -102,3 +102,4 @@ CREATE INDEX IF NOT EXISTS idx_goals_completed ON goals(completed);
 
 -- Full-text search index for memory content
 CREATE INDEX IF NOT EXISTS idx_memories_content_search ON memories USING gin(to_tsvector('english', content));
+

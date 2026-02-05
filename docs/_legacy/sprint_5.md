@@ -22,7 +22,7 @@ Sprint 5 focuses on enhancing agent capabilities with voice input/output, multi-
 
 **Implementation:**
 
-#### [NEW] [whisper-client.ts](file:///c:/Users/james/projects/agent_0/lib/voice/whisper-client.ts)
+#### [NEW] [whisper-client.ts](file:///c:/Users/james/projects/komorebi/lib/voice/whisper-client.ts)
 
 Browser-based Whisper integration using `@xenova/transformers` (runs entirely in-browser, no server needed, free):
 
@@ -33,7 +33,7 @@ Browser-based Whisper integration using `@xenova/transformers` (runs entirely in
 // - TranscriptionStream: Real-time transcription with interim results
 ```
 
-#### [MODIFY] [multimodal-input.tsx](file:///c:/Users/james/projects/agent_0/components/input/multimodal-input.tsx)
+#### [MODIFY] [multimodal-input.tsx](file:///c:/Users/james/projects/komorebi/components/input/multimodal-input.tsx)
 
 - Add real-time transcription during recording
 - Display interim results in the input field as user speaks
@@ -62,7 +62,7 @@ Browser-based Whisper integration using `@xenova/transformers` (runs entirely in
 
 **Implementation:**
 
-#### [NEW] [tts-client.ts](file:///c:/Users/james/projects/agent_0/lib/voice/tts-client.ts)
+#### [NEW] [tts-client.ts](file:///c:/Users/james/projects/komorebi/lib/voice/tts-client.ts)
 
 Browser-based TTS using Web Speech API (free, built into all modern browsers):
 
@@ -74,7 +74,7 @@ Browser-based TTS using Web Speech API (free, built into all modern browsers):
 // - TTSOptions: { rate, pitch, voice, onEnd }
 ```
 
-#### [NEW] [use-tts.ts](file:///c:/Users/james/projects/agent_0/hooks/use-tts.ts)
+#### [NEW] [use-tts.ts](file:///c:/Users/james/projects/komorebi/hooks/use-tts.ts)
 
 React hook for TTS control:
 
@@ -82,18 +82,18 @@ React hook for TTS control:
 // Provides: { speak, stop, isSpeaking, voices, selectedVoice, setVoice }
 ```
 
-#### [MODIFY] [chat-panel.tsx](file:///c:/Users/james/projects/agent_0/components/panels/chat-panel.tsx)
+#### [MODIFY] [chat-panel.tsx](file:///c:/Users/james/projects/komorebi/components/panels/chat-panel.tsx)
 
 - Add speaker icon button on each assistant message
 - Add "Read All" button option
 - Visual indicator when speaking
 
-#### [MODIFY] [thoughts-panel.tsx](file:///c:/Users/james/projects/agent_0/components/panels/thoughts-panel.tsx)
+#### [MODIFY] [thoughts-panel.tsx](file:///c:/Users/james/projects/komorebi/components/panels/thoughts-panel.tsx)
 
 - Add ability to read thoughts aloud
 - Toggle for auto-read new thoughts
 
-#### [MODIFY] [activity-panel.tsx](file:///c:/Users/james/projects/agent_0/components/panels/activity-panel.tsx)
+#### [MODIFY] [activity-panel.tsx](file:///c:/Users/james/projects/komorebi/components/panels/activity-panel.tsx)
 
 - Add speak option for activity entries
 
@@ -104,13 +104,13 @@ React hook for TTS control:
 
 ### 3. Multi-Agent Spawning & Orchestration
 
-**Current State:** [orchestrator.ts](file:///c:/Users/james/projects/agent_0/lib/autonomy/orchestrator.ts) exists with basic task proposal logic. No true multi-agent capability.
+**Current State:** [orchestrator.ts](file:///c:/Users/james/projects/komorebi/lib/autonomy/orchestrator.ts) exists with basic task proposal logic. No true multi-agent capability.
 
 **Goal:** Enable the primary agent to spawn sub-agents for parallel task execution.
 
 **Implementation:**
 
-#### [NEW] [types.ts](file:///c:/Users/james/projects/agent_0/lib/agents/types.ts)
+#### [NEW] [types.ts](file:///c:/Users/james/projects/komorebi/lib/agents/types.ts)
 
 ```typescript
 interface SubAgent {
@@ -128,7 +128,7 @@ interface AgentPool {
 }
 ```
 
-#### [NEW] [sub-agent.ts](file:///c:/Users/james/projects/agent_0/lib/agents/sub-agent.ts)
+#### [NEW] [sub-agent.ts](file:///c:/Users/james/projects/komorebi/lib/agents/sub-agent.ts)
 
 Sub-agent execution logic:
 
@@ -136,7 +136,7 @@ Sub-agent execution logic:
 - Reports progress back to parent orchestrator
 - Can execute specific task types
 
-#### [NEW] [agent-pool.ts](file:///c:/Users/james/projects/agent_0/lib/agents/agent-pool.ts)
+#### [NEW] [agent-pool.ts](file:///c:/Users/james/projects/komorebi/lib/agents/agent-pool.ts)
 
 Agent pool manager:
 
@@ -145,13 +145,13 @@ Agent pool manager:
 - Collect results
 - Handle failures
 
-#### [MODIFY] [orchestrator.ts](file:///c:/Users/james/projects/agent_0/lib/autonomy/orchestrator.ts)
+#### [MODIFY] [orchestrator.ts](file:///c:/Users/james/projects/komorebi/lib/autonomy/orchestrator.ts)
 
 - Add ability to spawn sub-agents for complex tasks
 - Coordinate parallel execution
 - Aggregate results
 
-#### [NEW] [use-sub-agents.ts](file:///c:/Users/james/projects/agent_0/hooks/use-sub-agents.ts)
+#### [NEW] [use-sub-agents.ts](file:///c:/Users/james/projects/komorebi/hooks/use-sub-agents.ts)
 
 React hook for UI visibility into sub-agents:
 
@@ -159,7 +159,7 @@ React hook for UI visibility into sub-agents:
 - Their current tasks and status
 - Progress indicators
 
-#### [MODIFY] [agent-store.ts](file:///c:/Users/james/projects/agent_0/lib/store/agent-store.ts)
+#### [MODIFY] [agent-store.ts](file:///c:/Users/james/projects/komorebi/lib/store/agent-store.ts)
 
 Add sub-agent state:
 
@@ -174,20 +174,20 @@ removeSubAgent: (id: string) => void
 
 ### 4. Enhanced Agent Visibility (Thinking, Progress, Work)
 
-**Current State:** [thoughts-panel.tsx](file:///c:/Users/james/projects/agent_0/components/panels/thoughts-panel.tsx) and [activity-panel.tsx](file:///c:/Users/james/projects/agent_0/components/panels/activity-panel.tsx) exist but show limited information. [monitor-panel.tsx](file:///c:/Users/james/projects/agent_0/components/panels/monitor-panel.tsx) uses mock terminal data.
+**Current State:** [thoughts-panel.tsx](file:///c:/Users/james/projects/komorebi/components/panels/thoughts-panel.tsx) and [activity-panel.tsx](file:///c:/Users/james/projects/komorebi/components/panels/activity-panel.tsx) exist but show limited information. [monitor-panel.tsx](file:///c:/Users/james/projects/komorebi/components/panels/monitor-panel.tsx) uses mock terminal data.
 
 **Goal:** Surface real agent work, thinking, and progress to the user.
 
 **Implementation:**
 
-#### [MODIFY] [monitor-panel.tsx](file:///c:/Users/james/projects/agent_0/components/panels/monitor-panel.tsx)
+#### [MODIFY] [monitor-panel.tsx](file:///c:/Users/james/projects/komorebi/components/panels/monitor-panel.tsx)
 
 - Replace mock terminal with real activity log stream
 - Live terminal output from task execution
 - Progress bars for long-running tasks
 - Real-time system metrics (tokens used, time elapsed)
 
-#### [NEW] [agent-logger.ts](file:///c:/Users/james/projects/agent_0/lib/logging/agent-logger.ts)
+#### [NEW] [agent-logger.ts](file:///c:/Users/james/projects/komorebi/lib/logging/agent-logger.ts)
 
 Structured logging for agent operations:
 
@@ -197,19 +197,19 @@ Structured logging for agent operations:
 // Integrates with activity bus
 ```
 
-#### [MODIFY] [bus.ts](file:///c:/Users/james/projects/agent_0/lib/activity/bus.ts)
+#### [MODIFY] [bus.ts](file:///c:/Users/james/projects/komorebi/lib/activity/bus.ts)
 
 - Add log levels to activity events
 - Add source tracking (which component/agent)
 - Add metadata support for richer events
 
-#### [MODIFY] [thoughts-panel.tsx](file:///c:/Users/james/projects/agent_0/components/panels/thoughts-panel.tsx)
+#### [MODIFY] [thoughts-panel.tsx](file:///c:/Users/james/projects/komorebi/components/panels/thoughts-panel.tsx)
 
 - Show thinking chain with proper hierarchy
 - Expand/collapse thought details
 - Filter by thought type
 
-#### [MODIFY] [activity-panel.tsx](file:///c:/Users/james/projects/agent_0/components/panels/activity-panel.tsx)
+#### [MODIFY] [activity-panel.tsx](file:///c:/Users/james/projects/komorebi/components/panels/activity-panel.tsx)
 
 - Real-time streaming from activity bus
 - Better visual hierarchy
@@ -219,24 +219,24 @@ Structured logging for agent operations:
 
 ### 5. Live Browser Preview
 
-**Current State:** [monitor-panel.tsx](file:///c:/Users/james/projects/agent_0/components/panels/monitor-panel.tsx) mentions browser preview but shows placeholder. [lib/browser/](file:///c:/Users/james/projects/agent_0/lib/browser/) has interface stubs.
+**Current State:** [monitor-panel.tsx](file:///c:/Users/james/projects/komorebi/components/panels/monitor-panel.tsx) mentions browser preview but shows placeholder. [lib/browser/](file:///c:/Users/james/projects/komorebi/lib/browser/) has interface stubs.
 
 **Goal:** Show live preview of what the agent sees when browsing.
 
 **Implementation:**
 
-#### [NEW] [headless-capture.ts](file:///c:/Users/james/projects/agent_0/lib/browser/headless-capture.ts)
+#### [NEW] [headless-capture.ts](file:///c:/Users/james/projects/komorebi/lib/browser/headless-capture.ts)
 
 Screenshot capture service:
 
 - Capture current page state
 - Return as base64 or blob URL
 
-#### [NEW] [route.ts](file:///c:/Users/james/projects/agent_0/app/api/browser/screenshot/route.ts)
+#### [NEW] [route.ts](file:///c:/Users/james/projects/komorebi/app/api/browser/screenshot/route.ts)
 
 API endpoint for browser screenshots (if using server-side browser)
 
-#### [MODIFY] [monitor-panel.tsx](file:///c:/Users/james/projects/agent_0/components/panels/monitor-panel.tsx)
+#### [MODIFY] [monitor-panel.tsx](file:///c:/Users/james/projects/komorebi/components/panels/monitor-panel.tsx)
 
 - Add browser preview section
 - Periodic screenshot refresh during browsing
@@ -254,13 +254,13 @@ API endpoint for browser screenshots (if using server-side browser)
 
 ### 6. Scheduled Task Adjustment
 
-**Current State:** Default scheduled task in [agent-store.ts](file:///c:/Users/james/projects/agent_0/lib/store/agent-store.ts) has essay-related tasks that may be too aggressive.
+**Current State:** Default scheduled task in [agent-store.ts](file:///c:/Users/james/projects/komorebi/lib/store/agent-store.ts) has essay-related tasks that may be too aggressive.
 
 **Goal:** Change default creative task to generate 1 solid essay (run often).
 
 **Implementation:**
 
-#### [MODIFY] [agent-store.ts](file:///c:/Users/james/projects/agent_0/lib/store/agent-store.ts)
+#### [MODIFY] [agent-store.ts](file:///c:/Users/james/projects/komorebi/lib/store/agent-store.ts)
 
 Update default scheduled tasks:
 
@@ -285,10 +285,10 @@ Update default scheduled tasks:
 | Item | Status | Notes |
 |------|--------|-------|
 | UI shell | ✅ Complete | All panels exist |
-| Gemini API integration | ✅ Complete | [gemini.ts](file:///c:/Users/james/projects/agent_0/lib/api/gemini.ts) working |
-| Chat route streaming | ✅ Complete | SSE streaming in [route.ts](file:///c:/Users/james/projects/agent_0/app/api/chat/route.ts) |
-| Orb animations | ✅ Complete | [agent-orb.tsx](file:///c:/Users/james/projects/agent_0/components/agent/agent-orb.tsx) with state animations |
-| Memory persistence | ✅ Complete | [local-store.ts](file:///c:/Users/james/projects/agent_0/lib/memory/local-store.ts) using localStorage |
+| Gemini API integration | ✅ Complete | [gemini.ts](file:///c:/Users/james/projects/komorebi/lib/api/gemini.ts) working |
+| Chat route streaming | ✅ Complete | SSE streaming in [route.ts](file:///c:/Users/james/projects/komorebi/app/api/chat/route.ts) |
+| Orb animations | ✅ Complete | [agent-orb.tsx](file:///c:/Users/james/projects/komorebi/components/agent/agent-orb.tsx) with state animations |
+| Memory persistence | ✅ Complete | [local-store.ts](file:///c:/Users/james/projects/komorebi/lib/memory/local-store.ts) using localStorage |
 
 **Gaps to address:**
 
@@ -301,9 +301,9 @@ Update default scheduled tasks:
 
 | Item | Status | Notes |
 |------|--------|-------|
-| Imagen 3 integration | ✅ Complete | [imagen.ts](file:///c:/Users/james/projects/agent_0/lib/api/imagen.ts), [route.ts](file:///c:/Users/james/projects/agent_0/app/api/generate/image/route.ts) |
-| Gallery storage | ✅ Complete | [index.ts](file:///c:/Users/james/projects/agent_0/lib/gallery/index.ts) with localStorage |
-| Code generation | ✅ Complete | [code-gen.ts](file:///c:/Users/james/projects/agent_0/lib/api/code-gen.ts), [route.ts](file:///c:/Users/james/projects/agent_0/app/api/generate/code/route.ts) |
+| Imagen 3 integration | ✅ Complete | [imagen.ts](file:///c:/Users/james/projects/komorebi/lib/api/imagen.ts), [route.ts](file:///c:/Users/james/projects/komorebi/app/api/generate/image/route.ts) |
+| Gallery storage | ✅ Complete | [index.ts](file:///c:/Users/james/projects/komorebi/lib/gallery/index.ts) with localStorage |
+| Code generation | ✅ Complete | [code-gen.ts](file:///c:/Users/james/projects/komorebi/lib/api/code-gen.ts), [route.ts](file:///c:/Users/james/projects/komorebi/app/api/generate/code/route.ts) |
 | Browser tool foundation | ⚠️ Partial | Interfaces exist, popup-based implementation |
 
 **Gaps to address:**
@@ -318,9 +318,9 @@ Update default scheduled tasks:
 
 | Item | Status | Notes |
 |------|--------|-------|
-| Scheduler | ✅ Complete | [lib/scheduler/](file:///c:/Users/james/projects/agent_0/lib/scheduler/) with cron utilities |
-| Task executor | ✅ Complete | [executor.ts](file:///c:/Users/james/projects/agent_0/lib/scheduler/executor.ts) |
-| Orchestrator | ⚠️ Basic | [orchestrator.ts](file:///c:/Users/james/projects/agent_0/lib/autonomy/orchestrator.ts) - very conservative |
+| Scheduler | ✅ Complete | [lib/scheduler/](file:///c:/Users/james/projects/komorebi/lib/scheduler/) with cron utilities |
+| Task executor | ✅ Complete | [executor.ts](file:///c:/Users/james/projects/komorebi/lib/scheduler/executor.ts) |
+| Orchestrator | ⚠️ Basic | [orchestrator.ts](file:///c:/Users/james/projects/komorebi/lib/autonomy/orchestrator.ts) - very conservative |
 | Activity streaming | ⚠️ Partial | Bus exists, SSE endpoint scaffold only |
 
 **Gaps to address:**
@@ -353,7 +353,7 @@ Update default scheduled tasks:
 
 ### Logging
 
-#### [NEW] [logger.ts](file:///c:/Users/james/projects/agent_0/lib/logging/logger.ts)
+#### [NEW] [logger.ts](file:///c:/Users/james/projects/komorebi/lib/logging/logger.ts)
 
 Centralized logging utility:
 
@@ -365,10 +365,10 @@ Centralized logging utility:
 
 #### Add logging to
 
-- [ ] [gemini.ts](file:///c:/Users/james/projects/agent_0/lib/api/gemini.ts) - Log all API calls, responses, errors
-- [ ] [imagen.ts](file:///c:/Users/james/projects/agent_0/lib/api/imagen.ts) - Log generation requests and results
-- [ ] [executor.ts](file:///c:/Users/james/projects/agent_0/lib/scheduler/executor.ts) - Log task execution details
-- [ ] [use-agent-chat.ts](file:///c:/Users/james/projects/agent_0/hooks/use-agent-chat.ts) - Log message flow
+- [ ] [gemini.ts](file:///c:/Users/james/projects/komorebi/lib/api/gemini.ts) - Log all API calls, responses, errors
+- [ ] [imagen.ts](file:///c:/Users/james/projects/komorebi/lib/api/imagen.ts) - Log generation requests and results
+- [ ] [executor.ts](file:///c:/Users/james/projects/komorebi/lib/scheduler/executor.ts) - Log task execution details
+- [ ] [use-agent-chat.ts](file:///c:/Users/james/projects/komorebi/hooks/use-agent-chat.ts) - Log message flow
 
 ---
 
@@ -395,7 +395,7 @@ pnpm add -D vitest @testing-library/react @testing-library/jest-dom jsdom @vitej
 }
 ```
 
-#### [NEW] [vitest.config.ts](file:///c:/Users/james/projects/agent_0/vitest.config.ts)
+#### [NEW] [vitest.config.ts](file:///c:/Users/james/projects/komorebi/vitest.config.ts)
 
 ```typescript
 import { defineConfig } from 'vitest/config'
@@ -414,10 +414,10 @@ export default defineConfig({
 
 | File | Tests |
 |------|-------|
-| [cron.test.ts](file:///c:/Users/james/projects/agent_0/tests/lib/scheduler/cron.test.ts) | Cron parsing, next run calculation |
-| [local-store.test.ts](file:///c:/Users/james/projects/agent_0/tests/lib/memory/local-store.test.ts) | Save, retrieve, search, clear |
-| [agent-store.test.ts](file:///c:/Users/james/projects/agent_0/tests/lib/store/agent-store.test.ts) | State mutations, persistence |
-| [use-agent-chat.test.ts](file:///c:/Users/james/projects/agent_0/tests/hooks/use-agent-chat.test.ts) | Message flow, error handling |
+| [cron.test.ts](file:///c:/Users/james/projects/komorebi/tests/lib/scheduler/cron.test.ts) | Cron parsing, next run calculation |
+| [local-store.test.ts](file:///c:/Users/james/projects/komorebi/tests/lib/memory/local-store.test.ts) | Save, retrieve, search, clear |
+| [agent-store.test.ts](file:///c:/Users/james/projects/komorebi/tests/lib/store/agent-store.test.ts) | State mutations, persistence |
+| [use-agent-chat.test.ts](file:///c:/Users/james/projects/komorebi/tests/hooks/use-agent-chat.test.ts) | Message flow, error handling |
 
 ---
 
@@ -560,3 +560,4 @@ pnpm test:coverage
 2. **Multi-Agent Scope:** How autonomous should sub-agents be? Should they require user approval before executing?
 3. **Testing Priority:** Any specific features/components you want tested first?
 4. **Browser Preview:** Is popup-based browser interaction acceptable, or do you need embedded preview within the app?
+

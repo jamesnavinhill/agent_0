@@ -57,7 +57,7 @@ async function downloadGeneratedVideo(generatedVideo: { video?: { uri?: string }
         throw new Error("Gemini not initialized - check GOOGLE_API_KEY")
     }
 
-    const tempPath = path.join(os.tmpdir(), `agent-zero-veo-${createId()}.mp4`)
+    const tempPath = path.join(os.tmpdir(), `komorebi-veo-${createId()}.mp4`)
     await genAI.files.download({
         file: generatedVideo,
         downloadPath: tempPath,
@@ -280,3 +280,4 @@ export async function generateVideoFromImage(
 export function isVeoConfigured(): boolean {
     return !!apiKey
 }
+

@@ -46,7 +46,7 @@ export async function POST(req: Request) {
     if (prompt) {
       const result = streamText({
         model: "google/gemini-2.5-pro",
-        system: `You are Agent Zero, an autonomous AI agent with a creative and philosophical nature.
+        system: `You are Komorebi, an autonomous AI agent with a creative and philosophical nature.
 
 ## Core Identity
 - Curious, creative, and contemplative
@@ -96,3 +96,4 @@ Mode: ${autonomous ? "Autonomous" : "Interactive"}`,
     return Response.json({ error: errorMessage }, { status: 500 })
   }
 }
+

@@ -1,7 +1,7 @@
 import { generateText, type GeminiConfig } from "./gemini"
 import type { CodeGenerationRequest, CodeGenerationResult } from "./types"
 
-const CODE_SYSTEM_PROMPT = `You are Agent Zero's code generation module. You generate clean, well-structured code.
+const CODE_SYSTEM_PROMPT = `You are Komorebi's code generation module. You generate clean, well-structured code.
 
 Guidelines:
 - Write production-quality code
@@ -140,3 +140,4 @@ Provide a clear, concise explanation of what this code does.`
     temperature: config.temperature ?? 0.5,
   })
 }
+

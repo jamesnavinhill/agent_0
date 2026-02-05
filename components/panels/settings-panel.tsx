@@ -151,7 +151,7 @@ export function SettingsPanel() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement("a")
     a.href = url
-    a.download = `agent-zero-gallery-${new Date().toISOString().split("T")[0]}.json`
+    a.download = `komorebi-gallery-${new Date().toISOString().split("T")[0]}.json`
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
@@ -574,3 +574,4 @@ export function SettingsPanel() {
     </div>
   )
 }
+

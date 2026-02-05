@@ -1,9 +1,9 @@
-# Agent Zero: Project Rules & Core Principles
+# Komorebi: Project Rules & Core Principles
 
 **Version:** 1.1  
 **Date:** January 19, 2026
 
-This document defines the foundational principles for the development of Agent Zero. All code, architecture, and feature implementations must adhere to these rules to ensure specific, logical, and safe operation.
+This document defines the foundational principles for the development of Komorebi. All code, architecture, and feature implementations must adhere to these rules to ensure specific, logical, and safe operation.
 
 ---
 
@@ -63,3 +63,4 @@ For composed workflows:
 2. Intermediate results must be persisted (resumable)
 3. Memory of each step informs the next
 4. Failure at any step logs clearly and halts gracefully
+

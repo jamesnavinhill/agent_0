@@ -3,7 +3,7 @@
 Date: 2026-02-05
 
 **Goal**
-Refactor Agent Zero to run locally on a Windows host without Vercel dependencies, while keeping Neon Postgres and local filesystem storage.
+Refactor Komorebi to run locally on a Windows host without Vercel dependencies, while keeping Neon Postgres and local filesystem storage.
 
 **Decisions (Locked)**
 
@@ -85,22 +85,22 @@ Checklist:
 Suggested Task Scheduler action (uses `.env.local` for the secret, no console pop-ups):
 
 ```bat
-schtasks /Create /TN "AgentZeroCron" /SC MINUTE /MO 1 /TR "wscript.exe C:\\Users\\james\\projects\\agent_0\\scripts\\run-cron.vbs"
+schtasks /Create /TN "KomorebiCron" /SC MINUTE /MO 1 /TR "wscript.exe C:\\Users\\james\\projects\\komorebi\\scripts\\run-cron.vbs"
 ```
 
 If the task already exists and is popping up windows, update it to run hidden:
 
 ```bat
-schtasks /Change /TN "AgentZeroCron" /TR "wscript.exe C:\\Users\\james\\projects\\agent_0\\scripts\\run-cron.vbs"
+schtasks /Change /TN "KomorebiCron" /TR "wscript.exe C:\\Users\\james\\projects\\komorebi\\scripts\\run-cron.vbs"
 ```
 
 Kill switch commands:
 
 ```bat
-schtasks /Change /TN "AgentZeroCron" /Disable
-schtasks /Change /TN "AgentZeroCron" /Enable
-schtasks /Delete /TN "AgentZeroCron" /F
-schtasks /Run /TN "AgentZeroCron"
+schtasks /Change /TN "KomorebiCron" /Disable
+schtasks /Change /TN "KomorebiCron" /Enable
+schtasks /Delete /TN "KomorebiCron" /F
+schtasks /Run /TN "KomorebiCron"
 ```
 
 **Phase 2 Done When**
@@ -153,3 +153,6 @@ Checklist:
 
 - If changes break runtime, revert to last known good commit.
 - Keep a backup of `.env.local` and database credentials.
+
+
+

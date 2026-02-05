@@ -1,4 +1,4 @@
-# Agent Zero: Polish Assessment Report
+# Komorebi: Polish Assessment Report
 
 > **Date:** January 19, 2026  
 > **Version:** 1.0  
@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-Agent Zero has **solid foundational systems** in place after Sprints 1-4, with Sprint 5 actively adding voice I/O and multi-agent capabilities. The codebase is clean, well-organized, and follows TypeScript best practices. However, several ambitious features from the original full-scope document remain unimplemented.
+Komorebi has **solid foundational systems** in place after Sprints 1-4, with Sprint 5 actively adding voice I/O and multi-agent capabilities. The codebase is clean, well-organized, and follows TypeScript best practices. However, several ambitious features from the original full-scope document remain unimplemented.
 
 **Current State:** ~70% of core MVP, ~40% of full vision
 
@@ -107,7 +107,7 @@ Agent Zero has **solid foundational systems** in place after Sprints 1-4, with S
 
 ### Immediate (This Sprint) ✅ COMPLETED
 
-1. ~~**Rename package.json**~~ - ✅ Changed `my-v0-project` to `agent-zero`
+1. ~~**Rename package.json**~~ - ✅ Changed `my-v0-project` to `komorebi`
 2. ~~**Add error boundaries**~~ - ✅ Created `components/error-boundary.tsx`, wrapped all panels
 3. ~~**Persist API key securely**~~ - ✅ Created `lib/utils/secure-storage.ts` with XOR obfuscation, validation, and masking
 
@@ -129,7 +129,7 @@ Agent Zero has **solid foundational systems** in place after Sprints 1-4, with S
 ## 📁 File Structure Summary
 
 ```
-agent_0/
+komorebi/
 ├── app/
 │   ├── api/
 │   │   ├── activity/       # SSE stream + push endpoints
@@ -180,7 +180,7 @@ EFFORT│Boundary│  Media  │EFFORT
 
 ## Conclusion
 
-Agent Zero has exceeded expectations for an MVP foundation. The architecture is clean, extensible, and ready for the next phase. The highest-value, lowest-effort improvements are:
+Komorebi has exceeded expectations for an MVP foundation. The architecture is clean, extensible, and ready for the next phase. The highest-value, lowest-effort improvements are:
 
 1. **Database migration** (Neon) - Persistent memory
 2. **Blob storage** (Vercel) - Cloud-hosted assets  
@@ -191,3 +191,6 @@ The 3D immersive UI remains the signature differentiator from the full-scope vis
 ---
 
 *Generated from codebase analysis on January 19, 2026*
+
+
+

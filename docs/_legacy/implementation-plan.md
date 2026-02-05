@@ -1,4 +1,4 @@
-# Agent Zero - Implementation Plan
+# Komorebi - Implementation Plan
 
 > Bringing the UI shell online with a living, autonomous AI agent.
 
@@ -315,7 +315,7 @@ Enhance `activity-panel.tsx`:
 ## File Structure (Current)
 
 ```
-agent_0/
+komorebi/
 ├── app/
 │   ├── api/
 │   │   ├── chat/route.ts        # ✅ Gemini chat endpoint (streaming SSE)
@@ -458,3 +458,5 @@ Notes:
 3. Update `app/api/chat/route.ts` to use Gemini
 4. Test basic conversation flow
 5. Add enhanced breathing animation to orb
+
+

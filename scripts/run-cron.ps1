@@ -1,5 +1,5 @@
 param(
-    [string]$ProjectRoot = "C:\Users\james\projects\agent_0",
+    [string]$ProjectRoot = "C:\Users\james\projects\komorebi",
     [string]$CronEndpoint = "http://localhost:3000/api/cron"
 )
 
@@ -25,3 +25,4 @@ if (-not $cronSecret) {
 }
 
 Invoke-WebRequest -UseBasicParsing -Headers @{ Authorization = "Bearer $cronSecret" } $CronEndpoint | Out-Null
+

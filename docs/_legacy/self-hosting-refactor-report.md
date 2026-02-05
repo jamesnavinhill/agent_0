@@ -1,4 +1,4 @@
-﻿# Self-Hosting Refactor Report (Agent Zero)
+# Self-Hosting Refactor Report (Komorebi)
 
 Date: 2026-02-05
 
@@ -180,7 +180,7 @@ Move off Vercel deployment and run locally on your own server. Provide a robust,
 Suggested command for a scheduled task:
 
 ```bat
-schtasks /Create /TN "AgentZeroCron" /SC MINUTE /MO 1 /TR "powershell -Command \"Invoke-WebRequest -UseBasicParsing -Headers @{Authorization='Bearer %CRON_SECRET%'} http://localhost:3000/api/cron\""
+schtasks /Create /TN "KomorebiCron" /SC MINUTE /MO 1 /TR "powershell -Command \"Invoke-WebRequest -UseBasicParsing -Headers @{Authorization='Bearer %CRON_SECRET%'} http://localhost:3000/api/cron\""
 ```
 
 Notes:
@@ -192,7 +192,7 @@ Notes:
 
 - [ ] Confirm that `public/gallery` is writable on the host.
 - [ ] Verify gallery write/read flows without Blob configured:
-  - Upload item → file appears in `public/gallery`
+  - Upload item ? file appears in `public/gallery`
   - Gallery list returns `source: "filesystem"`
 - [ ] Add storage interface abstraction if you later add object storage.
 
@@ -217,7 +217,7 @@ Notes:
 ### 7) Documentation Updates
 
 - [ ] Update README with self-hosting instructions (Windows, LAN access, Scheduler).
-- [ ] Add a short “Ops Runbook” in `docs/` with:
+- [ ] Add a short �Ops Runbook� in `docs/` with:
   - How to restart the server
   - How to check logs
   - How to update environment variables
@@ -250,3 +250,5 @@ Notes:
 - [S17] Supabase Cron: <https://supabase.com/docs/guides/cron>
 - [S18] schtasks commands: <https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/schtasks>
 - [S19] schtasks create: <https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/schtasks-create>
+
+

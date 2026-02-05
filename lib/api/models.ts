@@ -1,6 +1,6 @@
 /**
  * Gemini Model Configuration
- * Centralized model definitions for Agent Zero
+ * Centralized model definitions for Komorebi
  * All models are configurable through the UI
  */
 
@@ -211,3 +211,4 @@ export function supportsCodeExecution(modelId: string): boolean {
   const model = getModel(modelId)
   return model?.capabilities.includes("code-execution") ?? false
 }
+

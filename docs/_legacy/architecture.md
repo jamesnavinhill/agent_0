@@ -1,10 +1,10 @@
-# Agent Zero: System Architecture
+# Komorebi: System Architecture
 
 **Version:** 1.0  
 **Last Updated:** January 19, 2026  
 **Status:** Active Development
 
-This is a living document describing the architecture of Agent Zero - an autonomous AI agent system designed for incremental capability expansion through modular task primitives.
+This is a living document describing the architecture of Komorebi - an autonomous AI agent system designed for incremental capability expansion through modular task primitives.
 
 ---
 
@@ -34,7 +34,7 @@ This is a living document describing the architecture of Agent Zero - an autonom
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                         AGENT ZERO                                  │
+│                         Komorebi                                  │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐               │
@@ -75,7 +75,7 @@ This is a living document describing the architecture of Agent Zero - an autonom
 
 ## 3. Execution Architecture
 
-The heart of Agent Zero is the **Unified Execution Path** - ensuring consistent behavior regardless of trigger source.
+The heart of Komorebi is the **Unified Execution Path** - ensuring consistent behavior regardless of trigger source.
 
 ### Trigger Sources
 
@@ -218,7 +218,7 @@ Every task is defined in the database and executed by a corresponding tool modul
 
 ### The Gemini Stack
 
-Agent Zero leverages the full Gemini ecosystem for specialized tasks:
+Komorebi leverages the full Gemini ecosystem for specialized tasks:
 
 | Use Case | Model | Rationale |
 |----------|-------|-----------|
@@ -363,7 +363,7 @@ As capabilities mature, tasks will compose into multi-step workflows:
 ## 9. Directory Structure
 
 ```
-agent_0/
+komorebi/
 ├── app/
 │   ├── api/
 │   │   ├── agent/
@@ -460,3 +460,5 @@ agent_0/
 ---
 
 *This document evolves with the system. Update as architecture changes.*
+
+

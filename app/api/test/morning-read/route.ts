@@ -11,7 +11,7 @@ export const maxDuration = 60
  * POST/GET /api/test/morning-read
  * 
  * Usage: 
- *   curl -H "Authorization: Bearer YOUR_CRON_SECRET" https://agent-zero-alpha.vercel.app/api/test/morning-read
+ *   curl -H "Authorization: Bearer YOUR_CRON_SECRET" https://komorebi-alpha.vercel.app/api/test/morning-read
  */
 async function handleRequest(req: NextRequest) {
     // Verify Cron Secret
@@ -67,3 +67,4 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
     return handleRequest(req)
 }
+

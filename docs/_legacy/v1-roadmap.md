@@ -1,4 +1,4 @@
-# Agent Zero: V1.0 Consolidated Roadmap
+# Komorebi: V1.0 Consolidated Roadmap
 
 **Status:** Active Execution  
 **Current Phase:** Phase 2 (Data Truth & Persistence)
@@ -59,3 +59,4 @@ Each task will be a modular file in `lib/agent/tools/`.
 1. **Refactor Schedule Panel:** Remove `mockGoals` from the UI store and wire up real Task CRUD operations.
 2. **Gallery UI Connection:** Connect the Gallery Grid to the real database `gallery_items`.
 3. **Strict Typing:** Continue strictly typing the `Task` and `Activity` interfaces across the stack.
+

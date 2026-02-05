@@ -4,7 +4,7 @@ This file guides automated agents working in this repo.
 
 ## Project Name
 
-Komorebi (code still references "Agent Zero" in some strings).
+Komorebi.
 
 ## Source of Truth
 
@@ -48,3 +48,4 @@ pnpm run db:seed:morning-ritual
 - Do not delete files under `public/generated`, `public/gallery`, or `public/research` unless explicitly asked.
 - Keep docs in `docs/` uppercase and move obsolete docs to `docs/_legacy`.
 - Prefer small, focused changes and keep outputs consistent with the existing API contracts.
+

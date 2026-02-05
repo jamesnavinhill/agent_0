@@ -1,5 +1,5 @@
 /**
- * Centralized logging utility for Agent Zero
+ * Centralized logging utility for Komorebi
  * Integrates with activity bus for real-time visibility
  */
 
@@ -146,3 +146,4 @@ export function clearLogs() {
 
 // Default logger instance
 export const logger = createLogger("Agent")
+

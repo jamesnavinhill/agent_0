@@ -1,5 +1,5 @@
 /**
- * Export and download utilities for Agent Zero
+ * Export and download utilities for Komorebi
  */
 
 /**
@@ -120,3 +120,4 @@ export function getMimeType(type: "text" | "image" | "code" | "audio" | "video")
             return "text/plain"
     }
 }
+
