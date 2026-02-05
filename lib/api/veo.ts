@@ -17,6 +17,7 @@ const genAI = apiKey ? new GoogleGenAI({ apiKey }) : null
 
 // Default model per handoff spec
 export type VeoModel =
+    | "veo-2.0-generate-001"
     | "veo-3.0-fast-generate-001"
     | "veo-3.0-generate-001"
     | "veo-3.1-fast-generate-preview"
@@ -31,6 +32,8 @@ export interface VeoConfig {
     aspectRatio?: VideoAspectRatio
     resolution?: VideoResolution
     durationSeconds?: VideoDuration
+    includeAudio?: boolean
+    numberOfVideos?: 1 | 2
 }
 
 export interface VideoGenerationResult {
@@ -46,6 +49,8 @@ const DEFAULT_CONFIG: Required<VeoConfig> = {
     aspectRatio: "16:9",
     resolution: "1080p",
     durationSeconds: 6,
+    includeAudio: false,
+    numberOfVideos: 1,
 }
 
 // Maximum time to wait for video generation (5 minutes)
@@ -90,9 +95,19 @@ export async function generateVideoFromText(
         const videoConfig: Record<string, any> = {
             aspectRatio: mergedConfig.aspectRatio,
             resolution: mergedConfig.resolution,
+            numberOfVideos: mergedConfig.numberOfVideos,
         }
         if (mergedConfig.model.startsWith("veo-2.")) {
             videoConfig.durationSeconds = mergedConfig.durationSeconds
+        }
+        if (mergedConfig.model.startsWith("veo-3.") && mergedConfig.includeAudio !== undefined) {
+            videoConfig.includeAudio = mergedConfig.includeAudio
+        }
+
+        if (mergedConfig.model.startsWith("veo-3.") && mergedConfig.includeAudio === false) {
+            log.warn("Attempting to disable audio via includeAudio=false (not listed in official config fields).", {
+                model: mergedConfig.model,
+            })
         }
 
         // Start video generation - this returns an operation object
@@ -202,9 +217,19 @@ export async function generateVideoFromImage(
         const videoConfig: Record<string, any> = {
             aspectRatio: mergedConfig.aspectRatio,
             resolution: mergedConfig.resolution,
+            numberOfVideos: mergedConfig.numberOfVideos,
         }
         if (mergedConfig.model.startsWith("veo-2.")) {
             videoConfig.durationSeconds = mergedConfig.durationSeconds
+        }
+        if (mergedConfig.model.startsWith("veo-3.") && mergedConfig.includeAudio !== undefined) {
+            videoConfig.includeAudio = mergedConfig.includeAudio
+        }
+
+        if (mergedConfig.model.startsWith("veo-3.") && mergedConfig.includeAudio === false) {
+            log.warn("Attempting to disable audio via includeAudio=false (not listed in official config fields).", {
+                model: mergedConfig.model,
+            })
         }
 
         // Start image-to-video generation with reference image

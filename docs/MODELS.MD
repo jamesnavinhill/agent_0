@@ -39,6 +39,7 @@ Defined in `lib/api/imagen.ts`.
 
 Defined in `lib/api/veo.ts`.
 
+- `veo-2.0-generate-001` (silent-only)
 - `veo-3.0-fast-generate-001` (default)
 - `veo-3.0-generate-001`
 - `veo-3.1-fast-generate-preview`

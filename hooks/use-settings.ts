@@ -17,10 +17,11 @@ export interface AgentSettings {
     model: "gemini-3-flash-preview" | "gemini-3-pro-preview" | "gemini-2.5-flash" | "gemini-2.5-pro" | "gemini-2.5-flash-lite"
     imageModel: "gemini-2.5-flash-image" | "gemini-3-pro-image-preview" | "imagen-4.0-generate-001" | "imagen-4.0-ultra-generate-001" | "imagen-4.0-fast-generate-001"
     imageAspectRatio: "1:1" | "3:4" | "4:3" | "9:16" | "16:9"
-    videoModel: "veo-3.0-fast-generate-001" | "veo-3.0-generate-001" | "veo-3.1-fast-generate-preview" | "veo-3.1-generate-preview"
+    videoModel: "veo-2.0-generate-001" | "veo-3.0-fast-generate-001" | "veo-3.0-generate-001" | "veo-3.1-fast-generate-preview" | "veo-3.1-generate-preview"
     videoAspectRatio: "16:9" | "9:16"
     videoResolution: "1080p" | "720p"
     videoDurationSeconds: 4 | 6 | 8
+    videoIncludeAudio: boolean
     temperature: number
     schedulesEnabled: boolean
 }
@@ -34,6 +35,7 @@ const defaultSettings: AgentSettings = {
     videoAspectRatio: "16:9",
     videoResolution: "1080p",
     videoDurationSeconds: 6,
+    videoIncludeAudio: false,
     temperature: 0.7,
     schedulesEnabled: true,
 }
@@ -51,6 +53,23 @@ export function useSettings() {
             const stored = localStorage.getItem(SETTINGS_KEY)
             const parsed = stored ? JSON.parse(stored) : {}
 
+            const allowedVideoModels = new Set<AgentSettings["videoModel"]>([
+                "veo-2.0-generate-001",
+                "veo-3.0-fast-generate-001",
+                "veo-3.0-generate-001",
+                "veo-3.1-fast-generate-preview",
+                "veo-3.1-generate-preview",
+            ])
+            const allowedVideoResolutions = new Set<AgentSettings["videoResolution"]>([
+                "1080p",
+                "720p",
+            ])
+            const allowedVideoDurations = new Set<AgentSettings["videoDurationSeconds"]>([
+                4,
+                6,
+                8
+            ])
+
             // Load API key from secure storage
             const apiKey = getApiKey("google") || ""
 
@@ -58,6 +77,18 @@ export function useSettings() {
                 ...defaultSettings,
                 ...parsed,
                 apiKey,
+                videoModel: allowedVideoModels.has(parsed.videoModel)
+                    ? parsed.videoModel
+                    : defaultSettings.videoModel,
+                videoResolution: allowedVideoResolutions.has(parsed.videoResolution)
+                    ? parsed.videoResolution
+                    : defaultSettings.videoResolution,
+                videoDurationSeconds: allowedVideoDurations.has(parsed.videoDurationSeconds)
+                    ? parsed.videoDurationSeconds
+                    : defaultSettings.videoDurationSeconds,
+                videoIncludeAudio: typeof parsed.videoIncludeAudio === "boolean"
+                    ? parsed.videoIncludeAudio
+                    : defaultSettings.videoIncludeAudio,
             })
         } catch (error) {
             console.warn("Failed to load settings:", error)
@@ -125,6 +156,10 @@ export function useSettings() {
         setSettings({ videoDurationSeconds })
     }, [setSettings])
 
+    const setVideoIncludeAudio = useCallback((videoIncludeAudio: AgentSettings["videoIncludeAudio"]) => {
+        setSettings({ videoIncludeAudio })
+    }, [setSettings])
+
     const setTemperature = useCallback((temperature: number) => {
         setSettings({ temperature })
     }, [setSettings])
@@ -162,6 +197,7 @@ export function useSettings() {
         setVideoAspectRatio,
         setVideoResolution,
         setVideoDurationSeconds,
+        setVideoIncludeAudio,
         setTemperature,
         setSchedulesEnabled,
         clearApiKey,

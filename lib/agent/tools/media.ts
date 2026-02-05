@@ -330,6 +330,14 @@ export async function generateVideo(
     if (task?.parameters?.model) taskConfig.model = task.parameters.model as VeoConfig["model"]
     if (task?.parameters?.resolution) taskConfig.resolution = task.parameters.resolution as VeoConfig["resolution"]
     if (task?.parameters?.durationSeconds) taskConfig.durationSeconds = task.parameters.durationSeconds as VeoConfig["durationSeconds"]
+    const includeAudioParam = task?.parameters?.includeAudio ?? task?.parameters?.include_audio
+    if (typeof includeAudioParam === "boolean") {
+        taskConfig.includeAudio = includeAudioParam
+    }
+    const numberOfVideosParam = task?.parameters?.numberOfVideos ?? task?.parameters?.sampleCount
+    if (typeof numberOfVideosParam === "number") {
+        taskConfig.numberOfVideos = (numberOfVideosParam === 2 ? 2 : 1)
+    }
 
     pushActivity({
         action: "Starting Video Generation",
@@ -455,6 +463,8 @@ Style: Abstract, atmospheric, flowing motion, 4K quality.`
                 sourceGalleryId: mode === "image-to-video" ? sourceGalleryId : undefined,
                 aspectRatio,
                 durationSeconds: videoResult.durationSeconds,
+                includeAudio: taskConfig.includeAudio,
+                numberOfVideos: taskConfig.numberOfVideos,
                 generated_at: new Date().toISOString()
             }
         })

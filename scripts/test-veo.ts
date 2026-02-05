@@ -15,7 +15,7 @@ async function testVeo() {
 
     console.log("\n1. Starting video generation...")
     console.log("   Prompt:", prompt)
-    console.log("   Model: veo-3.1-fast-generate-preview")
+    console.log("   Model: veo-3.1-fast-generate-preview (includeAudio=false)")
 
     try {
         let operation = await ai.models.generateVideos({
@@ -23,6 +23,9 @@ async function testVeo() {
             prompt: prompt,
             config: {
                 aspectRatio: "16:9",
+                resolution: "1080p",
+                includeAudio: false,
+                numberOfVideos: 1,
             },
         })
 

@@ -28,6 +28,7 @@ Defaults (from `hooks/use-settings.ts`):
 - Video aspect ratio: `16:9`.
 - Video resolution: `1080p`.
 - Video duration: `6` seconds.
+- Video include audio: `false` (experimental; we send `includeAudio=false` in the Veo config).
 - Temperature: `0.7`.
 - Schedules enabled: `true`.
 

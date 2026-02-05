@@ -21,6 +21,7 @@ export interface ExecutorContext {
     videoAspectRatio?: string
     videoResolution?: string
     videoDurationSeconds?: number
+    videoIncludeAudio?: boolean
   }
 }
 
@@ -96,6 +97,7 @@ async function executeVideoTask(
   if (context.settings?.videoAspectRatio) overrides.aspectRatio = context.settings.videoAspectRatio
   if (context.settings?.videoResolution) overrides.resolution = context.settings.videoResolution
   if (context.settings?.videoDurationSeconds) overrides.durationSeconds = context.settings.videoDurationSeconds
+  if (typeof context.settings?.videoIncludeAudio === "boolean") overrides.includeAudio = context.settings.videoIncludeAudio
 
   const response = await fetch("/api/agent/execute", {
     method: "POST",

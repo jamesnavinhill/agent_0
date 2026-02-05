@@ -59,6 +59,7 @@ export function useScheduler(): UseSchedulerReturn {
         videoAspectRatio: settings.videoAspectRatio,
         videoResolution: settings.videoResolution,
         videoDurationSeconds: settings.videoDurationSeconds,
+        videoIncludeAudio: settings.videoIncludeAudio,
       },
     })
 
@@ -86,6 +87,7 @@ export function useScheduler(): UseSchedulerReturn {
     settings.videoAspectRatio,
     settings.videoResolution,
     settings.videoDurationSeconds,
+    settings.videoIncludeAudio,
   ])
 
   useEffect(() => {

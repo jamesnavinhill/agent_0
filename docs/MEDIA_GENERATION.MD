@@ -44,7 +44,8 @@ This document describes the image and video pipelines implemented in `lib/agent/
 - Model: `veo-3.0-fast-generate-001`.
 - Aspect ratio: `16:9`.
 - Resolution: `1080p`.
-- Duration: `6` seconds (only applied for Veo 2 models in code).
+- Duration: `6` seconds.
+- Include audio: `false` (experimental; we send `includeAudio=false` in the Veo config).
 
 ### Source Image Selection (image-to-video)
 

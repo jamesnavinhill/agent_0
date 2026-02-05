@@ -67,6 +67,7 @@ export function SettingsPanel() {
     setVideoAspectRatio,
     setVideoResolution,
     setVideoDurationSeconds,
+    setVideoIncludeAudio,
     setTemperature,
     setSchedulesEnabled,
     hasApiKey,
@@ -99,17 +100,18 @@ export function SettingsPanel() {
 
     const motionTask = (scheduledTasks ?? []).find((t) => t.name === "Motion Art")
     if (motionTask) {
-      updates.push({
-        id: motionTask.id,
-        parameters: {
-          ...(motionTask.parameters ?? {}),
-          model: settings.videoModel,
-          aspectRatio: settings.videoAspectRatio,
-          resolution: settings.videoResolution,
-          durationSeconds: settings.videoDurationSeconds,
-        },
-      })
-    }
+        updates.push({
+          id: motionTask.id,
+          parameters: {
+            ...(motionTask.parameters ?? {}),
+            model: settings.videoModel,
+            aspectRatio: settings.videoAspectRatio,
+            resolution: settings.videoResolution,
+            durationSeconds: settings.videoDurationSeconds,
+            includeAudio: settings.videoIncludeAudio,
+          },
+        })
+      }
 
     if (updates.length === 0) {
       setSyncStatus("No matching tasks found to sync.")
@@ -415,8 +417,22 @@ export function SettingsPanel() {
                 <SelectItem value="veo-3.0-generate-001">Veo 3 Generate</SelectItem>
                 <SelectItem value="veo-3.1-fast-generate-preview">Veo 3.1 Fast (Preview)</SelectItem>
                 <SelectItem value="veo-3.1-generate-preview">Veo 3.1 (Preview)</SelectItem>
+                <SelectItem value="veo-2.0-generate-001">Veo 2 Generate (Silent)</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="text-sm text-muted-foreground">Include Audio (Experimental)</label>
+              <Switch
+                checked={settings.videoIncludeAudio}
+                onCheckedChange={(checked) => setVideoIncludeAudio(checked)}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              When off, we send includeAudio=false to the API. This flag is not listed in the official Veo config fields and may be ignored or rejected.
+            </p>
           </div>
 
           {/* Video Settings */}
