@@ -281,6 +281,10 @@ export async function generateVideo(
     const mode = options?.mode || task?.parameters?.mode as VideoGenerationOptions["mode"] || "text-to-video"
     const sourceGalleryId = options?.sourceGalleryId || task?.parameters?.sourceGalleryId as string
     const aspectRatio = options?.aspectRatio || task?.parameters?.aspectRatio as VideoAspectRatio || "16:9"
+    const taskConfig: VeoConfig = {}
+    if (task?.parameters?.model) taskConfig.model = task.parameters.model as VeoConfig["model"]
+    if (task?.parameters?.resolution) taskConfig.resolution = task.parameters.resolution as VeoConfig["resolution"]
+    if (task?.parameters?.durationSeconds) taskConfig.durationSeconds = task.parameters.durationSeconds as VeoConfig["durationSeconds"]
 
     pushActivity({
         action: "Starting Video Generation",
@@ -322,6 +326,7 @@ export async function generateVideo(
 
             videoResult = await generateVideoFromImage(imageBase64, prompt, {
                 aspectRatio,
+                ...taskConfig,
                 ...options?.config
             })
         } else {
@@ -348,6 +353,7 @@ Style: Abstract, atmospheric, flowing motion, 4K quality.`
 
             videoResult = await generateVideoFromText(prompt, {
                 aspectRatio,
+                ...taskConfig,
                 ...options?.config
             })
         }

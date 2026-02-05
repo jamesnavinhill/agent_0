@@ -78,14 +78,14 @@ Checklist:
 - [ ] Verify tasks execute and update in UI or in the `tasks` table
 - [ ] If media generation fails, confirm `GOOGLE_API_KEY` is set and skip media tasks for now
 
-Suggested Task Scheduler action (uses `.env.local` for the secret):
+Suggested Task Scheduler action (uses `.env.local` for the secret, no console pop-ups):
 ```bat
-schtasks /Create /TN "AgentZeroCron" /SC MINUTE /MO 1 /TR "powershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File C:\\Users\\james\\projects\\agent_0\\scripts\\run-cron.ps1"
+schtasks /Create /TN "AgentZeroCron" /SC MINUTE /MO 1 /TR "wscript.exe C:\\Users\\james\\projects\\agent_0\\scripts\\run-cron.vbs"
 ```
 
 If the task already exists and is popping up windows, update it to run hidden:
 ```bat
-schtasks /Change /TN "AgentZeroCron" /TR "powershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File C:\\Users\\james\\projects\\agent_0\\scripts\\run-cron.ps1"
+schtasks /Change /TN "AgentZeroCron" /TR "wscript.exe C:\\Users\\james\\projects\\agent_0\\scripts\\run-cron.vbs"
 ```
 
 Kill switch commands:

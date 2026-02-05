@@ -74,6 +74,23 @@ export function GalleryPanel() {
 
     if (output.type === "image") {
       await downloadImage(output.content, `${filename}.png`)
+    } else if (output.type === "video" || output.type === "audio") {
+      const mediaUrl = output.content || output.url
+      if (!mediaUrl) return
+      try {
+        const response = await fetch(mediaUrl)
+        const blob = await response.blob()
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement("a")
+        a.href = url
+        a.download = `${filename}.${output.type === "video" ? "mp4" : "mp3"}`
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+      } catch (error) {
+        console.error("Failed to download media:", error)
+      }
     } else if (output.type === "code") {
       downloadFile(`${filename}.txt`, output.content, "text/plain")
     } else {
@@ -257,6 +274,14 @@ export function GalleryPanel() {
                           alt={output.title || "Generated image"}
                           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                         />
+                      ) : output.type === "video" ? (
+                        <video
+                          src={output.content || output.url || undefined}
+                          className="w-full h-full object-cover"
+                          preload="metadata"
+                          muted
+                          playsInline
+                        />
                       ) : (
                         <div className="w-full h-full flex flex-col p-4 relative">
                           <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center mb-3", config.color)}>
@@ -439,6 +464,15 @@ function DetailContent({ output, onClose }: { output: AgentOutput; onClose: () =
                   src={output.content || output.url || "/placeholder.svg"}
                   alt={output.title || "Generated image"}
                   className="max-h-[60vh] object-contain rounded-lg shadow-sm"
+                />
+              </div>
+            ) : output.type === "video" ? (
+              <div className="flex justify-center bg-surface-1/50 rounded-xl p-4 border border-border/50">
+                <video
+                  src={output.content || output.url || undefined}
+                  className="max-h-[60vh] w-full rounded-lg shadow-sm"
+                  controls
+                  playsInline
                 />
               </div>
             ) : output.type === "code" ? (

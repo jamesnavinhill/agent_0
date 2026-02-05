@@ -54,7 +54,7 @@ export function useScheduler(): UseSchedulerReturn {
 
     const mappedTasks = (scheduledTasks ?? []).map(t => ({
       ...t,
-      category: (t.category ?? "custom") as "art" | "music" | "code" | "philosophy" | "research" | "blog" | "game" | "social" | "custom",
+      category: (t.category ?? "custom") as "art" | "video" | "music" | "code" | "philosophy" | "research" | "blog" | "game" | "social" | "custom",
       runCount: 0,
     }))
     scheduler.setTasks(mappedTasks)
@@ -71,7 +71,7 @@ export function useScheduler(): UseSchedulerReturn {
 
     const mappedTasks = (scheduledTasks ?? []).map(t => ({
       ...t,
-      category: (t.category ?? "custom") as "art" | "music" | "code" | "philosophy" | "research" | "blog" | "game" | "social" | "custom",
+      category: (t.category ?? "custom") as "art" | "video" | "music" | "code" | "philosophy" | "research" | "blog" | "game" | "social" | "custom",
       runCount: 0,
       nextRun: t.nextRun ?? getNextRunTime(t.schedule) ?? undefined,
     }))

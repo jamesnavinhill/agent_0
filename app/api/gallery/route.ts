@@ -144,6 +144,7 @@ export async function GET(req: NextRequest) {
       return Response.json({
         items: items.map((i) => ({
           ...i,
+          content: (i.type === "image" || i.type === "video" || i.type === "audio") ? i.blob_url : "",
           url: i.blob_url,
           timestamp: i.created_at,
         })),
@@ -168,6 +169,7 @@ export async function GET(req: NextRequest) {
       .map((i) => ({
         ...i,
         url: `/gallery/${i.filename}`,
+        content: (i.type === "image" || i.type === "video" || i.type === "audio") ? `/gallery/${i.filename}` : "",
       }))
 
     return Response.json({ items, source: "filesystem" })

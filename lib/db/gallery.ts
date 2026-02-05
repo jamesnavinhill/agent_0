@@ -33,7 +33,7 @@ export async function saveGalleryItem(item: GalleryItemInput): Promise<string | 
             // Store content inline as data URL for text when blob not configured
             blobUrl = `data:text/markdown;base64,${Buffer.from(item.content).toString("base64")}`
         } else if (
-            item.type === "image" &&
+            (item.type === "image" || item.type === "video" || item.type === "audio") &&
             (item.content.startsWith("http") || item.content.startsWith("/"))
         ) {
             // Already a URL (remote or local)

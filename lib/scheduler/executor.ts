@@ -60,6 +60,8 @@ async function executeByCategory(
   switch (task.category) {
     case "art":
       return executeArtTask(task, context)
+    case "video":
+      return executeVideoTask(task, context)
     case "code":
       return executeCodeTask(task, context)
     case "research":
@@ -71,6 +73,46 @@ async function executeByCategory(
       return executeBrowserTask(task, context)
     default:
       return executeCustomTask(task, context)
+  }
+}
+
+async function executeVideoTask(
+  task: ScheduledTask,
+  context: ExecutorContext
+): Promise<TaskResult> {
+  context.addThought(`Starting video generation task: ${task.name}`, "action")
+
+  const response = await fetch("/api/agent/execute", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ taskId: task.id })
+  })
+
+  if (!response.ok) {
+    const error = await response.text()
+    throw new Error(`Video execution failed: ${error} (Status: ${response.status})`)
+  }
+
+  const result = await response.json()
+  const output = result.output || "Video generated successfully"
+
+  context.addOutput({
+    type: "video",
+    content: output,
+    title: `${task.name} - ${new Date().toLocaleDateString()}`,
+    category: "art",
+    metadata: {
+      taskId: task.id,
+      scheduled: false
+    }
+  })
+
+  return {
+    type: "video",
+    content: output,
+    metadata: { taskId: task.id }
   }
 }
 

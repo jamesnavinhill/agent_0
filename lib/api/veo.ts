@@ -1,5 +1,9 @@
 import { GoogleGenAI } from "@google/genai"
 import { createLogger } from "@/lib/logging/logger"
+import fs from "fs/promises"
+import os from "os"
+import path from "path"
+import { createId } from "@/lib/utils/id"
 
 const log = createLogger("Veo")
 
@@ -13,9 +17,10 @@ const genAI = apiKey ? new GoogleGenAI({ apiKey }) : null
 
 // Default model per handoff spec
 export type VeoModel =
+    | "veo-3.0-fast-generate-001"
+    | "veo-3.0-generate-001"
     | "veo-3.1-fast-generate-preview"
     | "veo-3.1-generate-preview"
-    | "veo-3.0-generate-preview"
 
 export type VideoAspectRatio = "16:9" | "9:16"
 export type VideoResolution = "720p" | "1080p" | "4k"
@@ -37,7 +42,7 @@ export interface VideoGenerationResult {
 }
 
 const DEFAULT_CONFIG: Required<VeoConfig> = {
-    model: "veo-3.1-fast-generate-preview",
+    model: "veo-3.0-fast-generate-001",
     aspectRatio: "16:9",
     resolution: "1080p",
     durationSeconds: 6,
@@ -46,6 +51,21 @@ const DEFAULT_CONFIG: Required<VeoConfig> = {
 // Maximum time to wait for video generation (5 minutes)
 const MAX_POLL_TIME_MS = 5 * 60 * 1000
 const POLL_INTERVAL_MS = 10000 // 10 seconds
+
+async function downloadGeneratedVideo(generatedVideo: { video?: { uri?: string } }): Promise<string> {
+    if (!genAI) {
+        throw new Error("Gemini not initialized - check GOOGLE_API_KEY")
+    }
+
+    const tempPath = path.join(os.tmpdir(), `agent-zero-veo-${createId()}.mp4`)
+    await genAI.files.download({
+        file: generatedVideo,
+        downloadPath: tempPath,
+    })
+    const buffer = await fs.readFile(tempPath)
+    await fs.unlink(tempPath).catch(() => undefined)
+    return buffer.toString("base64")
+}
 
 /**
  * Generate a video from a text prompt
@@ -67,13 +87,19 @@ export async function generateVideoFromText(
     })
 
     try {
+        const videoConfig: Record<string, any> = {
+            aspectRatio: mergedConfig.aspectRatio,
+            resolution: mergedConfig.resolution,
+        }
+        if (mergedConfig.model.startsWith("veo-2.")) {
+            videoConfig.durationSeconds = mergedConfig.durationSeconds
+        }
+
         // Start video generation - this returns an operation object
         let operation = await genAI.models.generateVideos({
             model: mergedConfig.model,
             prompt,
-            config: {
-                aspectRatio: mergedConfig.aspectRatio,
-            },
+            config: videoConfig,
         })
 
         log.info("Video generation started, polling for completion...", {
@@ -127,14 +153,9 @@ export async function generateVideoFromText(
             // If bytes are directly available
             videoBytes = generatedVideo.video.videoBytes
         } else if (generatedVideo.video.uri) {
-            // Download from URI if provided
-            log.info("Downloading video from URI...")
-            const response = await fetch(generatedVideo.video.uri)
-            if (!response.ok) {
-                throw new Error(`Failed to download video: ${response.statusText}`)
-            }
-            const buffer = await response.arrayBuffer()
-            videoBytes = Buffer.from(buffer).toString("base64")
+            // Use authenticated SDK downloader to avoid forbidden URI access
+            log.info("Downloading video via SDK...")
+            videoBytes = await downloadGeneratedVideo(generatedVideo)
         } else {
             throw new Error("No video data or URI in response")
         }
@@ -178,6 +199,14 @@ export async function generateVideoFromImage(
     })
 
     try {
+        const videoConfig: Record<string, any> = {
+            aspectRatio: mergedConfig.aspectRatio,
+            resolution: mergedConfig.resolution,
+        }
+        if (mergedConfig.model.startsWith("veo-2.")) {
+            videoConfig.durationSeconds = mergedConfig.durationSeconds
+        }
+
         // Start image-to-video generation with reference image
         let operation = await genAI.models.generateVideos({
             model: mergedConfig.model,
@@ -186,9 +215,7 @@ export async function generateVideoFromImage(
                 imageBytes: imageBytes,
                 mimeType: "image/png",
             },
-            config: {
-                aspectRatio: mergedConfig.aspectRatio,
-            },
+            config: videoConfig,
         })
 
         log.info("Image-to-video generation started, polling...")
@@ -227,12 +254,8 @@ export async function generateVideoFromImage(
         if (generatedVideo.video.videoBytes) {
             videoBytes = generatedVideo.video.videoBytes
         } else if (generatedVideo.video.uri) {
-            const response = await fetch(generatedVideo.video.uri)
-            if (!response.ok) {
-                throw new Error(`Failed to download video: ${response.statusText}`)
-            }
-            const buffer = await response.arrayBuffer()
-            videoBytes = Buffer.from(buffer).toString("base64")
+            log.info("Downloading video via SDK...")
+            videoBytes = await downloadGeneratedVideo(generatedVideo)
         } else {
             throw new Error("No video data or URI in response")
         }
