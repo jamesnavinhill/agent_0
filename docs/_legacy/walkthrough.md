@@ -9,6 +9,7 @@
 ## Overview
 
 Successfully implemented browser-based voice input/output capabilities for Agent Zero:
+
 - **Speech-to-Text (STT):** Browser-based Whisper using `@xenova/transformers`
 - **Text-to-Speech (TTS):** Web Speech API for agent voice output
 
@@ -19,11 +20,13 @@ Successfully implemented browser-based voice input/output capabilities for Agent
 ### Dependencies
 
 #### Installed Packages
+
 ```bash
 pnpm add @xenova/transformers
 ```
 
 **Package Details:**
+
 - `@xenova/transformers@2.17.2` - Browser-based Whisper model (~40MB for whisper-tiny)
 
 ---
@@ -31,13 +34,16 @@ pnpm add @xenova/transformers
 ### New Files Created
 
 #### [whisper-client.ts](file:///c:/Users/james/projects/agent_0/lib/voice/whisper-client.ts)
+
 Browser-based Whisper STT client with:
+
 - Model loading with progress tracking
 - Audio blob transcription
 - Streaming transcription support
 - Singleton pattern for efficient memory usage
 
 **Key Features:**
+
 - Lazy loads `whisper-tiny` model (~40MB)
 - Runs entirely in-browser (no API costs)
 - Progress callbacks for loading UI
@@ -46,13 +52,16 @@ Browser-based Whisper STT client with:
 ---
 
 #### [tts-client.ts](file:///c:/Users/james/projects/agent_0/lib/voice/tts-client.ts)
+
 Web Speech API TTS client with:
+
 - Voice selection and filtering
 - Playback controls (speak, stop, pause, resume)
 - Event callbacks (onStart, onEnd, onError)
 - Configurable rate, pitch, and volume
 
 **Key Features:**
+
 - Free, built into all modern browsers
 - Multiple voice options
 - Real-time playback control
@@ -61,7 +70,9 @@ Web Speech API TTS client with:
 ---
 
 #### [use-tts.ts](file:///c:/Users/james/projects/agent_0/hooks/use-tts.ts)
+
 React hook for TTS functionality providing:
+
 - [speak(text, options)](file:///c:/Users/james/projects/agent_0/lib/voice/tts-client.ts#69-113) - Speak text
 - [stop()](file:///c:/Users/james/projects/agent_0/lib/voice/tts-client.ts#114-123) - Stop current speech
 - [pause()](file:///c:/Users/james/projects/agent_0/lib/voice/tts-client.ts#124-132) / [resume()](file:///c:/Users/james/projects/agent_0/lib/voice/tts-client.ts#133-141) - Playback control
@@ -76,6 +87,7 @@ React hook for TTS functionality providing:
 #### [multimodal-input.tsx](file:///c:/Users/james/projects/agent_0/components/input/multimodal-input.tsx)
 
 **Changes:**
+
 - Added Whisper client integration
 - Auto-loads `whisper-tiny` model on mount
 - Transcribes audio recordings to text automatically
@@ -84,6 +96,7 @@ React hook for TTS functionality providing:
 - Falls back to audio attachment if transcription fails
 
 **User Experience:**
+
 1. Click microphone button to start recording
 2. Speak clearly
 3. Click microphone again to stop
@@ -91,6 +104,7 @@ React hook for TTS functionality providing:
 5. User can edit transcribed text before sending
 
 **Loading Indicators:**
+
 - "Loading speech model... X%" - Model downloading
 - "Recording audio..." - Active recording
 - "Transcribing..." - Processing audio
@@ -100,12 +114,14 @@ React hook for TTS functionality providing:
 #### [chat-panel.tsx](file:///c:/Users/james/projects/agent_0/components/panels/chat-panel.tsx)
 
 **Changes:**
+
 - Added TTS speak button to assistant messages
 - Hover-activated speaker icon on each message
 - Visual indicator when speaking (VolumeX icon)
 - Click to speak, click again to stop
 
 **User Experience:**
+
 - Hover over assistant message to reveal speaker icon
 - Click speaker icon to hear the message
 - Icon changes to VolumeX while speaking
@@ -116,12 +132,14 @@ React hook for TTS functionality providing:
 #### [thoughts-panel.tsx](file:///c:/Users/james/projects/agent_0/components/panels/thoughts-panel.tsx)
 
 **Changes:**
+
 - Added TTS speak button to each thought entry
 - Hover-activated controls
 - Smaller button size (7x7) to fit compact layout
 - Same speak/stop toggle behavior
 
 **User Experience:**
+
 - Hover over any thought to reveal speaker icon
 - Click to hear the thought content
 - Useful for monitoring agent reasoning while multitasking
@@ -133,6 +151,7 @@ React hook for TTS functionality providing:
 ### STT Testing
 
 1. **Start the dev server:**
+
    ```bash
    pnpm run dev
    ```
@@ -183,6 +202,7 @@ React hook for TTS functionality providing:
 ### Whisper Model
 
 **Model:** `whisper-tiny`
+
 - Size: ~40MB
 - Speed: Fast, suitable for real-time
 - Accuracy: Good for clear speech
@@ -193,11 +213,13 @@ React hook for TTS functionality providing:
 ### Web Speech API
 
 **Browser Support:**
+
 - ✅ Chrome/Edge (excellent)
 - ✅ Safari (good)
 - ✅ Firefox (basic)
 
 **Voice Quality:**
+
 - Varies by browser and OS
 - Chrome typically has best quality
 - Multiple voices available per language
@@ -207,11 +229,13 @@ React hook for TTS functionality providing:
 ## Performance Considerations
 
 ### Initial Load
+
 - First visit: ~40MB model download (one-time)
 - Model cached in browser IndexedDB
 - Subsequent visits: instant load
 
 ### Runtime
+
 - STT: Processes in-browser, no API calls
 - TTS: Native browser API, no latency
 - Memory: ~100MB for loaded model

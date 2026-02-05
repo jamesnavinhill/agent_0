@@ -33,6 +33,7 @@ Refactor Agent Zero to run locally on a Windows host without Vercel dependencies
 **Phase 0: Database Initialization (Neon)**
 
 Checklist:
+
 - [x] Copy the Neon connection string for the new project and set `DATABASE_URL` in `.env.local`.
 - [x] Ensure required extensions are enabled:
   - `pgcrypto`
@@ -47,12 +48,14 @@ Checklist:
   - `pnpm tsx scripts/check-db.ts`
 
 **Phase 0 Done When**
+
 - Schema is applied successfully and tables exist.
 - App loads without DB errors and memory/knowledge panels return data.
 
 **Phase 1: Hosting Baseline**
 
 Checklist:
+
 - [x] Create `.env.local` (or set OS-level env vars) with:
 - [x] `GOOGLE_API_KEY`
 - [x] `DATABASE_URL`
@@ -72,6 +75,7 @@ Checklist:
 **Phase 2: Scheduling**
 
 Checklist:
+
 - [ ] Create a Windows Task Scheduler job to hit `http://localhost:3000/api/cron`
 - [ ] Include `Authorization: Bearer <CRON_SECRET>` header
 - [ ] Set interval to 1 minute (adjust later if needed)
@@ -79,16 +83,19 @@ Checklist:
 - [ ] If media generation fails, confirm `GOOGLE_API_KEY` is set and skip media tasks for now
 
 Suggested Task Scheduler action (uses `.env.local` for the secret, no console pop-ups):
+
 ```bat
 schtasks /Create /TN "AgentZeroCron" /SC MINUTE /MO 1 /TR "wscript.exe C:\\Users\\james\\projects\\agent_0\\scripts\\run-cron.vbs"
 ```
 
 If the task already exists and is popping up windows, update it to run hidden:
+
 ```bat
 schtasks /Change /TN "AgentZeroCron" /TR "wscript.exe C:\\Users\\james\\projects\\agent_0\\scripts\\run-cron.vbs"
 ```
 
 Kill switch commands:
+
 ```bat
 schtasks /Change /TN "AgentZeroCron" /Disable
 schtasks /Change /TN "AgentZeroCron" /Enable
@@ -104,6 +111,7 @@ schtasks /Run /TN "AgentZeroCron"
 **Phase 3: Remove Vercel Dependencies**
 
 Checklist:
+
 - [x] Remove `@vercel/analytics` usage
 - [x] Remove `@vercel/analytics` dependency
 - [x] Replace `lib/storage/blob.ts` with a filesystem-first storage interface (now `lib/storage/local.ts`)
@@ -119,6 +127,7 @@ Checklist:
 **Phase 4: Hardening (Optional)**
 
 Checklist:
+
 - [ ] Add a manual cleanup script (disabled by default)
 - [ ] Add a warning if disk usage exceeds a threshold
 - [ ] Add backup guidance for `public/gallery` and Postgres

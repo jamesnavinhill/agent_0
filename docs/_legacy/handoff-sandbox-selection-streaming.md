@@ -15,6 +15,7 @@
 - **Safety guard:** If selection no longer matches file content, the save is blocked and a warning is shown.
 
 **Files:**
+
 - `components/panels/sandbox-panel.tsx`
 
 ---
@@ -26,6 +27,7 @@
 - UI includes **Streaming History** collapsible with expandable output.
 
 **Files:**
+
 - `hooks/use-sandbox.ts`
 - `components/panels/sandbox-panel.tsx`
 
@@ -38,6 +40,7 @@
 - UI-side file ops + runs emit activity events.
 
 **Files:**
+
 - `hooks/use-sandbox.ts`
 - `components/panels/sandbox-panel.tsx`
 
@@ -62,14 +65,17 @@
 ## ✅ Usage Notes
 
 **Selection edit:**
+
 1. Click a file in Sandbox.
 2. Highlight text in preview.
 3. Click **Scissors** → edit selection → Save.
 
 **Streaming history:**
+
 - Enable streaming, run command → entry shows in **Streaming History** with expandable output.
 
 **Sandbox feed:**
+
 - Shows `source` containing “sandbox” from activity bus (UI + streaming API).
 
 ---

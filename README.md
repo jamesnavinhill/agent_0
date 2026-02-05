@@ -1,178 +1,74 @@
+# Komorebi
 
-  ___   _____ _____ _   _ _____     ___
- / _ \ / ____| ____| \ | |_   _|   / _ \
-| |_| | |  __| |__ |  \| | | |    | | | |
-|  _  | | |_ |  __|| . ` | | |    | | | |
-| | | | |__| | |___| |\  | | |    | |_| |
-|_| |_|\_____|_____|_| \_| |_|     \___/
+Komorebi is a local-first autonomous agent interface built with Next.js. It combines a reactive UI, scheduled task execution, and media generation through Google Gemini, Imagen, and Veo APIs. It persists state in Neon Postgres and stores media on the local filesystem.
 
-# Agent Zero
+Note: The codebase still references the name "Agent Zero" in UI strings and comments. The project name moving forward is Komorebi.
 
-> __An autonomous AI agent system built for incremental capability expansion.__
+## Core Capabilities (From Current Code)
 
-Agent Zero is a next-generation AI agent framework designed to feel alive. It features a reactive UI, autonomous task execution, and deep integration with Google's Gemini 3.0/2.5 ecosystem. Built on principles of __Data Truth__, __Persistence First__, and __Modular Tasks__.
+- Agent chat with AI SDK orchestration and streaming.
+- Morning Read research task with Google Search grounding.
+- Image generation and editing with Gemini/Imagen models.
+- Video generation with Veo (text-to-video and image-to-video).
+- Memory and knowledge capture in Postgres.
+- Gallery persistence with local media storage under `public/`.
+- Scheduling via cron expressions and a local cron trigger.
+- Sandbox project storage and LLM-backed execution APIs.
+- Browser snapshot task using Playwright.
 
----
+## Quickstart
 
-## ✨ Current Capabilities
-
-| Task | Status | Description |
-|------|--------|-------------|
-| __Morning Read__ | ✅ Live | Research with Google Search Grounding |
-| __Media Generation__ | ✅ Live | AI art from memory context |
-| __Image Editing__ | ✅ Live | Retrieve & modify gallery images |
-| __Video Generation__ | ✅ Live | Veo text-to-video & image-to-video |
-| __Code Sandbox__ | 📋 Planned | Isolated code execution |
-| __Browser Automation__ | 📋 Planned | Web navigation & interaction |
-| __Long-form Writing__ | 📋 Planned | Essays, journals, reflections |
-
-## 🏗 Architecture
-
-```
-Triggers (Cron/UI/API)
-        │
-        ▼
-  /api/agent/execute  ──▶  runner.ts  ──▶  Task Tools
-        │                                      │
-        ▼                                      ▼
-   Unified Path                         research | media | code
-        │                                      │
-        └──────────────────────────────────────┘
-                          │
-                          ▼
-              ┌─────────────────────┐
-              │   Neon Postgres     │
-              │   Local Filesystem  │
-              │   Memory System     │
-              └─────────────────────┘
-```
-
-See [docs/architecture.md](docs/architecture.md) for detailed diagrams and design.
-
-## 🧠 Design Principles
-
-- __Agentic Native__ — Built for autonomous operation
-- __Data Truth__ — No mocks; UI reflects actual database state
-- __Persistence First__ — Every output is saved and retrievable
-- __Modular Tasks__ — Each capability is isolated and testable
-- __Unified Execution__ — Same code path for Cron, UI, and API triggers
-
-See [docs/project_rules.md](docs/project_rules.md) for full guidelines.
-
-## 🛠 Tech Stack
-
-| Layer | Technology |
-|-------|------------|
-| __Framework__ | Next.js 16 (App Router, Turbopack) |
-| __Language__ | TypeScript (strict) |
-| __Styling__ | TailwindCSS + Shadcn UI |
-| __AI Models__ | Google Gemini 3.0/2.5, Imagen 4.0 |
-| __Database__ | Neon Postgres (+ pgvector) |
-| __Storage__ | Local Filesystem (`public/`) |
-| __State__ | Zustand |
-| __Package Manager__ | pnpm |
-
-## 🚀 Getting Started
-
-### 1. Clone & Install
+Install dependencies.
 
 ```bash
-git clone https://github.com/jamesnavinhill/agent_0.git
-cd agent_0
 pnpm install
 ```
 
-### 2. Configure Environment
+Configure environment.
 
 ```bash
 cp .env.local.example .env.local
 ```
 
-Required environment variables:
+Required variables:
 
-```env
-GOOGLE_API_KEY=your_gemini_api_key
-DATABASE_URL=your_neon_postgres_url
-CRON_SECRET=your_cron_secret
-# Optional: override the local media root (must live under public/)
-# MEDIA_ROOT_DIR=public
+- `GOOGLE_API_KEY`
+- `DATABASE_URL`
+- `CRON_SECRET`
+
+Apply database schema.
+
+```bash
+pnpm run db:migrate
 ```
 
-### 3. Run Development Server
+Seed default tasks.
+
+```bash
+pnpm run db:seed:morning-read
+pnpm run db:seed:media-task
+pnpm run db:seed:motion-art
+pnpm run db:seed:morning-ritual
+```
+
+Run the dev server.
 
 ```bash
 pnpm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000)
+## Documentation
 
-### 4. Test Task Execution
+- `docs/ARCHITECTURE.MD`
+- `docs/API.MD`
+- `docs/CONFIG.MD`
+- `docs/DATABASE.MD`
+- `docs/DEVELOPMENT.MD`
+- `docs/MEDIA_GENERATION.MD`
+- `docs/COMPONENTS.MD`
+- `docs/SCHEDULING.MD`
+- `docs/STORAGE.MD`
 
-1. Navigate to Schedule page
-2. Click __Start__ to enable scheduler
-3. Click ⚡ on any task to trigger manually
-4. Watch Activity panel for real-time progress
-
-## 📁 Project Structure
-
-```
-agent_0/
-├── app/                    # Next.js pages & API routes
-│   └── api/
-│       ├── agent/execute/  # Unified task execution
-│       ├── gallery/        # Gallery CRUD
-│       ├── tasks/          # Task CRUD
-│       └── cron/           # Scheduled triggers
-│
-├── lib/
-│   ├── agent/
-│   │   ├── runner.ts       # Central task executor
-│   │   └── tools/          # Task implementations
-│   ├── api/                # AI service wrappers
-│   ├── db/                 # Database queries
-│   ├── scheduler/          # Scheduling logic
-│   └── storage/            # Local storage helpers
-│
-├── components/             # UI components
-│
-└── docs/                   # Documentation
-    ├── architecture.md     # System architecture
-    ├── project_rules.md    # Core principles
-    ├── v1-roadmap.md       # Development roadmap
-    └── media-generation.md # Media system docs
-```
-
-## 📚 Documentation
-
-| Document | Description |
-|----------|-------------|
-| [architecture.md](docs/architecture.md) | System design & diagrams |
-| [project_rules.md](docs/project_rules.md) | Core principles & guidelines |
-| [v1-roadmap.md](docs/v1-roadmap.md) | Feature roadmap |
-| [media-generation.md](docs/media-generation.md) | Media pipeline details |
-| [schedule.md](docs/schedule.md) | Scheduling strategy |
-| [gemini-models.md](docs/gemini-models.md) | Model reference |
-
-## 🔮 Roadmap
-
-### Phase 2 (Current): Media Expansion
-
-- Image editing & refinement
-- Video generation (Veo)
-- Multi-step task workflows
-
-### Phase 3: Extended Capabilities
-
-- Code sandbox with isolated execution
-- Browser automation (Playwright)
-- Long-form writing & journaling
-
-### Phase 4: Advanced Composition
-
-- Sub-agent orchestration
-- External service integrations (v0, Producer.ai)
-- Full semantic memory search
-
-## 📄 License
+## License
 
 MIT

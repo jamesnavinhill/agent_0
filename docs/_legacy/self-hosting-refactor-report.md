@@ -178,11 +178,13 @@ Move off Vercel deployment and run locally on your own server. Provide a robust,
 - [ ] Validate the job by checking `/api/cron` responses and confirming tasks run in UI.
 
 Suggested command for a scheduled task:
+
 ```bat
 schtasks /Create /TN "AgentZeroCron" /SC MINUTE /MO 1 /TR "powershell -Command \"Invoke-WebRequest -UseBasicParsing -Headers @{Authorization='Bearer %CRON_SECRET%'} http://localhost:3000/api/cron\""
 ```
 
 Notes:
+
 - Frequency can be adjusted (e.g., every 1-5 minutes).
 - For more frequent runs, consider shorter intervals plus internal task-level scheduling.
 
@@ -227,6 +229,7 @@ Notes:
 - Avoid new vendors unless needed.
 - Use Windows Task Scheduler as the cron trigger.
 - Keep Neon as the managed Postgres backend.
+
 ## Sources (Official)
 
 - [S1] Next.js App Router Deploying: <https://nextjs.org/docs/app/getting-started/deploying>
