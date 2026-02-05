@@ -8,7 +8,7 @@ export const maxDuration = 60
 export async function POST(req: NextRequest) {
     try {
         const body = await req.json()
-        const { taskId } = body
+        const { taskId, overrides } = body
 
         if (!taskId) {
             return NextResponse.json({ error: "taskId is required" }, { status: 400 })
@@ -19,7 +19,11 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "Task not found" }, { status: 404 })
         }
 
-        const result = await executeTask(task, true) // isManual = true
+        const effectiveTask = overrides
+            ? { ...task, parameters: { ...task.parameters, ...overrides } }
+            : task
+
+        const result = await executeTask(effectiveTask, true) // isManual = true
 
         if (result.status === "error") {
             return NextResponse.json({ error: result.error }, { status: 500 })

@@ -57,7 +57,19 @@ const colorPresets = [
 export function SettingsPanel() {
   const { theme, setTheme, accentHue, setAccentHue } = useTheme()
   const { scheduledTasks, toggleScheduledTask, removeScheduledTask, memories, clearMessages, clearThoughts, outputs } = useAgentStore()
-  const { settings, setApiKey, setModel, setTemperature, setSchedulesEnabled, hasApiKey } = useSettings()
+  const {
+    settings,
+    setApiKey,
+    setModel,
+    setImageModel,
+    setVideoModel,
+    setVideoAspectRatio,
+    setVideoResolution,
+    setVideoDurationSeconds,
+    setTemperature,
+    setSchedulesEnabled,
+    hasApiKey,
+  } = useSettings()
   const { exportToJSON: exportMemories } = useMemory()
 
   const [expandedSection, setExpandedSection] = useState<string | null>("appearance")
@@ -279,7 +291,7 @@ export function SettingsPanel() {
 
           {/* Model Selection */}
           <div className="space-y-2">
-            <label className="text-sm text-muted-foreground">Model</label>
+            <label className="text-sm text-muted-foreground">Chat Model</label>
             <Select value={settings.model} onValueChange={(v) => setModel(v as typeof settings.model)}>
               <SelectTrigger>
                 <SelectValue />
@@ -288,7 +300,82 @@ export function SettingsPanel() {
                 <SelectItem value="gemini-3-flash-preview">Gemini 3 Flash (Fast)</SelectItem>
                 <SelectItem value="gemini-3-pro-preview">Gemini 3 Pro (Brain)</SelectItem>
                 <SelectItem value="gemini-2.5-flash">Gemini 2.5 Flash (Agentic)</SelectItem>
+                <SelectItem value="gemini-2.5-flash-lite">Gemini 2.5 Flash Lite (Ultra Fast)</SelectItem>
                 <SelectItem value="gemini-2.5-pro">Gemini 2.5 Pro (Research)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Image Model Selection */}
+          <div className="space-y-2">
+            <label className="text-sm text-muted-foreground">Image Model</label>
+            <Select value={settings.imageModel} onValueChange={(v) => setImageModel(v as typeof settings.imageModel)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="gemini-2.5-flash-image">Gemini 2.5 Flash Image (Default)</SelectItem>
+                <SelectItem value="gemini-3-pro-image-preview">Gemini 3 Pro Image (Preview)</SelectItem>
+                <SelectItem value="imagen-4.0-generate-001">Imagen 4 Generate</SelectItem>
+                <SelectItem value="imagen-4.0-ultra-generate-001">Imagen 4 Ultra</SelectItem>
+                <SelectItem value="imagen-4.0-fast-generate-001">Imagen 4 Fast</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Video Model Selection */}
+          <div className="space-y-2">
+            <label className="text-sm text-muted-foreground">Video Model (Veo)</label>
+            <Select value={settings.videoModel} onValueChange={(v) => setVideoModel(v as typeof settings.videoModel)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="veo-3.0-fast-generate-001">Veo 3 Fast Generate</SelectItem>
+                <SelectItem value="veo-3.0-generate-001">Veo 3 Generate</SelectItem>
+                <SelectItem value="veo-3.1-fast-generate-preview">Veo 3.1 Fast (Preview)</SelectItem>
+                <SelectItem value="veo-3.1-generate-preview">Veo 3.1 (Preview)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Video Settings */}
+          <div className="space-y-2">
+            <label className="text-sm text-muted-foreground">Video Aspect Ratio</label>
+            <Select value={settings.videoAspectRatio} onValueChange={(v) => setVideoAspectRatio(v as typeof settings.videoAspectRatio)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="16:9">Landscape (16:9)</SelectItem>
+                <SelectItem value="9:16">Portrait (9:16)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm text-muted-foreground">Video Resolution</label>
+            <Select value={settings.videoResolution} onValueChange={(v) => setVideoResolution(v as typeof settings.videoResolution)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1080p">1080p (Best)</SelectItem>
+                <SelectItem value="720p">720p</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm text-muted-foreground">Video Duration</label>
+            <Select value={String(settings.videoDurationSeconds)} onValueChange={(v) => setVideoDurationSeconds(Number(v) as typeof settings.videoDurationSeconds)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="4">4s</SelectItem>
+                <SelectItem value="6">6s</SelectItem>
+                <SelectItem value="8">8s</SelectItem>
               </SelectContent>
             </Select>
           </div>

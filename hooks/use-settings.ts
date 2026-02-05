@@ -14,7 +14,12 @@ const SETTINGS_KEY = "agent_zero_settings"
 
 export interface AgentSettings {
     apiKey: string
-    model: "gemini-3-flash-preview" | "gemini-3-pro-preview" | "gemini-2.5-flash" | "gemini-2.5-pro"
+    model: "gemini-3-flash-preview" | "gemini-3-pro-preview" | "gemini-2.5-flash" | "gemini-2.5-pro" | "gemini-2.5-flash-lite"
+    imageModel: "gemini-2.5-flash-image" | "gemini-3-pro-image-preview" | "imagen-4.0-generate-001" | "imagen-4.0-ultra-generate-001" | "imagen-4.0-fast-generate-001"
+    videoModel: "veo-3.0-fast-generate-001" | "veo-3.0-generate-001" | "veo-3.1-fast-generate-preview" | "veo-3.1-generate-preview"
+    videoAspectRatio: "16:9" | "9:16"
+    videoResolution: "1080p" | "720p"
+    videoDurationSeconds: 4 | 6 | 8
     temperature: number
     schedulesEnabled: boolean
 }
@@ -22,6 +27,11 @@ export interface AgentSettings {
 const defaultSettings: AgentSettings = {
     apiKey: "",
     model: "gemini-3-flash-preview",
+    imageModel: "gemini-2.5-flash-image",
+    videoModel: "veo-3.0-fast-generate-001",
+    videoAspectRatio: "16:9",
+    videoResolution: "1080p",
+    videoDurationSeconds: 6,
     temperature: 0.7,
     schedulesEnabled: true,
 }
@@ -89,6 +99,26 @@ export function useSettings() {
         setSettings({ model })
     }, [setSettings])
 
+    const setImageModel = useCallback((imageModel: AgentSettings["imageModel"]) => {
+        setSettings({ imageModel })
+    }, [setSettings])
+
+    const setVideoModel = useCallback((videoModel: AgentSettings["videoModel"]) => {
+        setSettings({ videoModel })
+    }, [setSettings])
+
+    const setVideoAspectRatio = useCallback((videoAspectRatio: AgentSettings["videoAspectRatio"]) => {
+        setSettings({ videoAspectRatio })
+    }, [setSettings])
+
+    const setVideoResolution = useCallback((videoResolution: AgentSettings["videoResolution"]) => {
+        setSettings({ videoResolution })
+    }, [setSettings])
+
+    const setVideoDurationSeconds = useCallback((videoDurationSeconds: AgentSettings["videoDurationSeconds"]) => {
+        setSettings({ videoDurationSeconds })
+    }, [setSettings])
+
     const setTemperature = useCallback((temperature: number) => {
         setSettings({ temperature })
     }, [setSettings])
@@ -120,6 +150,11 @@ export function useSettings() {
         setSettings,
         setApiKey,
         setModel,
+        setImageModel,
+        setVideoModel,
+        setVideoAspectRatio,
+        setVideoResolution,
+        setVideoDurationSeconds,
         setTemperature,
         setSchedulesEnabled,
         clearApiKey,

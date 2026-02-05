@@ -8,7 +8,11 @@ interface RequestMessage {
 }
 
 export async function POST(req: Request) {
-  const { messages }: { messages: RequestMessage[] } = await req.json()
+  const {
+    messages,
+    model,
+    temperature,
+  }: { messages: RequestMessage[]; model?: string; temperature?: number } = await req.json()
 
   if (!isConfigured()) {
     return new Response(
@@ -27,7 +31,7 @@ export async function POST(req: Request) {
   const stream = new ReadableStream({
     async start(controller) {
       try {
-        for await (const chunk of chatStream(geminiMessages)) {
+        for await (const chunk of chatStream(geminiMessages, { model, temperature })) {
           const data = JSON.stringify({ type: "text", content: chunk })
           controller.enqueue(encoder.encode(`data: ${data}\n\n`))
         }

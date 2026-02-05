@@ -2,6 +2,8 @@
 
 import { useState, useCallback, useRef } from "react"
 import { useAgentStore } from "@/lib/store/agent-store"
+import { useSettings } from "@/hooks/use-settings"
+import { createId } from "@/lib/utils/id"
 
 export type ChatStatus = "idle" | "loading" | "streaming" | "error"
 
@@ -17,6 +19,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
   const abortControllerRef = useRef<AbortController | null>(null)
   
   const { messages, addMessage, setState, addThought, addActivity, updateActivity } = useAgentStore()
+  const { settings } = useSettings()
 
   const sendMessage = useCallback(async (content: string) => {
     if (!content.trim()) return
@@ -33,7 +36,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
     
     addThought(`Received: "${content.slice(0, 50)}${content.length > 50 ? "..." : ""}"`, "observation")
     
-    const activityId = crypto.randomUUID()
+    const activityId = createId()
     addActivity("Processing message", content.slice(0, 100))
     
     const chatMessages = [
@@ -45,7 +48,11 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: chatMessages }),
+        body: JSON.stringify({
+          messages: chatMessages,
+          model: settings.model,
+          temperature: settings.temperature,
+        }),
         signal: abortControllerRef.current.signal,
       })
 
@@ -120,7 +127,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
         setStatus("idle")
       }, 3000)
     }
-  }, [messages, addMessage, setState, addThought, addActivity, options])
+  }, [messages, addMessage, setState, addThought, addActivity, options, settings.model, settings.temperature])
 
   const abort = useCallback(() => {
     abortControllerRef.current?.abort()

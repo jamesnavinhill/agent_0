@@ -15,6 +15,13 @@ export interface ExecutorContext {
     metadata?: Record<string, unknown>
   }) => void
   setState: (state: "idle" | "listening" | "thinking" | "creating" | "speaking" | "error") => void
+  settings?: {
+    imageModel?: string
+    videoModel?: string
+    videoAspectRatio?: string
+    videoResolution?: string
+    videoDurationSeconds?: number
+  }
 }
 
 export async function executeTask(
@@ -82,12 +89,21 @@ async function executeVideoTask(
 ): Promise<TaskResult> {
   context.addThought(`Starting video generation task: ${task.name}`, "action")
 
+  const overrides: Record<string, unknown> = {}
+  if (context.settings?.videoModel) overrides.model = context.settings.videoModel
+  if (context.settings?.videoAspectRatio) overrides.aspectRatio = context.settings.videoAspectRatio
+  if (context.settings?.videoResolution) overrides.resolution = context.settings.videoResolution
+  if (context.settings?.videoDurationSeconds) overrides.durationSeconds = context.settings.videoDurationSeconds
+
   const response = await fetch("/api/agent/execute", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
     },
-    body: JSON.stringify({ taskId: task.id })
+    body: JSON.stringify({
+      taskId: task.id,
+      overrides: Object.keys(overrides).length > 0 ? overrides : undefined,
+    })
   })
 
   if (!response.ok) {
@@ -168,12 +184,18 @@ async function executeArtTask(
   // This ensures images are uploaded to local storage and saved to gallery
   context.addThought(`Starting media generation task: ${task.name}`, "action")
 
+  const overrides: Record<string, unknown> = {}
+  if (context.settings?.imageModel) overrides.model = context.settings.imageModel
+
   const response = await fetch("/api/agent/execute", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
     },
-    body: JSON.stringify({ taskId: task.id })
+    body: JSON.stringify({
+      taskId: task.id,
+      overrides: Object.keys(overrides).length > 0 ? overrides : undefined,
+    })
   })
 
   if (!response.ok) {

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react"
 import { useAgentStore, type ScheduledTask } from "@/lib/store/agent-store"
+import { useSettings } from "@/hooks/use-settings"
 import {
   Scheduler,
   getScheduler,
@@ -39,6 +40,7 @@ export function useScheduler(): UseSchedulerReturn {
     addOutput,
     setState: setAgentState,
   } = useAgentStore()
+  const { settings } = useSettings()
 
   useEffect(() => {
     const scheduler = getScheduler()
@@ -50,6 +52,13 @@ export function useScheduler(): UseSchedulerReturn {
       addThought,
       addOutput,
       setState: setAgentState,
+      settings: {
+        imageModel: settings.imageModel,
+        videoModel: settings.videoModel,
+        videoAspectRatio: settings.videoAspectRatio,
+        videoResolution: settings.videoResolution,
+        videoDurationSeconds: settings.videoDurationSeconds,
+      },
     })
 
     const mappedTasks = (scheduledTasks ?? []).map(t => ({
@@ -64,7 +73,18 @@ export function useScheduler(): UseSchedulerReturn {
     return () => {
       unsubscribe()
     }
-  }, [addActivity, updateActivity, addThought, addOutput, setAgentState])
+  }, [
+    addActivity,
+    updateActivity,
+    addThought,
+    addOutput,
+    setAgentState,
+    settings.imageModel,
+    settings.videoModel,
+    settings.videoAspectRatio,
+    settings.videoResolution,
+    settings.videoDurationSeconds,
+  ])
 
   useEffect(() => {
     if (!schedulerRef.current) return

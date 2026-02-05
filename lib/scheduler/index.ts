@@ -206,6 +206,13 @@ export class Scheduler {
   async runNow(taskId: string): Promise<TaskExecution | null> {
     const task = this.tasks.get(taskId)
     if (!task) return null
+
+    if (this.state.currentExecution) {
+      if (this.state.currentExecution.taskId === taskId) {
+        return this.state.currentExecution
+      }
+      return null
+    }
     
     return this.executeTask(task)
   }

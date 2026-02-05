@@ -2,6 +2,8 @@
 
 import { useState, useCallback } from "react"
 import { useAgentStore } from "@/lib/store/agent-store"
+import { useSettings } from "@/hooks/use-settings"
+import { createId } from "@/lib/utils/id"
 
 interface GeneratedImage {
   url: string
@@ -12,7 +14,7 @@ interface GeneratedImage {
 interface ImageGenerationOptions {
   count?: number
   aspectRatio?: "1:1" | "3:4" | "4:3" | "9:16" | "16:9"
-  model?: "imagen-3.0-generate-002" | "imagen-3.0-fast-generate-001"
+  model?: "gemini-2.5-flash-image" | "gemini-3-pro-image-preview" | "imagen-4.0-generate-001" | "imagen-4.0-ultra-generate-001" | "imagen-4.0-fast-generate-001"
 }
 
 interface UseImageGenerationReturn {
@@ -28,6 +30,7 @@ export function useImageGeneration(): UseImageGenerationReturn {
   const [lastGenerated, setLastGenerated] = useState<GeneratedImage | null>(null)
   
   const { setState, addOutput, addActivity, updateActivity, addThought } = useAgentStore()
+  const { settings } = useSettings()
 
   const generate = useCallback(async (
     prompt: string,
@@ -37,7 +40,7 @@ export function useImageGeneration(): UseImageGenerationReturn {
     setError(null)
     setState("creating")
 
-    const activityId = crypto.randomUUID()
+    const activityId = createId()
     addActivity("Generating image", `Prompt: "${prompt.slice(0, 50)}..."`)
     addThought(`Creating visual art: "${prompt.slice(0, 80)}"`, "action")
 
@@ -49,7 +52,7 @@ export function useImageGeneration(): UseImageGenerationReturn {
           prompt,
           count: options.count,
           aspectRatio: options.aspectRatio,
-          model: options.model,
+          model: options.model ?? settings.imageModel,
         }),
       })
 
@@ -70,7 +73,7 @@ export function useImageGeneration(): UseImageGenerationReturn {
           metadata: {
             prompt,
             aspectRatio: options.aspectRatio,
-            model: options.model,
+            model: options.model ?? settings.imageModel,
           },
         })
       }
@@ -92,7 +95,7 @@ export function useImageGeneration(): UseImageGenerationReturn {
     } finally {
       setIsGenerating(false)
     }
-  }, [setState, addOutput, addActivity, updateActivity, addThought])
+  }, [setState, addOutput, addActivity, updateActivity, addThought, settings.imageModel])
 
   return {
     generate,
