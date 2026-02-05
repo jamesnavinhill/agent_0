@@ -30,6 +30,26 @@ Refactor Agent Zero to run locally on a Windows host without Vercel dependencies
 - Neon `DATABASE_URL`, `GOOGLE_API_KEY`, and `CRON_SECRET` available.
 - Firewall access to port 3000 on LAN only.
 
+**Phase 0: Database Initialization (Neon)**
+
+Checklist:
+- [x] Copy the Neon connection string for the new project and set `DATABASE_URL` in `.env.local`.
+- [x] Ensure required extensions are enabled:
+  - `pgcrypto`
+  - `vector` (pgvector)
+- [x] Apply schema from `lib/db/schema.sql` using the local script:
+  - `pnpm tsx scripts/migrate.ts`
+- [x] (Optional) Seed initial tasks if you want a starting schedule:
+  - `pnpm tsx scripts/seed-morning-read.ts`
+  - `pnpm tsx scripts/seed-media-task.ts`
+  - `pnpm tsx scripts/seed-motion-art.ts`
+- [x] (Optional) Verify DB connectivity:
+  - `pnpm tsx scripts/check-db.ts`
+
+**Phase 0 Done When**
+- Schema is applied successfully and tables exist.
+- App loads without DB errors and memory/knowledge panels return data.
+
 **Phase 1: Hosting Baseline**
 
 Checklist:

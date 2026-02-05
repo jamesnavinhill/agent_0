@@ -9,7 +9,12 @@
     "start": "cross-env BROWSERSLIST_IGNORE_OLD_DATA=true BASELINE_BROWSER_MAPPING_IGNORE_OLD_DATA=true next start",
     "test": "vitest",
     "test:ui": "vitest --ui",
-    "test:coverage": "vitest --coverage"
+    "test:coverage": "vitest --coverage",
+    "db:migrate": "tsx scripts/migrate.ts",
+    "db:check": "tsx scripts/check-db.ts",
+    "db:seed:morning-read": "tsx scripts/seed-morning-read.ts",
+    "db:seed:media-task": "tsx scripts/seed-media-task.ts",
+    "db:seed:motion-art": "tsx scripts/seed-motion-art.ts"
   },
   "dependencies": {
     "@ai-sdk/react": "3.0.41",
