@@ -17,7 +17,7 @@ async function seed() {
             const taskId = existing[0].id
             await sql(`
                 UPDATE tasks
-                SET parameters = '{"mode": "text-to-video", "aspectRatio": "16:9", "model": "veo-3.0-fast-generate-001"}'::jsonb,
+                SET parameters = '{"mode": "image-to-video", "aspectRatio": "16:9", "model": "veo-3.0-fast-generate-001"}'::jsonb,
                     updated_at = NOW()
                 WHERE id = $1
             `, [taskId])
@@ -34,7 +34,7 @@ async function seed() {
                 '0 14 * * *', -- 2:00 PM Daily
                 true, 
                 'video',
-                '{"mode": "text-to-video", "aspectRatio": "16:9", "model": "veo-3.0-fast-generate-001"}'::jsonb
+                '{"mode": "image-to-video", "aspectRatio": "16:9", "model": "veo-3.0-fast-generate-001"}'::jsonb
             )
             RETURNING id
         `)

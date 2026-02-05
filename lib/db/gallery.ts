@@ -110,6 +110,68 @@ export async function getGalleryItemById(id: string): Promise<{
 }
 
 /**
+ * Get the latest gallery item by type/category
+ */
+export async function getLatestGalleryItem(filter?: {
+    type?: "image" | "code" | "text" | "audio" | "video"
+    category?: string
+}): Promise<{
+    id: string
+    type: string
+    blob_url: string
+    title: string | null
+    prompt: string | null
+    category: string
+    metadata: Record<string, unknown> | null
+    created_at: string
+} | null> {
+    if (!isDatabaseConfigured()) return null
+
+    try {
+        let query = `
+            SELECT id, type, blob_url, title, prompt, category, metadata, created_at
+            FROM gallery_items
+            WHERE 1=1
+        `
+        const params: unknown[] = []
+        let paramIndex = 1
+
+        if (filter?.type) {
+            query += ` AND type = $${paramIndex++}`
+            params.push(filter.type)
+        }
+        if (filter?.category) {
+            query += ` AND category = $${paramIndex++}`
+            params.push(filter.category)
+        }
+
+        query += ` ORDER BY created_at DESC LIMIT 1`
+
+        const rows = await sql<{
+            id: string
+            type: string
+            blob_url: string
+            title: string | null
+            prompt: string | null
+            category: string
+            metadata: string | null
+            created_at: string
+        }>(query, params)
+
+        if (rows.length === 0) return null
+
+        const row = rows[0]
+        return {
+            ...row,
+            metadata: row.metadata ? JSON.parse(row.metadata) : null
+        }
+    } catch (error) {
+        console.error("[Gallery] Failed to get latest item:", error)
+        return null
+    }
+}
+
+/**
  * Get gallery items from database
  */
 export async function getGalleryItems(filter?: {

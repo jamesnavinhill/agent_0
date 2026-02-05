@@ -62,6 +62,7 @@ export function SettingsPanel() {
     setApiKey,
     setModel,
     setImageModel,
+    setImageAspectRatio,
     setVideoModel,
     setVideoAspectRatio,
     setVideoResolution,
@@ -84,16 +85,17 @@ export function SettingsPanel() {
 
     const updates: Array<{ id: string; parameters: Record<string, unknown> }> = []
 
-    const mediaTask = (scheduledTasks ?? []).find((t) => t.name === "Meaningful Media")
-    if (mediaTask) {
-      updates.push({
-        id: mediaTask.id,
-        parameters: {
-          ...(mediaTask.parameters ?? {}),
-          model: settings.imageModel,
-        },
-      })
-    }
+      const mediaTask = (scheduledTasks ?? []).find((t) => t.name === "Meaningful Media")
+      if (mediaTask) {
+        updates.push({
+          id: mediaTask.id,
+          parameters: {
+            ...(mediaTask.parameters ?? {}),
+            model: settings.imageModel,
+            aspectRatio: settings.imageAspectRatio,
+          },
+        })
+      }
 
     const motionTask = (scheduledTasks ?? []).find((t) => t.name === "Motion Art")
     if (motionTask) {
@@ -381,6 +383,22 @@ export function SettingsPanel() {
                 <SelectItem value="imagen-4.0-generate-001">Imagen 4 Generate</SelectItem>
                 <SelectItem value="imagen-4.0-ultra-generate-001">Imagen 4 Ultra</SelectItem>
                 <SelectItem value="imagen-4.0-fast-generate-001">Imagen 4 Fast</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm text-muted-foreground">Image Aspect Ratio</label>
+            <Select value={settings.imageAspectRatio} onValueChange={(v) => setImageAspectRatio(v as typeof settings.imageAspectRatio)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1:1">Square (1:1)</SelectItem>
+                <SelectItem value="16:9">Landscape (16:9)</SelectItem>
+                <SelectItem value="9:16">Portrait (9:16)</SelectItem>
+                <SelectItem value="4:3">Standard (4:3)</SelectItem>
+                <SelectItem value="3:4">Portrait (3:4)</SelectItem>
               </SelectContent>
             </Select>
           </div>

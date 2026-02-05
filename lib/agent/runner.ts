@@ -1,5 +1,5 @@
 import { Task } from "@/app/api/tasks/route"
-import { updateTaskStatus, updateTaskSchedule } from "@/lib/db/tasks"
+import { updateTaskStatus, updateTaskSchedule, getTask } from "@/lib/db/tasks"
 import { generateText } from "@/lib/api/gemini"
 import { getNextRunTime } from "@/lib/scheduler/cron"
 import { pushActivity } from "@/lib/activity/bus"
@@ -66,6 +66,35 @@ export async function executeTask(task: Task, isManual = false): Promise<Executi
             output = subAgentResult.success
                 ? (subAgentResult.result as string) || "Sub-agent task completed"
                 : `Sub-agent failed: ${subAgentResult.error}`
+        }
+        else if (task.category === "flow" || task.parameters?.flow === "morning-ritual") {
+            console.log("[Runner] -> Flow path")
+
+            const steps = (task.parameters?.steps as Array<{ id?: string; name?: string }>) || []
+            if (steps.length === 0) {
+                throw new Error("Flow task has no steps configured")
+            }
+
+            const results: string[] = []
+
+            for (const step of steps) {
+                if (!step.id) {
+                    throw new Error("Flow step is missing task id")
+                }
+                const stepTask = await getTask(step.id)
+                if (!stepTask) {
+                    throw new Error(`Flow step task not found: ${step.id}`)
+                }
+
+                const stepResult = await executeTask(stepTask, true)
+                if (stepResult.status === "error") {
+                    throw new Error(`Flow step failed (${stepTask.name}): ${stepResult.error}`)
+                }
+
+                results.push(`${stepTask.name}: ${stepResult.output ?? "complete"}`)
+            }
+
+            output = `Morning Ritual complete:\n${results.join("\n")}`
         }
         else if (task.name.includes("Morning Read") || task.category === "research") {
             console.log("[Runner] -> Research path")

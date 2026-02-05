@@ -15,6 +15,7 @@
     "db:seed:morning-read": "tsx scripts/seed-morning-read.ts",
     "db:seed:media-task": "tsx scripts/seed-media-task.ts",
     "db:seed:motion-art": "tsx scripts/seed-motion-art.ts",
+    "db:seed:morning-ritual": "tsx scripts/seed-morning-ritual.ts",
     "db:repair:videos": "tsx scripts/repair-video-urls.ts"
   },
   "dependencies": {

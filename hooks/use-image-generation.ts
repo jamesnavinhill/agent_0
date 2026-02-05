@@ -51,7 +51,7 @@ export function useImageGeneration(): UseImageGenerationReturn {
         body: JSON.stringify({
           prompt,
           count: options.count,
-          aspectRatio: options.aspectRatio,
+          aspectRatio: options.aspectRatio ?? settings.imageAspectRatio,
           model: options.model ?? settings.imageModel,
         }),
       })
@@ -72,7 +72,7 @@ export function useImageGeneration(): UseImageGenerationReturn {
           category: "art",
           metadata: {
             prompt,
-            aspectRatio: options.aspectRatio,
+            aspectRatio: options.aspectRatio ?? settings.imageAspectRatio,
             model: options.model ?? settings.imageModel,
           },
         })
@@ -95,7 +95,7 @@ export function useImageGeneration(): UseImageGenerationReturn {
     } finally {
       setIsGenerating(false)
     }
-  }, [setState, addOutput, addActivity, updateActivity, addThought, settings.imageModel])
+  }, [setState, addOutput, addActivity, updateActivity, addThought, settings.imageModel, settings.imageAspectRatio])
 
   return {
     generate,

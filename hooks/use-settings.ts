@@ -16,6 +16,7 @@ export interface AgentSettings {
     apiKey: string
     model: "gemini-3-flash-preview" | "gemini-3-pro-preview" | "gemini-2.5-flash" | "gemini-2.5-pro" | "gemini-2.5-flash-lite"
     imageModel: "gemini-2.5-flash-image" | "gemini-3-pro-image-preview" | "imagen-4.0-generate-001" | "imagen-4.0-ultra-generate-001" | "imagen-4.0-fast-generate-001"
+    imageAspectRatio: "1:1" | "3:4" | "4:3" | "9:16" | "16:9"
     videoModel: "veo-3.0-fast-generate-001" | "veo-3.0-generate-001" | "veo-3.1-fast-generate-preview" | "veo-3.1-generate-preview"
     videoAspectRatio: "16:9" | "9:16"
     videoResolution: "1080p" | "720p"
@@ -28,6 +29,7 @@ const defaultSettings: AgentSettings = {
     apiKey: "",
     model: "gemini-3-flash-preview",
     imageModel: "gemini-2.5-flash-image",
+    imageAspectRatio: "9:16",
     videoModel: "veo-3.0-fast-generate-001",
     videoAspectRatio: "16:9",
     videoResolution: "1080p",
@@ -103,6 +105,10 @@ export function useSettings() {
         setSettings({ imageModel })
     }, [setSettings])
 
+    const setImageAspectRatio = useCallback((imageAspectRatio: AgentSettings["imageAspectRatio"]) => {
+        setSettings({ imageAspectRatio })
+    }, [setSettings])
+
     const setVideoModel = useCallback((videoModel: AgentSettings["videoModel"]) => {
         setSettings({ videoModel })
     }, [setSettings])
@@ -151,6 +157,7 @@ export function useSettings() {
         setApiKey,
         setModel,
         setImageModel,
+        setImageAspectRatio,
         setVideoModel,
         setVideoAspectRatio,
         setVideoResolution,

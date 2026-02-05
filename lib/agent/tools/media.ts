@@ -1,5 +1,5 @@
 import { generateImage, AspectRatio, ImagenModel } from "@/lib/api/imagen"
-import { saveGalleryItem, getGalleryItemById } from "@/lib/db/gallery"
+import { saveGalleryItem, getGalleryItemById, getLatestGalleryItem } from "@/lib/db/gallery"
 import { pushActivity } from "@/lib/activity/bus"
 import { addMemory, getRecentMemories } from "@/lib/db/memories"
 import { Task } from "@/app/api/tasks/route"
@@ -11,6 +11,51 @@ import path from "path"
 
 const DEFAULT_MODEL: ImagenModel = "gemini-2.5-flash-image"
 const DEFAULT_ASPECT: AspectRatio = "9:16"
+
+const PUBLIC_DIR = path.join(process.cwd(), "public")
+const MEDIA_ROOT_DIR = path.resolve(process.env.MEDIA_ROOT_DIR ?? PUBLIC_DIR)
+const MEDIA_ROOT_REL = path.relative(PUBLIC_DIR, MEDIA_ROOT_DIR)
+const MEDIA_ROOT_WITHIN_PUBLIC =
+    MEDIA_ROOT_REL === "" || (!MEDIA_ROOT_REL.startsWith("..") && !path.isAbsolute(MEDIA_ROOT_REL))
+
+function getMediaPublicBase(): string {
+    if (!MEDIA_ROOT_WITHIN_PUBLIC) return ""
+    if (!MEDIA_ROOT_REL) return ""
+    return `/${MEDIA_ROOT_REL.replace(/\\/g, "/")}`
+}
+
+async function findLatestGeneratedImageUrl(): Promise<string | null> {
+    const generatedDir = path.join(MEDIA_ROOT_DIR, "generated")
+    let entries: string[] = []
+
+    try {
+        entries = await fs.readdir(generatedDir)
+    } catch {
+        return null
+    }
+
+    const images = entries.filter((name) => /\.(png|jpe?g|webp)$/i.test(name))
+    if (images.length === 0) return null
+
+    let latestFile = images[0]
+    let latestMtime = 0
+
+    for (const file of images) {
+        try {
+            const stat = await fs.stat(path.join(generatedDir, file))
+            const mtime = stat.mtimeMs
+            if (mtime > latestMtime) {
+                latestMtime = mtime
+                latestFile = file
+            }
+        } catch {
+            // ignore files we can't stat
+        }
+    }
+
+    const base = getMediaPublicBase()
+    return `${base}/generated/${latestFile}`.replace(/\\/g, "/")
+}
 
 // Helper to handle base64 upload for images
 async function uploadGeneratedImage(dataUrl: string): Promise<string> {
@@ -265,7 +310,7 @@ Style: Cinematic, high-fidelity, 8k.
 export interface VideoGenerationOptions {
     mode: "text-to-video" | "image-to-video"
     prompt: string
-    sourceGalleryId?: string  // Required for image-to-video
+    sourceGalleryId?: string  // Optional - falls back to latest art image
     aspectRatio?: VideoAspectRatio
     config?: VeoConfig
 }
@@ -279,8 +324,8 @@ export async function generateVideo(
 ): Promise<string> {
     // Resolve options from task parameters or direct options
     const mode = options?.mode || task?.parameters?.mode as VideoGenerationOptions["mode"] || "text-to-video"
-    const sourceGalleryId = options?.sourceGalleryId || task?.parameters?.sourceGalleryId as string
-    const aspectRatio = options?.aspectRatio || task?.parameters?.aspectRatio as VideoAspectRatio || "16:9"
+    let sourceGalleryId = options?.sourceGalleryId || task?.parameters?.sourceGalleryId as string
+    let aspectRatio = options?.aspectRatio || task?.parameters?.aspectRatio as VideoAspectRatio || "16:9"
     const taskConfig: VeoConfig = {}
     if (task?.parameters?.model) taskConfig.model = task.parameters.model as VeoConfig["model"]
     if (task?.parameters?.resolution) taskConfig.resolution = task.parameters.resolution as VeoConfig["resolution"]
@@ -300,13 +345,50 @@ export async function generateVideo(
 
         if (mode === "image-to-video") {
             // Image-to-video: animate an existing gallery image
-            if (!sourceGalleryId) {
-                throw new Error("sourceGalleryId required for image-to-video mode")
+            let sourceItem = null as Awaited<ReturnType<typeof getLatestGalleryItem>> | null
+            const maxAttempts = 3
+            for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+                sourceItem = sourceGalleryId
+                    ? await getGalleryItemById(sourceGalleryId)
+                    : await getLatestGalleryItem({ type: "image", category: "art" })
+
+                if (!sourceItem) {
+                    sourceItem = await getLatestGalleryItem({ type: "image" })
+                }
+
+                if (sourceItem) break
+
+                if (attempt < maxAttempts) {
+                    await new Promise((resolve) => setTimeout(resolve, 1500))
+                }
             }
 
-            const sourceItem = await getGalleryItemById(sourceGalleryId)
             if (!sourceItem) {
-                throw new Error(`Source gallery item not found: ${sourceGalleryId}`)
+                const fallbackUrl = await findLatestGeneratedImageUrl()
+                if (fallbackUrl) {
+                    sourceItem = {
+                        id: "filesystem",
+                        type: "image",
+                        blob_url: fallbackUrl,
+                        title: null,
+                        prompt: null,
+                        category: "art",
+                        metadata: null,
+                        created_at: new Date().toISOString(),
+                    }
+                }
+            }
+
+            if (!sourceItem) {
+                throw new Error("No source image found for image-to-video mode")
+            }
+
+            if (!sourceGalleryId) {
+                sourceGalleryId = sourceItem.id
+            }
+
+            if (sourceItem.metadata && typeof sourceItem.metadata.aspectRatio === "string") {
+                aspectRatio = sourceItem.metadata.aspectRatio as VideoAspectRatio
             }
 
             // Download source image

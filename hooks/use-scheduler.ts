@@ -54,6 +54,7 @@ export function useScheduler(): UseSchedulerReturn {
       setState: setAgentState,
       settings: {
         imageModel: settings.imageModel,
+        imageAspectRatio: settings.imageAspectRatio,
         videoModel: settings.videoModel,
         videoAspectRatio: settings.videoAspectRatio,
         videoResolution: settings.videoResolution,
@@ -63,7 +64,7 @@ export function useScheduler(): UseSchedulerReturn {
 
     const mappedTasks = (scheduledTasks ?? []).map(t => ({
       ...t,
-      category: (t.category ?? "custom") as "art" | "video" | "music" | "code" | "philosophy" | "research" | "blog" | "game" | "social" | "custom",
+      category: (t.category ?? "custom") as "art" | "video" | "flow" | "music" | "code" | "philosophy" | "research" | "blog" | "game" | "social" | "custom",
       runCount: 0,
     }))
     scheduler.setTasks(mappedTasks)
@@ -80,6 +81,7 @@ export function useScheduler(): UseSchedulerReturn {
     addOutput,
     setAgentState,
     settings.imageModel,
+    settings.imageAspectRatio,
     settings.videoModel,
     settings.videoAspectRatio,
     settings.videoResolution,
@@ -91,7 +93,7 @@ export function useScheduler(): UseSchedulerReturn {
 
     const mappedTasks = (scheduledTasks ?? []).map(t => ({
       ...t,
-      category: (t.category ?? "custom") as "art" | "video" | "music" | "code" | "philosophy" | "research" | "blog" | "game" | "social" | "custom",
+      category: (t.category ?? "custom") as "art" | "video" | "flow" | "music" | "code" | "philosophy" | "research" | "blog" | "game" | "social" | "custom",
       runCount: 0,
       nextRun: t.nextRun ?? getNextRunTime(t.schedule) ?? undefined,
     }))

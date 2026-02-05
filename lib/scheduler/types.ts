@@ -1,6 +1,7 @@
 export type TaskCategory =
   | "art"
   | "video"
+  | "flow"
   | "music"
   | "code"
   | "philosophy"

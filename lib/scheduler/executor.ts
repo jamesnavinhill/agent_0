@@ -69,6 +69,8 @@ async function executeByCategory(
       return executeArtTask(task, context)
     case "video":
       return executeVideoTask(task, context)
+    case "flow":
+      return executeFlowTask(task, context)
     case "code":
       return executeCodeTask(task, context)
     case "research":
@@ -132,6 +134,35 @@ async function executeVideoTask(
   }
 }
 
+async function executeFlowTask(
+  task: ScheduledTask,
+  context: ExecutorContext
+): Promise<TaskResult> {
+  context.addThought(`Starting flow task: ${task.name}`, "action")
+
+  const response = await fetch("/api/agent/execute", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ taskId: task.id })
+  })
+
+  if (!response.ok) {
+    const error = await response.text()
+    throw new Error(`Flow execution failed: ${error} (Status: ${response.status})`)
+  }
+
+  const result = await response.json()
+  const output = result.output || "Flow completed"
+
+  return {
+    type: "text",
+    content: output,
+    metadata: { taskId: task.id }
+  }
+}
+
 async function executeBrowserTask(
   task: ScheduledTask,
   context: ExecutorContext
@@ -186,6 +217,7 @@ async function executeArtTask(
 
   const overrides: Record<string, unknown> = {}
   if (context.settings?.imageModel) overrides.model = context.settings.imageModel
+  if (context.settings?.imageAspectRatio) overrides.aspectRatio = context.settings.imageAspectRatio
 
   const response = await fetch("/api/agent/execute", {
     method: "POST",
