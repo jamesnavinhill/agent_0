@@ -14,7 +14,8 @@
     "db:check": "tsx scripts/check-db.ts",
     "db:seed:morning-read": "tsx scripts/seed-morning-read.ts",
     "db:seed:media-task": "tsx scripts/seed-media-task.ts",
-    "db:seed:motion-art": "tsx scripts/seed-motion-art.ts"
+    "db:seed:motion-art": "tsx scripts/seed-motion-art.ts",
+    "db:repair:videos": "tsx scripts/repair-video-urls.ts"
   },
   "dependencies": {
     "@ai-sdk/react": "3.0.41",

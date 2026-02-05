@@ -56,7 +56,7 @@ const colorPresets = [
 
 export function SettingsPanel() {
   const { theme, setTheme, accentHue, setAccentHue } = useTheme()
-  const { scheduledTasks, toggleScheduledTask, removeScheduledTask, memories, clearMessages, clearThoughts, outputs } = useAgentStore()
+  const { scheduledTasks, toggleScheduledTask, removeScheduledTask, fetchTasks, memories, clearMessages, clearThoughts, outputs } = useAgentStore()
   const {
     settings,
     setApiKey,
@@ -74,6 +74,68 @@ export function SettingsPanel() {
 
   const [expandedSection, setExpandedSection] = useState<string | null>("appearance")
   const [showApiKey, setShowApiKey] = useState(false)
+  const [syncingTasks, setSyncingTasks] = useState(false)
+  const [syncStatus, setSyncStatus] = useState<string | null>(null)
+
+  const handleSyncTaskSettings = async () => {
+    if (syncingTasks) return
+    setSyncingTasks(true)
+    setSyncStatus(null)
+
+    const updates: Array<{ id: string; parameters: Record<string, unknown> }> = []
+
+    const mediaTask = (scheduledTasks ?? []).find((t) => t.name === "Meaningful Media")
+    if (mediaTask) {
+      updates.push({
+        id: mediaTask.id,
+        parameters: {
+          ...(mediaTask.parameters ?? {}),
+          model: settings.imageModel,
+        },
+      })
+    }
+
+    const motionTask = (scheduledTasks ?? []).find((t) => t.name === "Motion Art")
+    if (motionTask) {
+      updates.push({
+        id: motionTask.id,
+        parameters: {
+          ...(motionTask.parameters ?? {}),
+          model: settings.videoModel,
+          aspectRatio: settings.videoAspectRatio,
+          resolution: settings.videoResolution,
+          durationSeconds: settings.videoDurationSeconds,
+        },
+      })
+    }
+
+    if (updates.length === 0) {
+      setSyncStatus("No matching tasks found to sync.")
+      setSyncingTasks(false)
+      return
+    }
+
+    try {
+      const res = await fetch("/api/tasks", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ updates }),
+      })
+
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to sync task settings")
+      }
+
+      await fetchTasks()
+      setSyncStatus(`Synced ${data.updated ?? updates.length} task${(data.updated ?? updates.length) === 1 ? "" : "s"}.`)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Sync failed"
+      setSyncStatus(message)
+    } finally {
+      setSyncingTasks(false)
+    }
+  }
 
   const exportGallery = () => {
     const data = {
@@ -378,6 +440,27 @@ export function SettingsPanel() {
                 <SelectItem value="8">8s</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="space-y-2 pt-2 border-t border-border">
+            <div className="flex items-center justify-between">
+              <label className="text-sm text-muted-foreground">Sync to Scheduled Tasks</label>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSyncTaskSettings}
+                disabled={syncingTasks}
+                className="gap-2"
+              >
+                {syncingTasks ? "Syncing..." : "Sync Now"}
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Applies current image/video settings to the “Meaningful Media” and “Motion Art” tasks (used by cron).
+            </p>
+            {syncStatus && (
+              <p className="text-xs text-muted-foreground">{syncStatus}</p>
+            )}
           </div>
 
           {/* Temperature */}
