@@ -57,10 +57,10 @@ Checklist:
 - [x] `GOOGLE_API_KEY`
 - [x] `DATABASE_URL`
 - [x] `CRON_SECRET`
-- [ ] Run `pnpm run build`
-- [ ] Run `pnpm run start`
-- [ ] Open `http://localhost:3000`
-- [ ] Open `http://<LAN_IP>:3000` from another device on the same network
+- [x] Run `pnpm run build`
+- [x] Run `pnpm run start`
+- [x] Open `http://localhost:3000`
+- [x] Open `http://<LAN_IP>:3000` from another device on the same network
 - [ ] Confirm `public/gallery` is writable
 
 **Phase 1 Done When**
@@ -75,7 +75,26 @@ Checklist:
 - [ ] Create a Windows Task Scheduler job to hit `http://localhost:3000/api/cron`
 - [ ] Include `Authorization: Bearer <CRON_SECRET>` header
 - [ ] Set interval to 1 minute (adjust later if needed)
-- [ ] Verify tasks execute and update in UI
+- [ ] Verify tasks execute and update in UI or in the `tasks` table
+- [ ] If media generation fails, confirm `GOOGLE_API_KEY` is set and skip media tasks for now
+
+Suggested Task Scheduler action (uses `.env.local` for the secret):
+```bat
+schtasks /Create /TN "AgentZeroCron" /SC MINUTE /MO 1 /TR "powershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File C:\\Users\\james\\projects\\agent_0\\scripts\\run-cron.ps1"
+```
+
+If the task already exists and is popping up windows, update it to run hidden:
+```bat
+schtasks /Change /TN "AgentZeroCron" /TR "powershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File C:\\Users\\james\\projects\\agent_0\\scripts\\run-cron.ps1"
+```
+
+Kill switch commands:
+```bat
+schtasks /Change /TN "AgentZeroCron" /Disable
+schtasks /Change /TN "AgentZeroCron" /Enable
+schtasks /Delete /TN "AgentZeroCron" /F
+schtasks /Run /TN "AgentZeroCron"
+```
 
 **Phase 2 Done When**
 
@@ -85,12 +104,12 @@ Checklist:
 **Phase 3: Remove Vercel Dependencies**
 
 Checklist:
-- [ ] Remove `@vercel/analytics` usage
-- [ ] Remove `@vercel/analytics` dependency
-- [ ] Replace `lib/storage/blob.ts` with a filesystem-first storage interface (now `lib/storage/local.ts`)
-- [ ] Verify filesystem storage is stable
-- [ ] Remove `@vercel/blob` dependency
-- [ ] Remove `vercel.json` from runtime config usage
+- [x] Remove `@vercel/analytics` usage
+- [x] Remove `@vercel/analytics` dependency
+- [x] Replace `lib/storage/blob.ts` with a filesystem-first storage interface (now `lib/storage/local.ts`)
+- [x] Verify filesystem storage is stable
+- [x] Remove `@vercel/blob` dependency
+- [x] Remove `vercel.json` from runtime config usage
 
 **Phase 3 Done When**
 
@@ -124,4 +143,4 @@ Checklist:
 **Rollback Plan**
 
 - If changes break runtime, revert to last known good commit.
-- Keep a backup of `.env.production` and database credentials.
+- Keep a backup of `.env.local` and database credentials.

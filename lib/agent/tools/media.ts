@@ -9,7 +9,7 @@ import { createId } from "@/lib/utils/id"
 import fs from "fs/promises"
 import path from "path"
 
-const DEFAULT_MODEL: ImagenModel = "imagen-3.0-generate-002"
+const DEFAULT_MODEL: ImagenModel = "gemini-2.5-flash-image"
 const DEFAULT_ASPECT: AspectRatio = "9:16"
 
 // Helper to handle base64 upload for images

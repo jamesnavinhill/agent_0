@@ -89,7 +89,7 @@ export const imageGenerationTool = tool({
           title: prompt.slice(0, 100),
           prompt: fullPrompt,
           category: "art",
-          metadata: { aspectRatio, style, model: "imagen-3" },
+          metadata: { aspectRatio, style, model: "gemini-2.5-flash-image" },
         })
       }
 

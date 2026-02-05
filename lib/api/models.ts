@@ -18,7 +18,7 @@ export interface ModelConfig {
 }
 
 /**
- * Available Gemini models as of January 2026
+ * Available Gemini models as of February 2026
  */
 export const GEMINI_MODELS: ModelConfig[] = [
   // Gemini 3 Series (Latest)
