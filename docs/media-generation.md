@@ -108,7 +108,7 @@ curl -X POST http://localhost:3000/api/agent/execute \
 ### ✅ Image Generation (`performDailyArt`)
 
 - Generates images from memory context or manual prompts
-- Uploads to Vercel Blob, saves to gallery_items
+- Uploads to local filesystem, saves to gallery_items
 - Creates episodic memory of creation
 
 ### ✅ Image Editing (`editGalleryImage`)
@@ -121,7 +121,7 @@ curl -X POST http://localhost:3000/api/agent/execute \
 
 - **Text-to-Video:** Generate from text prompt
 - **Image-to-Video:** Animate an existing gallery image
-- Uploads to Vercel Blob, saves with type: "video"
+- Uploads to local filesystem, saves with type: "video"
 
 ---
 

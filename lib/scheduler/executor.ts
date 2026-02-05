@@ -123,7 +123,7 @@ async function executeArtTask(
   context: ExecutorContext
 ): Promise<TaskResult> {
   // Art tasks use the unified server-side runner for proper persistence
-  // This ensures images are uploaded to Blob storage and saved to gallery
+  // This ensures images are uploaded to local storage and saved to gallery
   context.addThought(`Starting media generation task: ${task.name}`, "action")
 
   const response = await fetch("/api/agent/execute", {

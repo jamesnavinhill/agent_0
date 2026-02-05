@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server"
 import { sql as dbQuery, isDatabaseConfigured } from "@/lib/db/neon"
-import { uploadFile, deleteFile, isBlobConfigured, getContentType } from "@/lib/storage/blob"
+import { uploadFile, deleteFile, isBlobConfigured } from "@/lib/storage/local"
 import fs from "fs/promises"
 import path from "path"
 
@@ -91,7 +91,7 @@ async function dbDeleteItem(id: string): Promise<GalleryItem | null> {
 }
 
 // ============================================================================
-// Filesystem fallback helpers (for local dev without Blob/Neon)
+// Filesystem helpers (local storage)
 // ============================================================================
 
 async function ensureGalleryDir() {
@@ -188,8 +188,8 @@ export async function POST(req: Request) {
     const id = crypto.randomUUID()
     const timestamp = new Date().toISOString()
 
-    // Try Blob storage first if configured
-    if (isBlobConfigured()) {
+    // Try local storage + database first if both are configured
+    if (isBlobConfigured() && isDatabaseConfigured()) {
       let blobUrl: string
 
       if (type === "image" && content.startsWith("data:image/")) {
@@ -231,16 +231,16 @@ export async function POST(req: Request) {
           return Response.json({
             success: true,
             item: { ...item, url: item.blob_url },
-            source: "blob+database",
+            source: "filesystem+database",
           })
         }
       }
 
-      // Blob uploaded but no database - return blob URL directly
+      // Stored locally but no database - return file URL directly
       return Response.json({
         success: true,
         item: { id, type, url: blobUrl, title, prompt, category: category ?? "art", timestamp },
-        source: "blob",
+        source: "filesystem",
       })
     }
 
@@ -303,12 +303,12 @@ export async function DELETE(req: NextRequest) {
       const item = await dbDeleteItem(id)
 
       if (item) {
-        // Also delete from Blob storage if it's a blob URL
+        // Also delete from local storage if it's a local URL
         if (item.blob_url && isBlobConfigured()) {
           try {
             await deleteFile(item.blob_url)
           } catch (e) {
-            console.warn("Failed to delete blob:", e)
+            console.warn("Failed to delete local file:", e)
           }
         }
 

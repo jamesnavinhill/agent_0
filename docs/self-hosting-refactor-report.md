@@ -8,9 +8,9 @@ Move off Vercel deployment and run locally on your own server. Provide a robust,
 
 ## Codebase Findings (Vercel / Hosting Coupling)
 
-- Vercel Analytics is imported in `app/layout.tsx` and listed as a dependency in `package.json`.
-- Vercel Blob is used via `@vercel/blob` in `lib/storage/blob.ts` and gallery flows (`app/api/gallery/route.ts`, `lib/db/gallery.ts`). For context on Vercel Blob behavior and tokens, see [S9].
-- `vercel.json` sets `CRON_SECRET` for Vercel deployments.
+- Vercel Analytics has been removed from `app/layout.tsx` and `package.json`.
+- Vercel Blob has been replaced with local filesystem storage via `lib/storage/local.ts` (gallery and media flows).
+- `vercel.json` has been removed; env vars are now handled locally.
 - Database access is implemented via `@neondatabase/serverless` (`lib/db/neon.ts`), with all database queries routed through that pool.
 - The schema uses PostgreSQL-specific features: `vector` extension, `gen_random_uuid()`, `tsvector` / `plainto_tsquery`, `jsonb`, and `text[]` arrays (`lib/db/schema.sql`). [S6][S7][S8]
 - Gallery API already has a filesystem fallback to `public/gallery` when Blob/DB are not configured (`app/api/gallery/route.ts`). This relies on Node's filesystem APIs. [S5]
@@ -43,7 +43,7 @@ Move off Vercel deployment and run locally on your own server. Provide a robust,
 - Pros: full control over routing/server behavior.
 - Cons: loss of optimizations; not recommended unless required. [S4]
 
-## Storage Options (Replace Vercel Blob)
+## Storage Options (Local Filesystem Default)
 
 ### Option A: Local Filesystem (Already supported)
 
@@ -53,7 +53,7 @@ Move off Vercel deployment and run locally on your own server. Provide a robust,
 
 ### Option B: S3-Compatible Object Storage (Recommended for durability)
 
-- Use Amazon S3 or an S3-compatible server (e.g., MinIO) and replace `lib/storage/blob.ts` with an S3 client implementation. [S10][S11][S12]
+- Use Amazon S3 or an S3-compatible server (e.g., MinIO) and replace `lib/storage/local.ts` with an S3 client implementation. [S10][S11][S12]
 - Pros: durability, scalable, can be shared across multiple app instances.
 - Cons: extra infrastructure and credentials.
 
@@ -94,7 +94,7 @@ Move off Vercel deployment and run locally on your own server. Provide a robust,
 ## Recommended Refactor Direction (Conditional)
 
 - Keep the integrated Next.js server (`next build` + `next start`) unless you have a concrete need for a custom server. [S1][S4]
-- Replace Vercel Blob with an S3-compatible storage adapter if you need durability and multi-instance support. Otherwise, keep the filesystem fallback for local-only use. [S5][S10][S11][S12]
+- Replace local storage with an S3-compatible storage adapter if you need durability and multi-instance support. Otherwise, keep the filesystem default. [S5][S10][S11][S12]
 - Keep PostgreSQL (required by schema). If you move off Neon to self-hosted Postgres, replace the Neon driver with `pg` and ensure `pgcrypto` + pgvector are installed. [S6][S7][S8]
 - Replace Vercel Cron with OS-level scheduling or a container CronJob, depending on your target environment. [S13][S14][S15]
 
@@ -117,8 +117,7 @@ Move off Vercel deployment and run locally on your own server. Provide a robust,
 ## Concrete Refactor Tasks (Non-breaking)
 
 - Remove `@vercel/analytics` usage (or replace with a self-hosted analytics provider if you still need analytics).
-- Replace `lib/storage/blob.ts` with a storage interface (S3 + filesystem implementations). [S10][S11][S12]
-- Remove `@vercel/blob` dependency once storage is replaced. [S9]
+- Replace `lib/storage/local.ts` with a storage interface (S3 + filesystem implementations) if you later add object storage. [S10][S11][S12]
 - Decide whether to keep `@neondatabase/serverless` or migrate to `pg` and update `lib/db/neon.ts` accordingly.
 - Replace `vercel.json` with your own environment management (e.g., `.env.production` or OS-level env vars).
 - Add a deployment playbook for your target OS (service manager, logs, backups, TLS, firewall).
@@ -139,7 +138,7 @@ Move off Vercel deployment and run locally on your own server. Provide a robust,
 ### Phase 2: Storage Simplification
 
 - Introduce a storage interface with a filesystem implementation using Node `fs`. [S5]
-- Keep Vercel Blob optional or remove it entirely once filesystem is confirmed stable. [S9]
+- Keep local filesystem storage as the default; add object storage only if needed. [S10][S11][S12]
 - Add an optional environment variable for the media root directory to place gallery files on an external drive.
 - Add an optional cleanup script (disabled by default) for future maintenance.
 
@@ -193,8 +192,7 @@ Notes:
 - [ ] Verify gallery write/read flows without Blob configured:
   - Upload item → file appears in `public/gallery`
   - Gallery list returns `source: "filesystem"`
-- [ ] Add storage interface abstraction (if desired) so Blob can be fully removed later.
-- [ ] Remove `@vercel/blob` dependency only after filesystem flow is verified.
+- [ ] Add storage interface abstraction if you later add object storage.
 
 ### 4) Database (Neon, no migration required)
 
@@ -239,7 +237,6 @@ Notes:
 - [S6] PostgreSQL Text Search Functions/Operators: <https://www.postgresql.org/docs/18/functions-textsearch.html>
 - [S7] PostgreSQL `pgcrypto` extension (`gen_random_uuid`): <https://www.postgresql.org/docs/current/pgcrypto.html>
 - [S8] pgvector extension (`CREATE EXTENSION vector`): <https://github.com/pgvector/pgvector>
-- [S9] Vercel Blob documentation: <https://vercel.com/docs/vercel-blob>
 - [S10] Amazon S3 GetObject API: <https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html>
 - [S11] Amazon S3 PutObject API: <https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutObject.html>
 - [S12] MinIO AIStor (S3-compatible object store): <https://docs.min.io/enterprise/aistor-object-store/>

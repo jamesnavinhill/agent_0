@@ -64,7 +64,7 @@ This is a living document describing the architecture of Agent Zero - an autonom
 ├─────────────────────────┼───────────────────────────────────────────┤
 │                         │                                           │
 │  ┌─────────┐  ┌─────────▼───────┐  ┌─────────────┐                  │
-│  │ Gemini  │  │   Neon Postgres │  │ Vercel Blob │   Services       │
+│  │ Gemini  │  │   Neon Postgres │  │ Local Files │   Services       │
 │  │   API   │  │   (DB + Vector) │  │  (Storage)  │                  │
 │  └─────────┘  └─────────────────┘  └─────────────┘                  │
 │                                                                     │
@@ -398,7 +398,7 @@ agent_0/
 │   │   └── cron.ts             # Cron parsing utilities
 │   │
 │   └── storage/
-│       └── blob.ts             # Vercel Blob uploads
+│       └── local.ts            # Local storage uploads
 │
 ├── components/
 │   └── panels/

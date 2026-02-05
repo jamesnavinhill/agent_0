@@ -42,7 +42,7 @@ Triggers (Cron/UI/API)
                           ▼
               ┌─────────────────────┐
               │   Neon Postgres     │
-              │   Vercel Blob       │
+              │   Local Filesystem  │
               │   Memory System     │
               └─────────────────────┘
 ```
@@ -68,7 +68,7 @@ See [docs/project_rules.md](docs/project_rules.md) for full guidelines.
 | __Styling__ | TailwindCSS + Shadcn UI |
 | __AI Models__ | Google Gemini 3.0/2.5, Imagen 4.0 |
 | __Database__ | Neon Postgres (+ pgvector) |
-| __Storage__ | Vercel Blob |
+| __Storage__ | Local Filesystem (`public/`) |
 | __State__ | Zustand |
 | __Package Manager__ | pnpm |
 
@@ -93,8 +93,9 @@ Required environment variables:
 ```env
 GOOGLE_API_KEY=your_gemini_api_key
 DATABASE_URL=your_neon_postgres_url
-BLOB_READ_WRITE_TOKEN=your_vercel_blob_token
 CRON_SECRET=your_cron_secret
+# Optional: override the local media root (must live under public/)
+# MEDIA_ROOT_DIR=public
 ```
 
 ### 3. Run Development Server
@@ -130,7 +131,7 @@ agent_0/
 │   ├── api/                # AI service wrappers
 │   ├── db/                 # Database queries
 │   ├── scheduler/          # Scheduling logic
-│   └── storage/            # Blob storage
+│   └── storage/            # Local storage helpers
 │
 ├── components/             # UI components
 │

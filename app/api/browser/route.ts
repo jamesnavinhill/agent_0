@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { chromium } from "playwright"
-import { uploadSnapshot } from "@/lib/storage/blob"
+import { uploadSnapshot } from "@/lib/storage/local"
 
 export const maxDuration = 60
 
@@ -33,8 +33,8 @@ export async function POST(req: NextRequest) {
         // Take screenshot
         const screenshotBuffer = await page.screenshot({ type: "jpeg", quality: 80 })
 
-        // Upload to Blob
-        console.log(`[Browser] Uploading snapshot...`)
+        // Save snapshot to local storage
+        console.log(`[Browser] Saving snapshot...`)
         const snapshotUrl = await uploadSnapshot(Buffer.from(screenshotBuffer), `snapshots/${Date.now()}.jpg`)
 
         await browser.close()

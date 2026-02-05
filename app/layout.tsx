@@ -1,7 +1,6 @@
 import React from "react"
 import type { Metadata, Viewport } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
-import { Analytics } from "@vercel/analytics/next"
 import { ThemeProvider } from "@/components/providers/theme-provider"
 import "./globals.css"
 
@@ -47,7 +46,6 @@ export default function RootLayout({
     <html lang="en" className="dark" suppressHydrationWarning>
       <body className="font-sans antialiased overflow-hidden">
         <ThemeProvider>{children}</ThemeProvider>
-        <Analytics />
       </body>
     </html>
   )

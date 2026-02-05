@@ -1,5 +1,5 @@
 import { sql, isDatabaseConfigured } from "./neon"
-import { uploadFile, isBlobConfigured } from "@/lib/storage/blob"
+import { uploadFile, isBlobConfigured } from "@/lib/storage/local"
 
 interface GalleryItemInput {
     type: "image" | "code" | "text" | "audio" | "video"
@@ -23,7 +23,7 @@ export async function saveGalleryItem(item: GalleryItemInput): Promise<string | 
     try {
         let blobUrl = ""
 
-        // For text content, upload to blob or store inline
+        // For text content, store to local media or inline as a data URL
         if (item.type === "text" && isBlobConfigured()) {
             const id = crypto.randomUUID()
             const buffer = Buffer.from(item.content, "utf-8")
@@ -31,8 +31,11 @@ export async function saveGalleryItem(item: GalleryItemInput): Promise<string | 
         } else if (item.type === "text") {
             // Store content inline as data URL for text when blob not configured
             blobUrl = `data:text/markdown;base64,${Buffer.from(item.content).toString("base64")}`
-        } else if (item.type === "image" && item.content.startsWith("http")) {
-            // Already a URL
+        } else if (
+            item.type === "image" &&
+            (item.content.startsWith("http") || item.content.startsWith("/"))
+        ) {
+            // Already a URL (remote or local)
             blobUrl = item.content
         } else {
             // Fallback - store as JSON

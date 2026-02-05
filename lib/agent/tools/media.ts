@@ -3,8 +3,10 @@ import { saveGalleryItem, getGalleryItemById } from "@/lib/db/gallery"
 import { pushActivity } from "@/lib/activity/bus"
 import { addMemory, getRecentMemories } from "@/lib/db/memories"
 import { Task } from "@/app/api/tasks/route"
-import { uploadFile } from "@/lib/storage/blob"
+import { uploadFile } from "@/lib/storage/local"
 import { generateVideoFromText, generateVideoFromImage, VeoConfig, VideoAspectRatio } from "@/lib/api/veo"
+import fs from "fs/promises"
+import path from "path"
 
 const DEFAULT_MODEL: ImagenModel = "imagen-3.0-generate-002"
 const DEFAULT_ASPECT: AspectRatio = "9:16"
@@ -33,6 +35,20 @@ async function uploadGeneratedVideo(videoBytes: string, mimeType: string): Promi
 
 // Helper to download image from URL and convert to base64
 async function downloadImageAsBase64(url: string): Promise<string> {
+    if (url.startsWith("data:image/")) {
+        const matches = url.match(/^data:image\/\w+;base64,(.+)$/)
+        if (!matches) {
+            throw new Error("Invalid data URL for image")
+        }
+        return matches[1]
+    }
+
+    if (url.startsWith("/")) {
+        const filePath = path.join(process.cwd(), "public", url.replace(/^\/+/, ""))
+        const buffer = await fs.readFile(filePath)
+        return buffer.toString("base64")
+    }
+
     const response = await fetch(url);
     if (!response.ok) {
         throw new Error(`Failed to download image: ${response.statusText}`);
@@ -335,7 +351,7 @@ Style: Abstract, atmospheric, flowing motion, 4K quality.`
             })
         }
 
-        // Upload video to blob storage
+        // Upload video to local storage
         const blobUrl = await uploadGeneratedVideo(videoResult.videoBytes, videoResult.mimeType)
 
         // Save to gallery

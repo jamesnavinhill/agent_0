@@ -67,7 +67,7 @@ Checklist:
 Checklist:
 - [ ] Remove `@vercel/analytics` usage
 - [ ] Remove `@vercel/analytics` dependency
-- [ ] Replace `lib/storage/blob.ts` with a filesystem-first storage interface
+- [ ] Replace `lib/storage/blob.ts` with a filesystem-first storage interface (now `lib/storage/local.ts`)
 - [ ] Verify filesystem storage is stable
 - [ ] Remove `@vercel/blob` dependency
 - [ ] Remove `vercel.json` from runtime config usage
