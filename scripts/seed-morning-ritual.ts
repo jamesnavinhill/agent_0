@@ -3,7 +3,7 @@ import dotenv from "dotenv"
 
 dotenv.config({ path: ".env.local" })
 
-const STEP_NAMES = ["The Morning Read", "Meaningful Media", "Motion Art"] as const
+const STEP_NAMES = ["The Morning Read", "Meaningful Media"] as const
 
 async function seed() {
     console.log("Seeding Morning Ritual flow task...")
@@ -45,7 +45,7 @@ async function seed() {
                  updated_at = NOW()
              WHERE id = $4`,
             [
-                "Run Morning Read, Meaningful Media, and Motion Art in sequence.",
+                "Run Morning Read and Meaningful Media in sequence.",
                 "0 6 * * *",
                 JSON.stringify(parameters),
                 taskId,
@@ -59,7 +59,7 @@ async function seed() {
              RETURNING id`,
             [
                 "Morning Ritual",
-                "Run Morning Read, Meaningful Media, and Motion Art in sequence.",
+                "Run Morning Read and Meaningful Media in sequence.",
                 "0 6 * * *",
                 true,
                 "flow",
@@ -74,6 +74,11 @@ async function seed() {
         [STEP_NAMES]
     )
     console.log("Disabled individual tasks (manual run still available).")
+
+    await sql(
+        `UPDATE tasks SET enabled = true, updated_at = NOW() WHERE name = 'Motion Art'`
+    )
+    console.log("Ensured Motion Art remains enabled as a standalone task.")
 }
 
 seed().catch((error) => {

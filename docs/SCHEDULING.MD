@@ -37,7 +37,7 @@ Task records live in the `tasks` table (`lib/db/schema.sql`). Each task includes
 Flow tasks chain multiple tasks in sequence.
 
 - `lib/agent/runner.ts` executes flow steps and stops on the first failure.
-- `scripts/seed-morning-ritual.ts` creates a Morning Ritual flow and disables its individual steps for scheduling.
+- `scripts/seed-morning-ritual.ts` creates a Morning Ritual flow, disables its included steps for scheduling, and keeps `Motion Art` standalone.
 
 ## Seeded Tasks
 
