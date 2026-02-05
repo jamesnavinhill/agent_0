@@ -316,7 +316,7 @@ export function MultimodalInput({ onSend, disabled }: MultimodalInputProps) {
               onChange={(e) => setInput(e.target.value)}
               onInput={handleInput}
               onKeyDown={handleKeyDown}
-              placeholder="Message Agent Zero..."
+              placeholder="Message Komorebi..."
               disabled={disabled || isRecording}
               rows={1}
               className={cn(

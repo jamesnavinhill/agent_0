@@ -44,4 +44,4 @@ Manual task runs, cron runs, and UI scheduler runs all converge on the same serv
 
 ## Naming Note
 
-The codebase still contains the name "Agent Zero" in some UI strings and comments. The project name moving forward is Komorebi. Documentation in `docs/` uses Komorebi as the official name.
+The codebase still contains the name "Agent Zero" in some system prompts and comments. The project name moving forward is Komorebi. Documentation in `docs/` uses Komorebi as the official name.

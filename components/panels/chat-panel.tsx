@@ -51,7 +51,7 @@ export function ChatPanel() {
           <div className="flex flex-col items-center justify-center h-full gap-6 text-center">
             <AgentOrb size="lg" />
             <div className="space-y-2 max-w-md">
-              <h2 className="text-xl font-medium text-foreground">Agent Zero</h2>
+              <h2 className="text-xl font-medium text-foreground">Komorebi</h2>
               <p className="text-sm text-muted-foreground leading-relaxed">
                 A multimodal AI agent ready for creative exploration, research, and autonomous task execution.
                 Speak, type, or upload files to begin.

@@ -8,7 +8,7 @@ const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Agent Zero | Autonomous AI Interface",
+  title: "Komorebi | Autonomous AI Interface",
   description: "A multimodal AI agent interface for creative exploration, research, and autonomous task execution",
   generator: "v0.app",
   icons: {

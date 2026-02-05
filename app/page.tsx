@@ -123,7 +123,7 @@ export default function AgentInterface() {
               >
                 {sidebarOpen ? <PanelLeftClose className="w-4 h-4" /> : <PanelLeft className="w-4 h-4" />}
               </Button>
-              <h1 className="text-sm font-medium">Agent Zero</h1>
+              <h1 className="text-sm font-medium">Komorebi</h1>
               <span className="text-xs text-muted-foreground hidden sm:inline">
                 Autonomous AI Interface
               </span>
