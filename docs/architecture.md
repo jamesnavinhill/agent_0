@@ -43,5 +43,3 @@ Manual task runs, cron runs, and UI scheduler runs all converge on the same serv
 - Gallery items are stored in Postgres with file URLs pointing to local media.
 
 ## Naming Note
-
-

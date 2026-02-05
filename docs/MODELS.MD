@@ -3,6 +3,7 @@
 Last reviewed: 2026-02-05 (local)
 
 This document reflects the model lists currently defined in:
+
 - `lib/api/models.ts` (Gemini text models and presets)
 - `lib/api/imagen.ts` (image models)
 - `lib/api/veo.ts` (video models)
@@ -10,6 +11,7 @@ This document reflects the model lists currently defined in:
 If a model is not listed here, it is not wired into the app code yet.
 
 ## Chat / Reasoning Models (Gemini)
+
 Defined in `lib/api/models.ts` and used by the UI settings and agent tooling.
 
 - `gemini-3-pro-preview`
@@ -24,6 +26,7 @@ Defined in `lib/api/models.ts` and used by the UI settings and agent tooling.
 - `gemini-2.0-flash` (deprecated)
 
 ## Image Models (Imagen + Gemini Image)
+
 Defined in `lib/api/imagen.ts`.
 
 - `gemini-2.5-flash-image` (default)
@@ -33,6 +36,7 @@ Defined in `lib/api/imagen.ts`.
 - `imagen-4.0-fast-generate-001`
 
 ## Video Models (Veo)
+
 Defined in `lib/api/veo.ts`.
 
 - `veo-3.0-fast-generate-001` (default)

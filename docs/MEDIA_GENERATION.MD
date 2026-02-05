@@ -23,7 +23,7 @@ This document describes the image and video pipelines implemented in `lib/agent/
 - Otherwise, the system summarizes recent memories and asks the model to visualize the state.
 - If memory context is minimal, a default "genesis" prompt is used.
 
-### Storage
+### Image Storage
 
 - Images are saved via `uploadGeneratedImage` to `public/generated`.
 - Gallery rows store a local URL in `gallery_items.blob_url`.
@@ -39,7 +39,7 @@ This document describes the image and video pipelines implemented in `lib/agent/
 - `text-to-video`: prompt-only.
 - `image-to-video`: animates a source image.
 
-### Defaults (from code)
+### Video Defaults (from code)
 
 - Model: `veo-3.0-fast-generate-001`.
 - Aspect ratio: `16:9`.

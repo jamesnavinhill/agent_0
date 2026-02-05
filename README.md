@@ -2,7 +2,6 @@
 
 Komorebi is a local-first autonomous agent interface built with Next.js. It combines a reactive UI, scheduled task execution, and media generation through Google Gemini, Imagen, and Veo APIs. It persists state in Neon Postgres and stores media on the local filesystem.
 
-
 ## Core Capabilities (From Current Code)
 
 - Agent chat with AI SDK orchestration and streaming.
@@ -71,4 +70,3 @@ pnpm run dev
 ## License
 
 MIT
-
