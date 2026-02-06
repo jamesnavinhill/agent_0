@@ -1,7 +1,7 @@
 # KOMOREBI V2 ROADMAP
 
 Date: 2026-02-05  
-Status: In Progress (Phases 0-3 completed on 2026-02-06)
+Status: In Progress (Phases 0-4 completed on 2026-02-06)
 
 ## Purpose
 
@@ -191,23 +191,23 @@ Acceptance:
 - [x] Settings use space efficiently on desktop while remaining usable on mobile.
 - [x] Accent control supports precise color shaping (hue/chroma/lightness).
 
-### [ ] Phase 4: Gallery and Modal Usability
+### [x] Phase 4: Gallery and Modal Usability (Completed 2026-02-06)
 
 Target: 2-3 days
 
 Implementation:
 
-- [ ] Fix modal download logic to branch by output type (image/video/audio/text/code) and download real media file when available.
-- [ ] Improve media modal geometry so image/video are the primary visual focus with minimal dead space.
-- [ ] Widen Daily Brief reading modal and tune prose width for long-form readability.
-- [ ] Make breadcrumb root ("Creations") clickable to return to stacks.
+- [x] Fix modal download logic to branch by output type (image/video/audio/text/code) and download real media file when available.
+- [x] Improve media modal geometry so image/video are the primary visual focus with minimal dead space.
+- [x] Widen Daily Brief reading modal and tune prose width for long-form readability.
+- [x] Make breadcrumb root ("Creations") clickable to return to stacks.
 
 Acceptance:
 
-- [ ] Download from gallery detail returns expected file type.
-- [ ] Daily Brief modal is comfortably readable on desktop.
-- [ ] Media modal feels proportional to content.
-- [ ] Breadcrumb supports return to stacks.
+- [x] Download from gallery detail returns expected file type.
+- [x] Daily Brief modal is comfortably readable on desktop.
+- [x] Media modal feels proportional to content.
+- [x] Breadcrumb supports return to stacks.
 
 ### [ ] Phase 5: Create Tab Resolution
 
@@ -274,7 +274,7 @@ Acceptance:
 - [x] Phase 0 (stability, migrations, no-mock baseline)
 - [x] Phase 1 + 2 (navigation consolidation + core UX cleanup)
 - [x] Phase 3 (settings redesign + full accent controls)
-- [ ] Phase 4 (gallery/modal fixes)
+- [x] Phase 4 (gallery/modal fixes)
 - [ ] Phase 5 (remove Create tab)
 - [ ] Phase 6 + 7 (sandbox completion + memory bridge)
 

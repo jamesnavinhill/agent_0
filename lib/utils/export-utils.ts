@@ -2,6 +2,43 @@
  * Export and download utilities for Komorebi
  */
 
+const MIME_EXTENSION_MAP: Record<string, string> = {
+    "image/jpeg": "jpg",
+    "image/png": "png",
+    "image/webp": "webp",
+    "image/gif": "gif",
+    "video/mp4": "mp4",
+    "video/webm": "webm",
+    "video/quicktime": "mov",
+    "audio/mpeg": "mp3",
+    "audio/mp4": "m4a",
+    "audio/wav": "wav",
+    "audio/webm": "webm",
+    "text/markdown": "md",
+    "text/plain": "txt",
+    "application/json": "json",
+}
+
+function extractExtensionFromPath(url: string): string | null {
+    try {
+        const parsed = new URL(url, typeof window !== "undefined" ? window.location.origin : "http://localhost")
+        const pathname = parsed.pathname
+        const lastSegment = pathname.split("/").pop() || ""
+        const dotIndex = lastSegment.lastIndexOf(".")
+        if (dotIndex === -1) return null
+        const extension = lastSegment.slice(dotIndex + 1).toLowerCase()
+        return extension || null
+    } catch {
+        return null
+    }
+}
+
+function extensionFromMimeType(mimeType?: string | null): string | null {
+    if (!mimeType) return null
+    const normalized = mimeType.split(";")[0].trim().toLowerCase()
+    return MIME_EXTENSION_MAP[normalized] || null
+}
+
 /**
  * Trigger a file download with the given content
  */
@@ -47,6 +84,60 @@ export async function downloadImage(imageUrl: string, filename: string): Promise
     } catch (error) {
         console.error("Failed to download image:", error)
         throw error
+    }
+}
+
+/**
+ * Download a URL target while preserving the real file type when possible.
+ */
+export async function downloadUrl(
+    url: string,
+    filenameBase: string,
+    fallbackExtension: string
+): Promise<void> {
+    // Handle data URLs directly without fetch.
+    if (url.startsWith("data:")) {
+        const mimeType = url.slice(5, url.indexOf(";base64")).trim()
+        const extFromMime = extensionFromMimeType(mimeType)
+        const a = document.createElement("a")
+        a.href = url
+        a.download = `${filenameBase}.${extFromMime || fallbackExtension}`
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        return
+    }
+
+    try {
+        const response = await fetch(url)
+        if (!response.ok) {
+            throw new Error(`Download request failed with status ${response.status}`)
+        }
+
+        const blob = await response.blob()
+        const blobUrl = URL.createObjectURL(blob)
+        const extFromMime = extensionFromMimeType(blob.type)
+        const extFromPath = extractExtensionFromPath(url)
+        const extension = extFromMime || extFromPath || fallbackExtension
+
+        const a = document.createElement("a")
+        a.href = blobUrl
+        a.download = `${filenameBase}.${extension}`
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(blobUrl)
+    } catch (error) {
+        // Fallback for cross-origin/non-fetchable URLs.
+        const extension = extractExtensionFromPath(url) || fallbackExtension
+        const a = document.createElement("a")
+        a.href = url
+        a.download = `${filenameBase}.${extension}`
+        a.rel = "noopener noreferrer"
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        console.error("Failed to fetch URL for download, used fallback anchor:", error)
     }
 }
 

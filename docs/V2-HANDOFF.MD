@@ -247,6 +247,33 @@ Docs updated:
 Residual risks / follow-ups:
 - Existing orb state color overrides in `app/globals.css` still use fixed accent values and could be normalized to the new accent token system in a future polish pass.
 
+## Phase 4 Completed - 2026-02-06
+
+Scope completed:
+- Reworked gallery detail downloads to branch by output type and download the real file when a media or file URL exists (`image`/`video`/`audio`/`text`/`code`).
+- Added `downloadUrl` and URL/mime extension inference utilities in `lib/utils/export-utils.ts` for robust media/file downloads.
+- Updated gallery modal sizing rules to use content-aware geometry so media outputs prioritize viewport space with reduced dead padding.
+- Improved Daily Brief readability with wider modal sizing and expanded text column width/line-height treatment.
+- Made breadcrumb root ("Creations") clickable so stack root navigation is available directly from category view.
+
+Acceptance checks:
+- [x] Download from gallery detail returns expected file type.
+- [x] Daily Brief modal is comfortably readable on desktop.
+- [x] Media modal feels proportional to content.
+- [x] Breadcrumb supports return to stacks.
+
+Validation run:
+- `pnpm run lint` -> pass
+- `pnpm run test` -> pass
+- `pnpm run build` -> pass
+
+Docs updated:
+- `docs/V2-ROADMAP.MD` (status updated)
+- `docs/V2-HANDOFF.MD` (this entry added)
+
+Residual risks / follow-ups:
+- Browser handling of cross-origin media downloads still depends on remote CORS policy; local app-hosted media paths work as expected.
+
 ## Quick Start Prompt For Next Agent
 
 Use this exact pattern:
