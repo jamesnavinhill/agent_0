@@ -274,6 +274,52 @@ Docs updated:
 Residual risks / follow-ups:
 - Browser handling of cross-origin media downloads still depends on remote CORS policy; local app-hosted media paths work as expected.
 
+## Phase 5 Completed - 2026-02-06
+
+Scope completed:
+- Removed Create tab routing from `app/page.tsx`.
+- Removed Create nav item from `components/navigation/nav-rail.tsx`.
+- Removed `"create"` from `activePanel` state union in `lib/store/agent-store.ts`.
+
+Acceptance checks:
+- [x] No dead-end creation workflow in navigation.
+
+Validation run:
+- `pnpm run lint` -> pass
+- `pnpm run test` -> pass
+- `pnpm run build` -> pass
+
+Docs updated:
+- `docs/V2-ROADMAP.MD` (status updated)
+- `docs/V2-HANDOFF.MD` (this entry added)
+
+Residual risks / follow-ups:
+- `components/panels/create-panel.tsx` remains in the repo but is intentionally unreferenced; delete later if a cleanup-only phase is desired.
+
+## Phase 6 Completed - 2026-02-06
+
+Scope completed:
+- Added sandbox readiness endpoint `GET /api/sandbox/health` to report dependency state and setup guidance (`DATABASE_URL`, sandbox tables, `GOOGLE_API_KEY`).
+- Extended sandbox hook state in `hooks/use-sandbox.ts` with health fetch/loading/error and wired refresh to include readiness checks.
+- Added sandbox dependency readiness UI section in `components/panels/sandbox-panel.tsx` with per-check status and actionable recommendation output.
+- Added sandbox DB preflight enforcement in agent tool execution path (`lib/agents/tools/sandbox.ts`) for parity with UI/API behavior.
+
+Acceptance checks:
+- [x] Sandbox project CRUD works in default configured environment.
+- [x] Errors are actionable and explicit when prerequisites are missing.
+
+Validation run:
+- `pnpm run lint` -> pass
+- `pnpm run test` -> pass
+- `pnpm run build` -> pass
+
+Docs updated:
+- `docs/V2-ROADMAP.MD` (status updated)
+- `docs/V2-HANDOFF.MD` (this entry added)
+
+Residual risks / follow-ups:
+- No live DB integration test was run in this session; sandbox CRUD and execution should still be manually smoke-tested once in the target environment.
+
 ## Quick Start Prompt For Next Agent
 
 Use this exact pattern:

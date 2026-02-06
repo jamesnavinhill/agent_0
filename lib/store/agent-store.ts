@@ -139,7 +139,7 @@ interface AgentStore {
   }
 
   // UI state
-  activePanel: "chat" | "gallery" | "create" | "monitor" | "schedule" | "memory" | "settings" | "subagents" | "sandbox"
+  activePanel: "chat" | "gallery" | "monitor" | "schedule" | "memory" | "settings" | "subagents" | "sandbox"
   setActivePanel: (panel: AgentStore["activePanel"]) => void
 
   sidebarOpen: boolean

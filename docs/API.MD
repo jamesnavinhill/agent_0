@@ -189,6 +189,12 @@ Response: `{ success: true }`.
 
 ## Sandbox
 
+### GET /api/sandbox/health
+
+Method: GET
+Response: `{ ready, checkedAt, checks, issues, recommendations }`.
+Notes: Returns dependency/readiness status for `DATABASE_URL`, sandbox table preflight, and `GOOGLE_API_KEY` with actionable setup messages.
+
 ### GET /api/sandbox/projects
 
 Method: GET

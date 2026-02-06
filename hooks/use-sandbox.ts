@@ -57,6 +57,21 @@ export interface SandboxDependency {
   dev_dependency: boolean
 }
 
+export interface SandboxHealthCheck {
+  id: string
+  label: string
+  status: "ready" | "missing" | "error" | "skipped"
+  message: string
+}
+
+export interface SandboxHealth {
+  ready: boolean
+  checkedAt: string
+  checks: SandboxHealthCheck[]
+  issues: string[]
+  recommendations: string[]
+}
+
 export interface FullProject extends SandboxProject {
   files: SandboxFile[]
   dependencies: SandboxDependency[]
@@ -70,9 +85,13 @@ export interface UseSandboxReturn {
   isLoading: boolean
   isRunning: boolean
   error: string | null
+  health: SandboxHealth | null
+  healthLoading: boolean
+  healthError: string | null
 
   // Actions
   fetchProjects: () => Promise<void>
+  refreshHealth: () => Promise<void>
   selectProject: (projectId: string | null) => Promise<void>
   createProject: (input: {
     name: string
@@ -137,6 +156,9 @@ export function useSandbox(): UseSandboxReturn {
   const [isLoading, setIsLoading] = useState(false)
   const [isRunning, setIsRunning] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [health, setHealth] = useState<SandboxHealth | null>(null)
+  const [healthLoading, setHealthLoading] = useState(false)
+  const [healthError, setHealthError] = useState<string | null>(null)
   const [streamingOutput, setStreamingOutput] = useState("")
   const [streamingHistory, setStreamingHistory] = useState<SandboxStreamingHistoryEntry[]>([])
 
@@ -152,6 +174,23 @@ export function useSandbox(): UseSandboxReturn {
       setError(err instanceof Error ? err.message : "Unknown error")
     } finally {
       setIsLoading(false)
+    }
+  }, [])
+
+  const fetchHealth = useCallback(async () => {
+    setHealthLoading(true)
+    setHealthError(null)
+    try {
+      const res = await fetch("/api/sandbox/health")
+      if (!res.ok) throw new Error(await readErrorMessage(res, "Failed to fetch sandbox readiness"))
+      const data = await res.json()
+      setHealth(data)
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error"
+      setHealthError(message)
+      setHealth(null)
+    } finally {
+      setHealthLoading(false)
     }
   }, [])
 
@@ -593,16 +632,17 @@ export function useSandbox(): UseSandboxReturn {
   )
 
   const refresh = useCallback(async () => {
-    await fetchProjects()
+    await Promise.all([fetchProjects(), fetchHealth()])
     if (selectedProject) {
       await selectProject(selectedProject.id)
     }
-  }, [fetchProjects, selectProject, selectedProject])
+  }, [fetchProjects, fetchHealth, selectProject, selectedProject])
 
   // Initial fetch
   useEffect(() => {
     fetchProjects()
-  }, [fetchProjects])
+    fetchHealth()
+  }, [fetchProjects, fetchHealth])
 
   return {
     projects,
@@ -610,9 +650,13 @@ export function useSandbox(): UseSandboxReturn {
     isLoading,
     isRunning,
     error,
+    health,
+    healthLoading,
+    healthError,
     streamingOutput,
     streamingHistory,
     fetchProjects,
+    refreshHealth: fetchHealth,
     selectProject,
     createProject,
     updateProject,

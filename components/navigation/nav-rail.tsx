@@ -9,7 +9,6 @@ import {
   Calendar,
   Database,
   Radio,
-  Sparkles,
   Users,
   Code2,
 } from "lucide-react"
@@ -23,7 +22,6 @@ import {
 
 const navItems = [
   { id: "chat" as const, icon: MessageSquare, label: "Chat" },
-  { id: "create" as const, icon: Sparkles, label: "Create" },
   { id: "subagents" as const, icon: Users, label: "Sub-Agents" },
   { id: "gallery" as const, icon: ImageIcon, label: "Gallery" },
   { id: "monitor" as const, icon: Radio, label: "Live Monitor" },

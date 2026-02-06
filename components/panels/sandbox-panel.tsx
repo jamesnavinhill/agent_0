@@ -107,9 +107,11 @@ export function SandboxPanel() {
     isLoading,
     isRunning,
     error,
+    health,
+    healthLoading,
+    healthError,
     streamingOutput,
     streamingHistory,
-    fetchProjects,
     selectProject,
     createProject,
     writeFile,
@@ -118,6 +120,7 @@ export function SandboxPanel() {
     runCode,
     runCodeStreaming,
     refresh,
+    refreshHealth,
   } = useSandbox()
 
   const [selectedFile, setSelectedFile] = useState<SandboxFile | null>(null)
@@ -325,6 +328,19 @@ export function SandboxPanel() {
 
   const fileTree = buildFileTree(files)
 
+  const getHealthDotClass = (status: "ready" | "missing" | "error" | "skipped") => {
+    switch (status) {
+      case "ready":
+        return "bg-green-500"
+      case "missing":
+        return "bg-yellow-500"
+      case "error":
+        return "bg-destructive"
+      default:
+        return "bg-muted-foreground"
+    }
+  }
+
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
@@ -361,10 +377,10 @@ export function SandboxPanel() {
                   variant="ghost"
                   size="icon"
                   className="h-7 w-7"
-                  onClick={fetchProjects}
-                  disabled={isLoadingProjects}
+                  onClick={refresh}
+                  disabled={isLoadingProjects || healthLoading}
                 >
-                  <RefreshCw className={cn("w-3.5 h-3.5", isLoadingProjects && "animate-spin")} />
+                  <RefreshCw className={cn("w-3.5 h-3.5", (isLoadingProjects || healthLoading) && "animate-spin")} />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>Refresh</TooltipContent>
@@ -451,6 +467,66 @@ export function SandboxPanel() {
             ))}
           </SelectContent>
         </Select>
+      </div>
+
+      <div className="px-3 py-2 border-b border-border bg-surface-1/40 space-y-2">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Activity className="w-3 h-3 text-muted-foreground" />
+            <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+              Dependency Readiness
+            </span>
+            {health && (
+              <Badge
+                variant="outline"
+                className={cn(
+                  "h-4 text-[9px]",
+                  health.ready
+                    ? "border-green-500/40 text-green-500"
+                    : "border-yellow-500/40 text-yellow-500"
+                )}
+              >
+                {health.ready ? "Ready" : "Needs Setup"}
+              </Badge>
+            )}
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6"
+            onClick={refreshHealth}
+            disabled={healthLoading}
+          >
+            <RefreshCw className={cn("w-3 h-3", healthLoading && "animate-spin")} />
+          </Button>
+        </div>
+
+        {healthLoading && !health && (
+          <p className="text-[11px] text-muted-foreground">Checking sandbox dependencies...</p>
+        )}
+
+        {healthError && !health && (
+          <p className="text-[11px] text-destructive">{healthError}</p>
+        )}
+
+        {health && (
+          <div className="space-y-1">
+            {health.checks.map((check) => (
+              <div key={check.id} className="flex items-start gap-2">
+                <span className={cn("mt-1 h-2 w-2 rounded-full", getHealthDotClass(check.status))} />
+                <div className="min-w-0">
+                  <p className="text-[11px] font-medium">{check.label}</p>
+                  <p className="text-[11px] text-muted-foreground">{check.message}</p>
+                </div>
+              </div>
+            ))}
+            {!health.ready && health.recommendations.length > 0 && (
+              <div className="rounded border border-yellow-500/30 bg-yellow-500/10 p-2 text-[11px] text-yellow-700 dark:text-yellow-300">
+                {health.recommendations[0]}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <ScrollArea className="flex-1">

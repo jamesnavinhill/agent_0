@@ -7,6 +7,7 @@
 import { tool } from "ai"
 import { z } from "zod"
 import {
+  ensureSandboxTablesReady,
   createProject,
   getProject,
   listProjects,
@@ -228,6 +229,8 @@ Use this for building, testing, and iterating on code.`,
     yield { state: "validating" as const, message: `Validating ${actionName}...` }
 
     try {
+      await ensureSandboxTablesReady()
+
       switch (input.action) {
         // ====================================================================
         // Project Actions

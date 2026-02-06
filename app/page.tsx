@@ -11,7 +11,6 @@ import { SettingsPanel } from "@/components/panels/settings-panel"
 import { MonitorPanel } from "@/components/panels/monitor-panel"
 import { SchedulePanel } from "@/components/panels/schedule-panel"
 import { MemoryPanel } from "@/components/panels/memory-panel"
-import { CreatePanel } from "@/components/panels/create-panel"
 import { SubAgentsPanel } from "@/components/panels/sub-agents-panel"
 import { SandboxPanel } from "@/components/panels/sandbox-panel"
 import { MultimodalInput } from "@/components/input/multimodal-input"
@@ -80,8 +79,6 @@ export default function AgentInterface() {
               onToggleThoughts={toggleThoughtsPanel}
             />
           )
-        case "create":
-          return <CreatePanel />
         case "gallery":
           return <GalleryPanel />
         case "subagents":

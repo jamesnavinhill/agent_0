@@ -1,7 +1,7 @@
 # KOMOREBI V2 ROADMAP
 
 Date: 2026-02-05  
-Status: In Progress (Phases 0-4 completed on 2026-02-06)
+Status: In Progress (Phases 0-6 completed on 2026-02-06)
 
 ## Purpose
 
@@ -209,34 +209,34 @@ Acceptance:
 - [x] Media modal feels proportional to content.
 - [x] Breadcrumb supports return to stacks.
 
-### [ ] Phase 5: Create Tab Resolution
+### [x] Phase 5: Create Tab Resolution (Completed 2026-02-06)
 
 Target: 1 day
 
 Implementation:
 
-- [ ] Remove Create tab and nav item (preferred, per current request), OR re-scope with persistence-first contract.
+- [x] Remove Create tab and nav item (preferred, per current request), OR re-scope with persistence-first contract.
 - [ ] If retained in future: all outputs must persist via `/api/gallery` and appear after refresh.
 
 Acceptance:
 
-- [ ] No dead-end creation workflow in navigation.
+- [x] No dead-end creation workflow in navigation.
 
-### [ ] Phase 6: Sandbox Completion Track
+### [x] Phase 6: Sandbox Completion Track (Completed 2026-02-06)
 
 Target: 3-5 days
 
 Implementation:
 
-- [ ] Complete setup parity for sandbox DB lifecycle.
-- [ ] Improve UI error surfacing with server message passthrough.
-- [ ] Add health/readiness indicators for sandbox dependencies.
-- [ ] Confirm fetch/create project flow and basic file/dependency/execution cycle.
+- [x] Complete setup parity for sandbox DB lifecycle.
+- [x] Improve UI error surfacing with server message passthrough.
+- [x] Add health/readiness indicators for sandbox dependencies.
+- [x] Confirm fetch/create project flow and basic file/dependency/execution cycle.
 
 Acceptance:
 
-- [ ] Sandbox project CRUD works in default configured environment.
-- [ ] Errors are actionable and explicit when prerequisites are missing.
+- [x] Sandbox project CRUD works in default configured environment.
+- [x] Errors are actionable and explicit when prerequisites are missing.
 
 ### [ ] Phase 7: Memory Bridge and Agent Evolution
 
@@ -275,7 +275,7 @@ Acceptance:
 - [x] Phase 1 + 2 (navigation consolidation + core UX cleanup)
 - [x] Phase 3 (settings redesign + full accent controls)
 - [x] Phase 4 (gallery/modal fixes)
-- [ ] Phase 5 (remove Create tab)
+- [x] Phase 5 (remove Create tab)
 - [ ] Phase 6 + 7 (sandbox completion + memory bridge)
 
 ## V2 Definition of Done
@@ -284,9 +284,9 @@ Acceptance:
 - [ ] No perpetual-looping activity artifacts in UI.
 - [ ] Chat thought stream is collapsible and clean.
 - [ ] Top global header removed; vertical space reclaimed.
-- [ ] Create tab removed (or fully persistence-backed if reintroduced).
+- [x] Create tab removed (or fully persistence-backed if reintroduced).
 - [ ] Settings layout and accent picker are polished and space-efficient.
 - [ ] Daily Brief and Gallery modals are readable and media-centered.
 - [ ] Gallery download returns actual media files.
-- [ ] Sandbox default setup path is explicit and functional.
+- [x] Sandbox default setup path is explicit and functional.
 - [ ] Agent can actively and passively use memory/knowledge in runtime.
