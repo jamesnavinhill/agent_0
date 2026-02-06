@@ -24,6 +24,7 @@ async function testVeo() {
             config: {
                 aspectRatio: "16:9",
                 resolution: "1080p",
+                // @ts-expect-error Google SDK typings omit includeAudio for this model config; we intentionally send it to request no audio.
                 includeAudio: false,
                 numberOfVideos: 1,
             },

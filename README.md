@@ -65,8 +65,9 @@ pnpm run build
 ```
 
 Notes:
+
 - `pnpm run build` now runs `pnpm run typecheck` first.
-- Typecheck targets shipped app/runtime code and tests, and excludes `scripts/`.
+- Typecheck covers the full repository (`.ts`/`.tsx`), including `scripts/`.
 
 ## Documentation
 
