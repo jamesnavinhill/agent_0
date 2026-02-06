@@ -48,11 +48,14 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
     ]
 
     try {
-      const response = await fetch("/api/chat", {
+      const response = await fetch("/api/agent/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: chatMessages,
+          simpleStream: true,
+          sessionId: "chat-panel",
+          autonomous: false,
           model: settings.model,
           temperature: settings.temperature,
         }),

@@ -19,6 +19,39 @@ import {
 
 export const maxDuration = 60
 
+interface SimpleChatMessage {
+  role: "user" | "assistant" | "system"
+  content: string
+}
+
+function isSimpleChatMessage(value: unknown): value is SimpleChatMessage {
+  if (!value || typeof value !== "object") return false
+  const candidate = value as Record<string, unknown>
+  return (
+    (candidate.role === "user" || candidate.role === "assistant" || candidate.role === "system") &&
+    typeof candidate.content === "string"
+  )
+}
+
+function isSimpleChatMessageArray(value: unknown): value is SimpleChatMessage[] {
+  return Array.isArray(value) && value.every(isSimpleChatMessage)
+}
+
+function buildPromptFromSimpleMessages(messages: SimpleChatMessage[]): string {
+  const serialized = messages
+    .slice(-16)
+    .map((message) => {
+      const label = message.role === "assistant" ? "Assistant" : message.role === "system" ? "System" : "User"
+      return `${label}: ${message.content}`
+    })
+    .join("\n\n")
+
+  return `Continue this conversation and respond to the latest user message.
+
+Conversation history:
+${serialized}`
+}
+
 function extractMessageText(message: unknown): string {
   if (!message || typeof message !== "object") return ""
   const candidate = message as Record<string, unknown>
@@ -55,7 +88,16 @@ function extractMessageText(message: unknown): string {
 export async function POST(req: Request) {
   try {
     const body = await req.json()
-    const { messages, prompt, sessionId, autonomous } = body
+    const {
+      messages,
+      prompt,
+      sessionId,
+      autonomous,
+      simpleStream,
+      model,
+      temperature,
+    } = body
+    const simpleMessages = isSimpleChatMessageArray(messages) ? messages : undefined
     const latestUserMessage = Array.isArray(messages)
       ? [...messages]
           .reverse()
@@ -64,6 +106,7 @@ export async function POST(req: Request) {
             return (message as { role?: string }).role === "user"
           })
       : undefined
+    const resolvedPrompt = prompt || (simpleMessages ? buildPromptFromSimpleMessages(simpleMessages) : "")
     const contextQuery = prompt || extractMessageText(latestUserMessage) || ""
     const passiveContext = await getPassiveContext({
       query: contextQuery,
@@ -84,8 +127,8 @@ export async function POST(req: Request) {
       },
     })
 
-    // For UIMessage[] from useChat, use createAgentUIStreamResponse
-    if (messages && Array.isArray(messages)) {
+    // For UIMessage[] from AI SDK useChat, use createAgentUIStreamResponse
+    if (messages && Array.isArray(messages) && !simpleStream && !simpleMessages) {
       return createAgentUIStreamResponse({
         agent: orchestratorAgent,
         uiMessages: messages as UIMessage[],
@@ -99,8 +142,8 @@ export async function POST(req: Request) {
       })
     }
 
-    // For single prompt (non-chat mode), use streamText with tools
-    if (prompt) {
+    // For simple client streaming mode, return SSE text chunks compatible with /api/chat consumers
+    if (resolvedPrompt) {
       const baseSystem = `You are Komorebi, an autonomous AI agent with a creative and philosophical nature.
 
 ## Core Identity
@@ -116,7 +159,8 @@ export async function POST(req: Request) {
 5. Cite retrieved memory/knowledge IDs when used`
 
       const result = streamText({
-        model: "google/gemini-2.5-pro",
+        model: model || "google/gemini-2.5-pro",
+        temperature,
         system: composeCitationAwareSystemInstruction(
           `${baseSystem}
 
@@ -124,20 +168,53 @@ Current session: ${sessionId || "interactive"}
 Mode: ${autonomous ? "Autonomous" : "Interactive"}`,
           passiveContext
         ),
-        prompt,
+        prompt: resolvedPrompt,
         tools: orchestratorTools,
         stopWhen: stepCountIs(15),
       })
 
-      return result.toUIMessageStreamResponse({
-        onFinish: ({ messages: finishedMessages }) => {
-          pushActivity({
-            action: "Agent chat completed",
-            details: `${finishedMessages.length} messages`,
-            source: "api/agent/chat",
-            level: "info",
-            metadata: { sessionId },
-          })
+      const encoder = new TextEncoder()
+      const stream = new ReadableStream({
+        async start(controller) {
+          let fullContent = ""
+          try {
+            for await (const chunk of result.textStream) {
+              fullContent += chunk
+              const data = JSON.stringify({ type: "text", content: chunk })
+              controller.enqueue(encoder.encode(`data: ${data}\n\n`))
+            }
+            controller.enqueue(encoder.encode("data: [DONE]\n\n"))
+            controller.close()
+
+            pushActivity({
+              action: "Agent chat completed",
+              details: `${fullContent.length} chars`,
+              source: "api/agent/chat",
+              level: "info",
+              metadata: { sessionId },
+            })
+          } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : "Unknown error"
+            const data = JSON.stringify({ type: "error", content: errorMessage })
+            controller.enqueue(encoder.encode(`data: ${data}\n\n`))
+            controller.close()
+
+            pushActivity({
+              action: "Agent chat stream error",
+              details: errorMessage,
+              source: "api/agent/chat",
+              level: "error",
+              metadata: { sessionId },
+            })
+          }
+        },
+      })
+
+      return new Response(stream, {
+        headers: {
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          Connection: "keep-alive",
         },
       })
     }
