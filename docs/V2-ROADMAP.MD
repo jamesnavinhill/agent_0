@@ -119,135 +119,148 @@ These are treated as product decisions for this roadmap:
 - Evidence: `components/demo/demo-initializer.tsx`.
 - Impact: violates "data truth/no mocks in production path" principle from legacy rules.
 
-## V2 Delivery Phases
+## V2 Delivery Phases (Checklist)
 
-## Phase 0: Baseline Reliability and Data Truth
+### [ ] Phase 0: Baseline Reliability and Data Truth
 
 Target: 1-2 days
 
-- Add explicit sandbox migration step to standard setup path (or merge sandbox tables into baseline migration strategy).
-- Add runtime preflight checks for required DB tables and clearer error messages.
-- Remove or gate demo initializer from production/dev default path.
-- Align activity lifecycle model so each start has a deterministic completion/error update.
+Implementation:
+
+- [ ] Add explicit sandbox migration step to standard setup path (or merge sandbox tables into baseline migration strategy).
+- [ ] Add runtime preflight checks for required DB tables and clearer error messages.
+- [ ] Remove or gate demo initializer from production/dev default path.
+- [ ] Align activity lifecycle model so each start has a deterministic completion/error update.
 
 Acceptance:
 
-- Fresh setup can run sandbox project list/create without hidden migration steps.
-- No perpetual-running activity rows after normal chat/create/scheduler usage.
-- No mock/demo records appear unless explicitly enabled.
+- [ ] Fresh setup can run sandbox project list/create without hidden migration steps.
+- [ ] No perpetual-running activity rows after normal chat/create/scheduler usage.
+- [ ] No mock/demo records appear unless explicitly enabled.
 
-## Phase 1: Navigation and Telemetry Consolidation
+### [ ] Phase 1: Navigation and Telemetry Consolidation
 
 Target: 2-3 days
 
-- Remove standalone Thoughts nav/tab.
-- Keep chat-side Thought Stream and add explicit desktop/mobile collapse control.
-- Decommission Activity tab (preferred) or convert it to a thin DB-backed view that does not duplicate monitor semantics.
-- Keep Live Monitor as the canonical operational log view.
+Implementation:
+
+- [ ] Remove standalone Thoughts nav/tab.
+- [ ] Keep chat-side Thought Stream and add explicit desktop/mobile collapse control.
+- [ ] Decommission Activity tab (preferred) or convert it to a thin DB-backed view that does not duplicate monitor semantics.
+- [ ] Keep Live Monitor as the canonical operational log view.
 
 Acceptance:
 
-- Single thought stream surface (chat sidebar).
-- Single canonical log surface (monitor).
-- Navigation reflects only active/meaningful features.
+- [ ] Single thought stream surface (chat sidebar).
+- [ ] Single canonical log surface (monitor).
+- [ ] Navigation reflects only active/meaningful features.
 
-## Phase 2: Header and Input UX Cleanup
+### [ ] Phase 2: Header and Input UX Cleanup
 
 Target: 1-2 days
 
-- Remove global top header strip from `app/page.tsx`.
-- Let each panel own its header and reclaim vertical space.
-- Keep bottom status bar as global status indicator.
-- Rebuild chat input row with strict alignment rules for textarea + attach/mic/send controls.
+Implementation:
+
+- [ ] Remove global top header strip from `app/page.tsx`.
+- [ ] Let each panel own its header and reclaim vertical space.
+- [ ] Keep bottom status bar as global status indicator.
+- [ ] Rebuild chat input row with strict alignment rules for textarea + attach/mic/send controls.
 
 Acceptance:
 
-- No duplicated top "Ready" header.
-- Chat controls align consistently at all widths.
+- [ ] No duplicated top "Ready" header.
+- [ ] Chat controls align consistently at all widths.
 
-## Phase 3: Settings IA and Accent Picker Upgrade
+### [ ] Phase 3: Settings IA and Accent Picker Upgrade
 
 Target: 2-4 days
 
-- Restructure API configuration into responsive multi-column layout.
-- Group controls by function (chat, image, video, scheduling sync).
-- Replace hue-only picker with full-range picker:
-- 2D color field.
-- hue slider.
-- chroma slider.
-- lightness slider.
-- Update theme model from single `accentHue` to full accent token state.
+Implementation:
+
+- [ ] Restructure API configuration into responsive multi-column layout.
+- [ ] Group controls by function (chat, image, video, scheduling sync).
+- [ ] Replace hue-only picker with full-range picker.
+- [ ] Add 2D color field.
+- [ ] Add hue slider.
+- [ ] Add chroma slider.
+- [ ] Add lightness slider.
+- [ ] Update theme model from single `accentHue` to full accent token state.
 
 Acceptance:
 
-- Settings use space efficiently on desktop while remaining usable on mobile.
-- Accent control supports precise color shaping (hue/chroma/lightness).
+- [ ] Settings use space efficiently on desktop while remaining usable on mobile.
+- [ ] Accent control supports precise color shaping (hue/chroma/lightness).
 
-## Phase 4: Gallery and Modal Usability
+### [ ] Phase 4: Gallery and Modal Usability
 
 Target: 2-3 days
 
-- Fix modal download logic to branch by output type (image/video/audio/text/code) and download real media file when available.
-- Improve media modal geometry so image/video are the primary visual focus with minimal dead space.
-- Widen Daily Brief reading modal and tune prose width for long-form readability.
-- Make breadcrumb root ("Creations") clickable to return to stacks.
+Implementation:
+
+- [ ] Fix modal download logic to branch by output type (image/video/audio/text/code) and download real media file when available.
+- [ ] Improve media modal geometry so image/video are the primary visual focus with minimal dead space.
+- [ ] Widen Daily Brief reading modal and tune prose width for long-form readability.
+- [ ] Make breadcrumb root ("Creations") clickable to return to stacks.
 
 Acceptance:
 
-- Download from gallery detail returns expected file type.
-- Daily Brief modal is comfortably readable on desktop.
-- Media modal feels proportional to content.
-- Breadcrumb supports return to stacks.
+- [ ] Download from gallery detail returns expected file type.
+- [ ] Daily Brief modal is comfortably readable on desktop.
+- [ ] Media modal feels proportional to content.
+- [ ] Breadcrumb supports return to stacks.
 
-## Phase 5: Create Tab Resolution
+### [ ] Phase 5: Create Tab Resolution
 
 Target: 1 day
 
-- Remove Create tab and nav item (preferred, per current request), OR re-scope with persistence-first contract.
-- If retained in future: all outputs must persist via `/api/gallery` and appear after refresh.
+Implementation:
+
+- [ ] Remove Create tab and nav item (preferred, per current request), OR re-scope with persistence-first contract.
+- [ ] If retained in future: all outputs must persist via `/api/gallery` and appear after refresh.
 
 Acceptance:
 
-- No dead-end creation workflow in navigation.
+- [ ] No dead-end creation workflow in navigation.
 
-## Phase 6: Sandbox Completion Track
+### [ ] Phase 6: Sandbox Completion Track
 
 Target: 3-5 days
 
-- Complete setup parity for sandbox DB lifecycle.
-- Improve UI error surfacing with server message passthrough.
-- Add health/readiness indicators for sandbox dependencies.
-- Confirm fetch/create project flow and basic file/dependency/execution cycle.
+Implementation:
+
+- [ ] Complete setup parity for sandbox DB lifecycle.
+- [ ] Improve UI error surfacing with server message passthrough.
+- [ ] Add health/readiness indicators for sandbox dependencies.
+- [ ] Confirm fetch/create project flow and basic file/dependency/execution cycle.
 
 Acceptance:
 
-- Sandbox project CRUD works in default configured environment.
-- Errors are actionable and explicit when prerequisites are missing.
+- [ ] Sandbox project CRUD works in default configured environment.
+- [ ] Errors are actionable and explicit when prerequisites are missing.
 
-## Phase 7: Memory Bridge and Agent Evolution
+### [ ] Phase 7: Memory Bridge and Agent Evolution
 
 Target: 4-6 days
 
-- Implement active retrieval tools:
-- `recall_memory(query, layer?, limit?)`
-- `search_knowledge(query, tags?, limit?)`
-- Implement passive context injection:
-- inject top relevant memories/knowledge snippets into chat/agent prompts.
-- Implement distillation layer:
-- summarize completed tasks (Morning Read, Ritual, Media) into compact memory nodes.
-- Add citation-capable memory references in responses where applicable.
+Implementation:
+
+- [ ] Implement `recall_memory(query, layer?, limit?)`.
+- [ ] Implement `search_knowledge(query, tags?, limit?)`.
+- [ ] Implement passive context injection of top relevant memories/knowledge snippets into chat/agent prompts.
+- [ ] Implement distillation layer summarizing completed tasks (Morning Read, Ritual, Media) into compact memory nodes.
+- [ ] Add citation-capable memory references in responses where applicable.
 
 Acceptance:
 
-- Agent can cite specific memory/knowledge entries from storage during chat.
-- Morning workflows produce both rich artifacts and distilled retrievable memory nodes.
+- [ ] Agent can cite specific memory/knowledge entries from storage during chat.
+- [ ] Morning workflows produce both rich artifacts and distilled retrievable memory nodes.
 
 ## Cross-Cutting Quality Gates
 
-- No mock data in production execution paths.
-- UI state and DB state remain consistent after refresh.
-- Each critical panel has at least one focused test path.
-- Setup docs include all required migration steps for enabled features.
+- [ ] No mock data in production execution paths.
+- [ ] UI state and DB state remain consistent after refresh.
+- [ ] Each critical panel has at least one focused test path.
+- [ ] Setup docs include all required migration steps for enabled features.
 
 ## Legacy Backlog Carried Forward (Validated)
 
@@ -258,21 +271,21 @@ Acceptance:
 
 ## Suggested Execution Order
 
-1. Phase 0 (stability, migrations, no-mock baseline)
-2. Phase 1 + 2 (navigation consolidation + core UX cleanup)
-3. Phase 4 + 3 (gallery/modal fixes + settings redesign)
-4. Phase 5 (remove Create tab)
-5. Phase 6 + 7 (sandbox completion + memory bridge)
+- [ ] Phase 0 (stability, migrations, no-mock baseline)
+- [ ] Phase 1 + 2 (navigation consolidation + core UX cleanup)
+- [ ] Phase 4 + 3 (gallery/modal fixes + settings redesign)
+- [ ] Phase 5 (remove Create tab)
+- [ ] Phase 6 + 7 (sandbox completion + memory bridge)
 
 ## V2 Definition of Done
 
-- No redundant telemetry surfaces.
-- No perpetual-looping activity artifacts in UI.
-- Chat thought stream is collapsible and clean.
-- Top global header removed; vertical space reclaimed.
-- Create tab removed (or fully persistence-backed if reintroduced).
-- Settings layout and accent picker are polished and space-efficient.
-- Daily Brief and Gallery modals are readable and media-centered.
-- Gallery download returns actual media files.
-- Sandbox default setup path is explicit and functional.
-- Agent can actively and passively use memory/knowledge in runtime.
+- [ ] No redundant telemetry surfaces.
+- [ ] No perpetual-looping activity artifacts in UI.
+- [ ] Chat thought stream is collapsible and clean.
+- [ ] Top global header removed; vertical space reclaimed.
+- [ ] Create tab removed (or fully persistence-backed if reintroduced).
+- [ ] Settings layout and accent picker are polished and space-efficient.
+- [ ] Daily Brief and Gallery modals are readable and media-centered.
+- [ ] Gallery download returns actual media files.
+- [ ] Sandbox default setup path is explicit and functional.
+- [ ] Agent can actively and passively use memory/knowledge in runtime.
