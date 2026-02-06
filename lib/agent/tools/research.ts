@@ -3,6 +3,7 @@ import { addKnowledge } from "@/lib/db/knowledge"
 import { saveGalleryItem } from "@/lib/db/gallery"
 import { pushActivity } from "@/lib/activity/bus"
 import { addMemory } from "@/lib/db/memories"
+import { createDistilledMemoryNode } from "@/lib/memory/distillation"
 
 export async function performMorningRead() {
   const startTime = Date.now()
@@ -94,6 +95,7 @@ export async function performMorningRead() {
     // Save knowledge items with tracking
     let savedCount = 0
     let skippedCount = 0
+    const savedKnowledgeTitles: string[] = []
     if (Array.isArray(data.knowledgeItems)) {
       for (const rawItem of data.knowledgeItems) {
         // Handle case where AI returns strings instead of objects
@@ -120,7 +122,10 @@ export async function performMorningRead() {
           summary: String(item.summary).trim(),
           tags: Array.isArray(item.tags) ? item.tags : ["research"]
         })
-        if (success) savedCount++
+        if (success) {
+          savedCount++
+          savedKnowledgeTitles.push(String(item.title).trim())
+        }
       }
       
       if (skippedCount > 0) {
@@ -172,6 +177,15 @@ export async function performMorningRead() {
         source: "morning-read",
         relevance: 0.8,
         tags: ["task", "research", "morning-read"]
+      })
+
+      await createDistilledMemoryNode({
+        task: "morning-read",
+        source: "morning-read",
+        summary: `Daily Brief generated on ${dateStr} with ${savedCount} saved knowledge entries.`,
+        highlights: savedKnowledgeTitles.slice(0, 3),
+        tags: ["research", "knowledge", "daily-brief"],
+        relevance: 0.9,
       })
     }
 

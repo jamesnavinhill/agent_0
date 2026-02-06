@@ -21,6 +21,7 @@ import {
 import { pushActivity } from "@/lib/activity/bus"
 import { logger } from "@/lib/logging/logger"
 import { createId } from "@/lib/utils/id"
+import { getPassiveContext } from "@/lib/memory/bridge"
 
 const VALID_SUBAGENT_ROLES: SubAgentRole[] = [
   "researcher",
@@ -126,6 +127,7 @@ export async function executeOrchestrator(
     sessionId?: string
     autonomous?: boolean
     maxSteps?: number
+    contextQuery?: string
     onStep?: (step: AgentStep) => void
     onToolCall?: (toolCall: ToolCallRecord) => void
   } = {}
@@ -144,12 +146,29 @@ export async function executeOrchestrator(
   })
 
   try {
+    const contextQuery = options.contextQuery ?? prompt
+    const passiveContext = await getPassiveContext({
+      query: contextQuery,
+      memoryLimit: 4,
+      knowledgeLimit: 4,
+    })
+
+    pushActivity({
+      action: "Memory bridge context prepared",
+      details: `${passiveContext.memories.length} memories, ${passiveContext.knowledge.length} knowledge entries`,
+      source: "orchestrator",
+      level: "debug",
+      metadata: { agentId, contextQuery: passiveContext.query },
+    })
+
     const result = await orchestratorAgent.generate({
       prompt,
       options: {
         sessionId: options.sessionId,
         autonomous: options.autonomous ?? false,
         maxSteps: options.maxSteps ?? 15,
+        retrievalContext: passiveContext.promptBlock,
+        contextQuery: passiveContext.query,
       },
     })
 
@@ -425,6 +444,7 @@ export async function executeAutonomousTask(
   const result = await executeOrchestrator(taskDescription, {
     autonomous: true,
     maxSteps: options.maxSteps ?? 15,
+    contextQuery: taskDescription,
     onStep: options.onStep,
     onToolCall: options.onToolCall,
   })
@@ -459,7 +479,7 @@ export async function executeAutonomousTask(
             action: "Delegated task skipped",
             details: `Invalid role: ${candidateRole ?? "missing"}`,
             source: "orchestrator",
-            level: "warning",
+            level: "info",
           })
 
           logger.warn("Skipping delegated sub-agent due to invalid role", {
@@ -476,7 +496,7 @@ export async function executeAutonomousTask(
             action: "Delegated task skipped",
             details: `Missing task description for ${candidateRole}`,
             source: "orchestrator",
-            level: "warning",
+            level: "info",
           })
 
           logger.warn("Skipping delegated sub-agent due to missing task description", {

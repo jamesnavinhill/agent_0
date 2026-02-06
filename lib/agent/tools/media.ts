@@ -6,6 +6,7 @@ import { Task } from "@/app/api/tasks/route"
 import { uploadFile } from "@/lib/storage/local"
 import { generateVideoFromText, generateVideoFromImage, VeoConfig, VideoAspectRatio } from "@/lib/api/veo"
 import { createId } from "@/lib/utils/id"
+import { createDistilledMemoryNode } from "@/lib/memory/distillation"
 import fs from "fs/promises"
 import path from "path"
 
@@ -197,6 +198,17 @@ Style: Cinematic, 8k, Detailed, Avant-Garde.
             source: "media_generation",
             relevance: 0.5,
             tags: ["art", "creative"]
+        })
+
+        await createDistilledMemoryNode({
+            task: "meaningful-media",
+            source: "media_generation",
+            summary: `Generated a Meaningful Media image artifact using ${model} (${aspectRatio}) with context: ${contextDescription}.`,
+            highlights: [
+                finalPrompt.slice(0, 140),
+            ],
+            tags: ["art", "image", "creative"],
+            relevance: 0.82,
         })
 
         return `Generated image based on: ${contextDescription}`
@@ -484,6 +496,15 @@ Style: Abstract, atmospheric, flowing motion, 4K quality.`
             source: "video_generation",
             relevance: 0.6,
             tags: ["video", "creative", mode]
+        })
+
+        await createDistilledMemoryNode({
+            task: "motion-art",
+            source: "video_generation",
+            summary: `Generated ${mode} motion artifact (${aspectRatio})${videoResult.durationSeconds ? ` lasting ${videoResult.durationSeconds}s` : ""}.`,
+            highlights: [prompt.slice(0, 140)],
+            tags: ["video", "motion", "creative", mode],
+            relevance: 0.84,
         })
 
         return `Generated ${mode} video saved to gallery`

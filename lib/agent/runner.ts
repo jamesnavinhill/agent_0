@@ -7,6 +7,7 @@ import { performMorningRead } from "@/lib/agent/tools/research"
 import { performDailyArt, generateVideo, editGalleryImage } from "@/lib/agent/tools/media"
 import { executeAutonomousTask, executeSubAgentTask } from "@/lib/agents/agent-executor"
 import { SpawnSubAgentConfig } from "@/lib/agents/types"
+import { createDistilledMemoryNode } from "@/lib/memory/distillation"
 
 export interface ExecutionResult {
     id: string
@@ -95,6 +96,15 @@ export async function executeTask(task: Task, isManual = false): Promise<Executi
             }
 
             output = `Morning Ritual complete:\n${results.join("\n")}`
+
+            await createDistilledMemoryNode({
+                task: "morning-ritual",
+                source: "morning-ritual",
+                summary: "Completed Morning Ritual flow with sequential Morning Read and Meaningful Media execution.",
+                highlights: results.slice(0, 3),
+                tags: ["flow", "morning-ritual", "automation"],
+                relevance: 0.9,
+            })
         }
         else if (task.name.includes("Morning Read") || task.category === "research") {
             console.log("[Runner] -> Research path")

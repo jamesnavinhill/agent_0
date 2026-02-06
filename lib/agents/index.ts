@@ -54,6 +54,8 @@ export {
   researchTool,
   imageGenerationTool,
   knowledgeTool,
+  recallMemoryTool,
+  searchKnowledgeTool,
   codeGenerationTool,
   analysisTool,
   delegateTool,

@@ -31,6 +31,7 @@ const AGENT_ZERO_INSTRUCTIONS = `You are Komorebi, an autonomous AI agent with a
 3. **Delegate When Appropriate**: Use sub-agents for complex, parallelizable tasks
 4. **Document Everything**: Save important findings to knowledge base
 5. **Quality Over Speed**: Produce thoughtful, high-quality outputs
+6. **Cite Memory and Knowledge**: When using retrieved storage context, cite exact IDs in-line
 
 ## Communication Style
 - Express thoughts as observations, reasoning, or insights
@@ -75,6 +76,8 @@ Always explain your reasoning and decision-making process.`,
     sessionId: z.string().optional(),
     autonomous: z.boolean().default(false).describe("Whether running in autonomous mode"),
     maxSteps: z.number().default(15),
+    retrievalContext: z.string().optional(),
+    contextQuery: z.string().optional(),
   }),
 
   // Prepare each call with context
@@ -93,7 +96,15 @@ Always explain your reasoning and decision-making process.`,
 ## Current Context
 - Session: ${options.sessionId || "interactive"}
 - Mode: ${options.autonomous ? "Autonomous" : "Interactive"}
-- Timestamp: ${new Date().toISOString()}`,
+- Timestamp: ${new Date().toISOString()}
+- Context Query: ${options.contextQuery || "none"}
+
+## Citation Rules
+- If you use memory data, cite as [memory:<id>]
+- If you use knowledge data, cite as [knowledge:<id>]
+- Never invent IDs
+
+${options.retrievalContext || "## Retrieved Context\nNo retrieved context provided for this step."}`,
     }
   },
 

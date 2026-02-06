@@ -7,7 +7,8 @@ import { tool } from "ai"
 import { z } from "zod"
 import { generateImage as imagenGenerateImage } from "@/lib/api/imagen"
 import { generateText } from "@/lib/api/gemini"
-import { addKnowledge } from "@/lib/db/knowledge"
+import { recallMemories } from "@/lib/db/memories"
+import { addKnowledge, searchKnowledge } from "@/lib/db/knowledge"
 import { saveGalleryItem } from "@/lib/db/gallery"
 import { pushActivity } from "@/lib/activity/bus"
 import { sandboxTool } from "./sandbox"
@@ -131,6 +132,82 @@ export const knowledgeTool = tool({
     return {
       success,
       message: success ? `Knowledge saved: ${title}` : "Failed to save knowledge",
+    }
+  },
+})
+
+/**
+ * Memory Recall Tool - Retrieve relevant memories from persistent storage
+ */
+export const recallMemoryTool = tool({
+  description: "Recall relevant memories by query. Use this when you need stored context from prior tasks or interactions.",
+  inputSchema: z.object({
+    query: z.string().describe("Natural language query for the memory you need"),
+    layer: z.enum(["shortTerm", "longTerm", "episodic", "semantic"]).optional().describe("Optional memory layer filter"),
+    limit: z.number().int().min(1).max(10).default(5).describe("Maximum number of memories to return"),
+  }),
+  execute: async ({ query, layer, limit }) => {
+    pushActivity({
+      action: "Memory recall started",
+      details: query.slice(0, 120),
+      source: "memory-tool",
+      level: "action",
+      metadata: { layer, limit },
+    })
+
+    const memories = await recallMemories(query, { layer, limit })
+
+    return {
+      query,
+      count: memories.length,
+      memories: memories.map((memory) => ({
+        id: memory.id,
+        layer: memory.layer,
+        content: memory.content,
+        source: memory.source,
+        relevance: memory.relevance,
+        tags: memory.tags,
+        createdAt: memory.created_at,
+        citation: `[memory:${memory.id}]`,
+      })),
+    }
+  },
+})
+
+/**
+ * Knowledge Search Tool - Retrieve relevant knowledge entries
+ */
+export const searchKnowledgeTool = tool({
+  description: "Search the long-term knowledge bank by query and optional tags.",
+  inputSchema: z.object({
+    query: z.string().describe("Natural language query for knowledge lookup"),
+    tags: z.array(z.string()).optional().describe("Optional tag filter"),
+    limit: z.number().int().min(1).max(10).default(5).describe("Maximum number of entries to return"),
+  }),
+  execute: async ({ query, tags, limit }) => {
+    pushActivity({
+      action: "Knowledge search started",
+      details: query.slice(0, 120),
+      source: "knowledge-search-tool",
+      level: "action",
+      metadata: { tags, limit },
+    })
+
+    const knowledge = await searchKnowledge(query, { tags, limit })
+
+    return {
+      query,
+      tags: tags ?? [],
+      count: knowledge.length,
+      knowledge: knowledge.map((entry) => ({
+        id: entry.id,
+        title: entry.title,
+        summary: entry.summary,
+        url: entry.url,
+        tags: entry.tags,
+        createdAt: entry.created_at,
+        citation: `[knowledge:${entry.id}]`,
+      })),
     }
   },
 })
@@ -289,6 +366,8 @@ export const orchestratorTools = {
   research: researchTool,
   generateImage: imageGenerationTool,
   saveKnowledge: knowledgeTool,
+  recall_memory: recallMemoryTool,
+  search_knowledge: searchKnowledgeTool,
   generateCode: codeGenerationTool,
   analyze: analysisTool,
   delegate: delegateTool,
@@ -302,6 +381,8 @@ export const orchestratorTools = {
 export const researcherTools = {
   research: researchTool,
   saveKnowledge: knowledgeTool,
+  recall_memory: recallMemoryTool,
+  search_knowledge: searchKnowledgeTool,
   analyze: analysisTool,
 } as const
 
@@ -309,12 +390,16 @@ export const creatorTools = {
   generateImage: imageGenerationTool,
   generateCode: codeGenerationTool,
   generateReport: reportTool,
+  recall_memory: recallMemoryTool,
+  search_knowledge: searchKnowledgeTool,
   sandbox: sandboxTool,
 } as const
 
 export const reviewerTools = {
   analyze: analysisTool,
   saveKnowledge: knowledgeTool,
+  recall_memory: recallMemoryTool,
+  search_knowledge: searchKnowledgeTool,
 } as const
 
 /**
@@ -325,6 +410,8 @@ export const coderTools = {
   generateCode: codeGenerationTool,
   analyze: analysisTool,
   saveKnowledge: knowledgeTool,
+  recall_memory: recallMemoryTool,
+  search_knowledge: searchKnowledgeTool,
 } as const
 
 // Re-export sandbox tool for direct imports

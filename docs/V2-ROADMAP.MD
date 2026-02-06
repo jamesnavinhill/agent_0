@@ -1,7 +1,7 @@
 # KOMOREBI V2 ROADMAP
 
 Date: 2026-02-05  
-Status: In Progress (Phases 0-6 completed on 2026-02-06)
+Status: In Progress (Phases 0-7 completed on 2026-02-06)
 
 ## Purpose
 
@@ -238,22 +238,22 @@ Acceptance:
 - [x] Sandbox project CRUD works in default configured environment.
 - [x] Errors are actionable and explicit when prerequisites are missing.
 
-### [ ] Phase 7: Memory Bridge and Agent Evolution
+### [x] Phase 7: Memory Bridge and Agent Evolution (Completed 2026-02-06)
 
 Target: 4-6 days
 
 Implementation:
 
-- [ ] Implement `recall_memory(query, layer?, limit?)`.
-- [ ] Implement `search_knowledge(query, tags?, limit?)`.
-- [ ] Implement passive context injection of top relevant memories/knowledge snippets into chat/agent prompts.
-- [ ] Implement distillation layer summarizing completed tasks (Morning Read, Ritual, Media) into compact memory nodes.
-- [ ] Add citation-capable memory references in responses where applicable.
+- [x] Implement `recall_memory(query, layer?, limit?)`.
+- [x] Implement `search_knowledge(query, tags?, limit?)`.
+- [x] Implement passive context injection of top relevant memories/knowledge snippets into chat/agent prompts.
+- [x] Implement distillation layer summarizing completed tasks (Morning Read, Ritual, Media) into compact memory nodes.
+- [x] Add citation-capable memory references in responses where applicable.
 
 Acceptance:
 
-- [ ] Agent can cite specific memory/knowledge entries from storage during chat.
-- [ ] Morning workflows produce both rich artifacts and distilled retrievable memory nodes.
+- [x] Agent can cite specific memory/knowledge entries from storage during chat.
+- [x] Morning workflows produce both rich artifacts and distilled retrievable memory nodes.
 
 ## Cross-Cutting Quality Gates
 
@@ -276,7 +276,7 @@ Acceptance:
 - [x] Phase 3 (settings redesign + full accent controls)
 - [x] Phase 4 (gallery/modal fixes)
 - [x] Phase 5 (remove Create tab)
-- [ ] Phase 6 + 7 (sandbox completion + memory bridge)
+- [x] Phase 6 + 7 (sandbox completion + memory bridge)
 
 ## V2 Definition of Done
 
@@ -289,4 +289,4 @@ Acceptance:
 - [ ] Daily Brief and Gallery modals are readable and media-centered.
 - [ ] Gallery download returns actual media files.
 - [x] Sandbox default setup path is explicit and functional.
-- [ ] Agent can actively and passively use memory/knowledge in runtime.
+- [x] Agent can actively and passively use memory/knowledge in runtime.

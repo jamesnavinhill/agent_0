@@ -1,4 +1,13 @@
-import { chatStream, isConfigured, type ChatMessage } from "@/lib/api/gemini"
+import {
+  chatStream,
+  DEFAULT_SYSTEM_INSTRUCTION,
+  isConfigured,
+  type ChatMessage,
+} from "@/lib/api/gemini"
+import {
+  composeCitationAwareSystemInstruction,
+  getPassiveContext,
+} from "@/lib/memory/bridge"
 
 export const maxDuration = 60
 
@@ -26,12 +35,27 @@ export async function POST(req: Request) {
     content: msg.content,
   }))
 
+  const latestUserMessage = [...messages]
+    .reverse()
+    .find((message) => message.role === "user")
+
+  const passiveContext = await getPassiveContext({
+    query: latestUserMessage?.content ?? "",
+    memoryLimit: 4,
+    knowledgeLimit: 4,
+  })
+
+  const systemInstruction = composeCitationAwareSystemInstruction(
+    DEFAULT_SYSTEM_INSTRUCTION,
+    passiveContext
+  )
+
   const encoder = new TextEncoder()
   
   const stream = new ReadableStream({
     async start(controller) {
       try {
-        for await (const chunk of chatStream(geminiMessages, { model, temperature })) {
+        for await (const chunk of chatStream(geminiMessages, { model, temperature, systemInstruction })) {
           const data = JSON.stringify({ type: "text", content: chunk })
           controller.enqueue(encoder.encode(`data: ${data}\n\n`))
         }

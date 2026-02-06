@@ -320,6 +320,32 @@ Docs updated:
 Residual risks / follow-ups:
 - No live DB integration test was run in this session; sandbox CRUD and execution should still be manually smoke-tested once in the target environment.
 
+## Phase 7 Completed - 2026-02-06
+
+Scope completed:
+- Added retrieval primitives in `lib/db/memories.ts` and `lib/db/knowledge.ts` for query-aware memory and knowledge lookup.
+- Added memory bridge context module in `lib/memory/bridge.ts` and injected passive retrieved context + citation policy into `/api/chat`, `/api/agent/chat`, and orchestrator runtime (`lib/agents/agent-executor.ts`, `lib/agents/ai-sdk-agents.ts`).
+- Added agent tools `recall_memory` and `search_knowledge` in `lib/agents/tools/index.ts` and exposed them across orchestrator/sub-agent tool sets.
+- Added distillation layer in `lib/memory/distillation.ts` and wired task-level distilled semantic memory nodes for Morning Read, Meaningful Media/Motion Art, and Morning Ritual completion.
+- Added citation-ready memory/knowledge IDs in retrieval context/tool outputs (`[memory:<id>]`, `[knowledge:<id>]`) for response referencing.
+
+Acceptance checks:
+- [x] Agent can cite specific memory/knowledge entries from storage during chat.
+- [x] Morning workflows produce both rich artifacts and distilled retrievable memory nodes.
+
+Validation run:
+- `pnpm run lint` -> pass
+- `pnpm run test` -> pass
+- `pnpm run build` -> pass
+
+Docs updated:
+- `docs/V2-ROADMAP.MD` (status updated)
+- `docs/V2-HANDOFF.MD` (this entry added)
+
+Residual risks / follow-ups:
+- Citation output format relies on model adherence to prompt instructions and should be manually smoke-tested with real stored memories/knowledge.
+- Retrieval currently uses lexical scoring (`ILIKE` + tag matching); semantic vector retrieval remains a future enhancement.
+
 ## Quick Start Prompt For Next Agent
 
 Use this exact pattern:
