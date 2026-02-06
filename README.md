@@ -34,7 +34,7 @@ Required variables:
 - `DATABASE_URL`
 - `CRON_SECRET`
 
-Apply database schema.
+Apply database schema (core + sandbox tables).
 
 ```bash
 pnpm run db:migrate

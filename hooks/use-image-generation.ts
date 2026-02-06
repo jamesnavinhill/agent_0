@@ -3,7 +3,6 @@
 import { useState, useCallback } from "react"
 import { useAgentStore } from "@/lib/store/agent-store"
 import { useSettings } from "@/hooks/use-settings"
-import { createId } from "@/lib/utils/id"
 
 interface GeneratedImage {
   url: string
@@ -40,8 +39,12 @@ export function useImageGeneration(): UseImageGenerationReturn {
     setError(null)
     setState("creating")
 
-    const activityId = createId()
-    addActivity("Generating image", `Prompt: "${prompt.slice(0, 50)}..."`)
+    const activityId = addActivity(
+      "Generating image",
+      `Prompt: "${prompt.slice(0, 50)}..."`,
+      undefined,
+      "running"
+    )
     addThought(`Creating visual art: "${prompt.slice(0, 80)}"`, "action")
 
     try {

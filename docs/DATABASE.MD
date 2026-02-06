@@ -44,7 +44,7 @@ Columns include `title`, `url`, `summary`, `content`, `embedding`, `tags`, `sour
 
 ## Migrations
 
-- `pnpm run db:migrate` runs `lib/db/schema.sql` via `scripts/migrate.ts`.
+- `pnpm run db:migrate` runs both `lib/db/schema.sql` and `scripts/create-sandbox-tables.sql` via `scripts/migrate.ts`.
 - `node scripts/run-migration.mjs schema` runs the schema migration.
 - `node scripts/run-migration.mjs sandbox` creates sandbox tables.
 - `POST /api/db/migrate` can run migrations in dev environments.

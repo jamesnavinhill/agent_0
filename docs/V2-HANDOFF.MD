@@ -148,7 +148,80 @@ Residual risks / follow-ups:
 
 ### Entries
 
-- None yet.
+## Phase 0 Completed - 2026-02-06
+
+Scope completed:
+- Merged sandbox table migration into `pnpm run db:migrate` by updating `scripts/migrate.ts` to apply both core and sandbox SQL.
+- Added sandbox DB preflight in `lib/db/sandbox.ts` and wired it into sandbox project/files/dependencies/executions routes.
+- Improved sandbox UI error surfacing by propagating server error messages in `hooks/use-sandbox.ts`.
+- Gated demo initialization behind `NEXT_PUBLIC_ENABLE_DEMO_DATA` and removed default demo injection path.
+- Aligned activity lifecycle by making `addActivity` return IDs and fixing chat/image/code/scheduler start-to-complete/error updates.
+
+Acceptance checks:
+- [x] Fresh setup can run sandbox project list/create without hidden migration steps.
+- [x] No perpetual-running activity rows after normal chat/create/scheduler usage.
+- [x] No mock/demo records appear unless explicitly enabled.
+
+Validation run:
+- `pnpm run lint` -> pass
+- `pnpm run test` -> pass
+- `pnpm run build` -> pass
+
+Docs updated:
+- `docs/V2-ROADMAP.MD` (status updated)
+- `docs/V2-HANDOFF.MD` (this entry added)
+
+Residual risks / follow-ups:
+- Fresh setup behavior is implemented and preflighted, but a full clean-database setup pass should still be run in the target environment.
+
+## Phase 1 Completed - 2026-02-06
+
+Scope completed:
+- Removed standalone Thoughts and Activity entries from navigation.
+- Removed standalone Thoughts and Activity route cases from `app/page.tsx`.
+- Kept Thought Stream only as a chat-side surface.
+- Added explicit Thought Stream collapse controls for desktop and mobile chat flows.
+
+Acceptance checks:
+- [x] Single thought stream surface (chat sidebar).
+- [x] Single canonical log surface (monitor).
+- [x] Navigation reflects only active/meaningful features.
+
+Validation run:
+- `pnpm run lint` -> pass
+- `pnpm run test` -> pass
+- `pnpm run build` -> pass
+
+Docs updated:
+- `docs/V2-ROADMAP.MD` (status updated)
+- `docs/V2-HANDOFF.MD` (this entry added)
+
+Residual risks / follow-ups:
+- Create tab remains by design for now and is slated for Phase 5 resolution.
+
+## Phase 2 Completed - 2026-02-06
+
+Scope completed:
+- Removed the global top header strip from `app/page.tsx`.
+- Moved chat header ownership to `components/panels/chat-panel.tsx`.
+- Preserved bottom global status in `components/agent/status-bar.tsx`.
+- Reworked `components/input/multimodal-input.tsx` input row alignment for consistent control sizing and vertical rhythm.
+
+Acceptance checks:
+- [x] No duplicated top "Ready" header.
+- [x] Chat controls align consistently at all widths.
+
+Validation run:
+- `pnpm run lint` -> pass
+- `pnpm run test` -> pass
+- `pnpm run build` -> pass
+
+Docs updated:
+- `docs/V2-ROADMAP.MD` (status updated)
+- `docs/V2-HANDOFF.MD` (this entry added)
+
+Residual risks / follow-ups:
+- Additional responsive tuning may be needed after broader manual QA across devices.
 
 ## Quick Start Prompt For Next Agent
 

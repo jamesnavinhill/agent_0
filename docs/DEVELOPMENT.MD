@@ -11,7 +11,7 @@ Last reviewed: 2026-02-05 (local)
 ## Database Tasks
 
 - `pnpm run db:check` verifies database connectivity.
-- `pnpm run db:migrate` applies `lib/db/schema.sql`.
+- `pnpm run db:migrate` applies both `lib/db/schema.sql` and `scripts/create-sandbox-tables.sql`.
 - `pnpm run db:seed:morning-read` seeds the Morning Read task.
 - `pnpm run db:seed:media-task` seeds Meaningful Media.
 - `pnpm run db:seed:motion-art` seeds Motion Art.

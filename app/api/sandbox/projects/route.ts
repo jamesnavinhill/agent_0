@@ -7,6 +7,8 @@
 import { NextResponse } from "next/server"
 import {
   createProject,
+  ensureSandboxTablesReady,
+  getSandboxApiError,
   listProjects,
   type CreateProjectInput,
   type ListProjectsInput,
@@ -15,6 +17,8 @@ import { pushActivity } from "@/lib/activity/bus"
 
 export async function GET(req: Request) {
   try {
+    await ensureSandboxTablesReady()
+
     const { searchParams } = new URL(req.url)
     const status = searchParams.get("status") as ListProjectsInput["status"]
     const limit = searchParams.get("limit")
@@ -28,13 +32,15 @@ export async function GET(req: Request) {
 
     return NextResponse.json({ projects, count: projects.length })
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to list projects"
-    return NextResponse.json({ error: message }, { status: 500 })
+    const sandboxError = getSandboxApiError(error)
+    return NextResponse.json({ error: sandboxError.message }, { status: sandboxError.status })
   }
 }
 
 export async function POST(req: Request) {
   try {
+    await ensureSandboxTablesReady()
+
     const body = await req.json()
 
     const input: CreateProjectInput = {
@@ -62,7 +68,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json(project, { status: 201 })
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to create project"
-    return NextResponse.json({ error: message }, { status: 500 })
+    const sandboxError = getSandboxApiError(error)
+    return NextResponse.json({ error: sandboxError.message }, { status: sandboxError.status })
   }
 }

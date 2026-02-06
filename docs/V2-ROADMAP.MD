@@ -1,7 +1,7 @@
 # KOMOREBI V2 ROADMAP
 
 Date: 2026-02-05  
-Status: Regroup Plan (Proposed for execution)
+Status: In Progress (Phases 0-2 completed on 2026-02-06)
 
 ## Purpose
 
@@ -121,55 +121,55 @@ These are treated as product decisions for this roadmap:
 
 ## V2 Delivery Phases (Checklist)
 
-### [ ] Phase 0: Baseline Reliability and Data Truth
+### [x] Phase 0: Baseline Reliability and Data Truth (Completed 2026-02-06)
 
 Target: 1-2 days
 
 Implementation:
 
-- [ ] Add explicit sandbox migration step to standard setup path (or merge sandbox tables into baseline migration strategy).
-- [ ] Add runtime preflight checks for required DB tables and clearer error messages.
-- [ ] Remove or gate demo initializer from production/dev default path.
-- [ ] Align activity lifecycle model so each start has a deterministic completion/error update.
+- [x] Add explicit sandbox migration step to standard setup path (or merge sandbox tables into baseline migration strategy).
+- [x] Add runtime preflight checks for required DB tables and clearer error messages.
+- [x] Remove or gate demo initializer from production/dev default path.
+- [x] Align activity lifecycle model so each start has a deterministic completion/error update.
 
 Acceptance:
 
-- [ ] Fresh setup can run sandbox project list/create without hidden migration steps.
-- [ ] No perpetual-running activity rows after normal chat/create/scheduler usage.
-- [ ] No mock/demo records appear unless explicitly enabled.
+- [x] Fresh setup can run sandbox project list/create without hidden migration steps.
+- [x] No perpetual-running activity rows after normal chat/create/scheduler usage.
+- [x] No mock/demo records appear unless explicitly enabled.
 
-### [ ] Phase 1: Navigation and Telemetry Consolidation
+### [x] Phase 1: Navigation and Telemetry Consolidation (Completed 2026-02-06)
 
 Target: 2-3 days
 
 Implementation:
 
-- [ ] Remove standalone Thoughts nav/tab.
-- [ ] Keep chat-side Thought Stream and add explicit desktop/mobile collapse control.
-- [ ] Decommission Activity tab (preferred) or convert it to a thin DB-backed view that does not duplicate monitor semantics.
-- [ ] Keep Live Monitor as the canonical operational log view.
+- [x] Remove standalone Thoughts nav/tab.
+- [x] Keep chat-side Thought Stream and add explicit desktop/mobile collapse control.
+- [x] Decommission Activity tab (preferred) or convert it to a thin DB-backed view that does not duplicate monitor semantics.
+- [x] Keep Live Monitor as the canonical operational log view.
 
 Acceptance:
 
-- [ ] Single thought stream surface (chat sidebar).
-- [ ] Single canonical log surface (monitor).
-- [ ] Navigation reflects only active/meaningful features.
+- [x] Single thought stream surface (chat sidebar).
+- [x] Single canonical log surface (monitor).
+- [x] Navigation reflects only active/meaningful features.
 
-### [ ] Phase 2: Header and Input UX Cleanup
+### [x] Phase 2: Header and Input UX Cleanup (Completed 2026-02-06)
 
 Target: 1-2 days
 
 Implementation:
 
-- [ ] Remove global top header strip from `app/page.tsx`.
-- [ ] Let each panel own its header and reclaim vertical space.
-- [ ] Keep bottom status bar as global status indicator.
-- [ ] Rebuild chat input row with strict alignment rules for textarea + attach/mic/send controls.
+- [x] Remove global top header strip from `app/page.tsx`.
+- [x] Let each panel own its header and reclaim vertical space.
+- [x] Keep bottom status bar as global status indicator.
+- [x] Rebuild chat input row with strict alignment rules for textarea + attach/mic/send controls.
 
 Acceptance:
 
-- [ ] No duplicated top "Ready" header.
-- [ ] Chat controls align consistently at all widths.
+- [x] No duplicated top "Ready" header.
+- [x] Chat controls align consistently at all widths.
 
 ### [ ] Phase 3: Settings IA and Accent Picker Upgrade
 
@@ -271,8 +271,8 @@ Acceptance:
 
 ## Suggested Execution Order
 
-- [ ] Phase 0 (stability, migrations, no-mock baseline)
-- [ ] Phase 1 + 2 (navigation consolidation + core UX cleanup)
+- [x] Phase 0 (stability, migrations, no-mock baseline)
+- [x] Phase 1 + 2 (navigation consolidation + core UX cleanup)
 - [ ] Phase 4 + 3 (gallery/modal fixes + settings redesign)
 - [ ] Phase 5 (remove Create tab)
 - [ ] Phase 6 + 7 (sandbox completion + memory bridge)

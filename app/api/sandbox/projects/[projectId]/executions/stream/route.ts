@@ -6,6 +6,8 @@
  */
 
 import {
+  ensureSandboxTablesReady,
+  getSandboxApiError,
   createExecution,
   markExecutionRunning,
   completeExecution,
@@ -51,6 +53,8 @@ export async function POST(req: Request, context: RouteContext) {
       const startTime = Date.now()
 
       try {
+        await ensureSandboxTablesReady()
+
         // Validate
         if (!command) {
           sendEvent(controller, "error", { error: "command is required" })
@@ -200,11 +204,13 @@ Use code execution to actually run this code, not just describe it.`
 
         controller.close()
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : "Execution failed"
+        const sandboxError = getSandboxApiError(error)
+        const errorMessage = sandboxError.message
         const durationMs = Date.now() - startTime
 
         sendEvent(controller, "error", {
           error: errorMessage,
+          status: sandboxError.status,
           durationMs,
         })
 

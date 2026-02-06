@@ -6,6 +6,8 @@
 
 import { NextResponse } from "next/server"
 import {
+  ensureSandboxTablesReady,
+  getSandboxApiError,
   listExecutions,
   createExecution,
   markExecutionRunning,
@@ -24,6 +26,8 @@ interface RouteContext {
 
 export async function GET(req: Request, context: RouteContext) {
   try {
+    await ensureSandboxTablesReady()
+
     const { projectId } = await context.params
     const { searchParams } = new URL(req.url)
     const limit = searchParams.get("limit")
@@ -46,13 +50,15 @@ export async function GET(req: Request, context: RouteContext) {
     const executions = await listExecutions({ projectId, limit, offset })
     return NextResponse.json({ executions, count: executions.length })
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to list executions"
-    return NextResponse.json({ error: message }, { status: 500 })
+    const sandboxError = getSandboxApiError(error)
+    return NextResponse.json({ error: sandboxError.message }, { status: sandboxError.status })
   }
 }
 
 export async function POST(req: Request, context: RouteContext) {
   try {
+    await ensureSandboxTablesReady()
+
     const { projectId } = await context.params
     const body = await req.json()
 
@@ -182,7 +188,7 @@ Use code execution to actually run this code, not just describe it.`
       return NextResponse.json(completed)
     }
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to create execution"
-    return NextResponse.json({ error: message }, { status: 500 })
+    const sandboxError = getSandboxApiError(error)
+    return NextResponse.json({ error: sandboxError.message }, { status: sandboxError.status })
   }
 }

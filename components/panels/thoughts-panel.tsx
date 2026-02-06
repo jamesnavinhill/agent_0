@@ -5,7 +5,7 @@ import React from "react"
 import { useAgentStore, type ThoughtEntry } from "@/lib/store/agent-store"
 import { cn } from "@/lib/utils"
 import { useEffect, useRef } from "react"
-import { Brain, Lightbulb, GitBranch, Zap, Volume2, VolumeX } from "lucide-react"
+import { Brain, Lightbulb, GitBranch, Zap, Volume2, VolumeX, PanelRightClose } from "lucide-react"
 import { useTTS } from "@/hooks/use-tts"
 import { Button } from "@/components/ui/button"
 
@@ -23,7 +23,11 @@ const thoughtColors: Record<ThoughtEntry["type"], string> = {
   action: "text-accent bg-accent/10",
 }
 
-export function ThoughtsPanel() {
+interface ThoughtsPanelProps {
+  onClose?: () => void
+}
+
+export function ThoughtsPanel({ onClose }: ThoughtsPanelProps) {
   const { thoughts, state } = useAgentStore()
   const scrollRef = useRef<HTMLDivElement>(null)
   const { speak, stop, isSpeaking } = useTTS()
@@ -61,12 +65,24 @@ export function ThoughtsPanel() {
           <Brain className="w-4 h-4 text-accent" />
           <span className="text-sm font-medium">Thought Stream</span>
         </div>
-        <div className={cn(
-          "w-2 h-2 rounded-full",
-          state === "thinking" || state === "creating"
-            ? "bg-accent animate-pulse"
-            : "bg-muted"
-        )} />
+        <div className="flex items-center gap-2">
+          <div className={cn(
+            "w-2 h-2 rounded-full",
+            state === "thinking" || state === "creating"
+              ? "bg-accent animate-pulse"
+              : "bg-muted"
+          )} />
+          {onClose && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onClose}
+              className="h-7 w-7"
+            >
+              <PanelRightClose className="w-3.5 h-3.5" />
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Thoughts stream */}

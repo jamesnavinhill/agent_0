@@ -6,6 +6,8 @@
 
 import { NextResponse } from "next/server"
 import {
+  ensureSandboxTablesReady,
+  getSandboxApiError,
   listFilesLatest,
   writeFile,
   getFileLatest,
@@ -19,6 +21,8 @@ interface RouteContext {
 
 export async function GET(req: Request, context: RouteContext) {
   try {
+    await ensureSandboxTablesReady()
+
     const { projectId } = await context.params
     const { searchParams } = new URL(req.url)
     const prefix = searchParams.get("prefix") || undefined
@@ -37,13 +41,15 @@ export async function GET(req: Request, context: RouteContext) {
     const files = await listFilesLatest({ projectId, prefix })
     return NextResponse.json({ files, count: files.length })
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to list files"
-    return NextResponse.json({ error: message }, { status: 500 })
+    const sandboxError = getSandboxApiError(error)
+    return NextResponse.json({ error: sandboxError.message }, { status: sandboxError.status })
   }
 }
 
 export async function POST(req: Request, context: RouteContext) {
   try {
+    await ensureSandboxTablesReady()
+
     const { projectId } = await context.params
     const body = await req.json()
 
@@ -73,13 +79,15 @@ export async function POST(req: Request, context: RouteContext) {
 
     return NextResponse.json(file, { status: 201 })
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to write file"
-    return NextResponse.json({ error: message }, { status: 500 })
+    const sandboxError = getSandboxApiError(error)
+    return NextResponse.json({ error: sandboxError.message }, { status: sandboxError.status })
   }
 }
 
 export async function DELETE(req: Request, context: RouteContext) {
   try {
+    await ensureSandboxTablesReady()
+
     const { projectId } = await context.params
     const { searchParams } = new URL(req.url)
     const path = searchParams.get("path")
@@ -100,7 +108,7 @@ export async function DELETE(req: Request, context: RouteContext) {
 
     return NextResponse.json({ deleted: true, file })
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to delete file"
-    return NextResponse.json({ error: message }, { status: 500 })
+    const sandboxError = getSandboxApiError(error)
+    return NextResponse.json({ error: sandboxError.message }, { status: sandboxError.status })
   }
 }

@@ -5,7 +5,12 @@
  */
 
 import { NextResponse } from "next/server"
-import { listDependencies, setDependencies } from "@/lib/db/sandbox"
+import {
+  ensureSandboxTablesReady,
+  getSandboxApiError,
+  listDependencies,
+  setDependencies,
+} from "@/lib/db/sandbox"
 import { pushActivity } from "@/lib/activity/bus"
 
 interface RouteContext {
@@ -14,17 +19,21 @@ interface RouteContext {
 
 export async function GET(req: Request, context: RouteContext) {
   try {
+    await ensureSandboxTablesReady()
+
     const { projectId } = await context.params
     const dependencies = await listDependencies(projectId)
     return NextResponse.json({ dependencies, count: dependencies.length })
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to list dependencies"
-    return NextResponse.json({ error: message }, { status: 500 })
+    const sandboxError = getSandboxApiError(error)
+    return NextResponse.json({ error: sandboxError.message }, { status: sandboxError.status })
   }
 }
 
 export async function PUT(req: Request, context: RouteContext) {
   try {
+    await ensureSandboxTablesReady()
+
     const { projectId } = await context.params
     const body = await req.json()
 
@@ -53,7 +62,7 @@ export async function PUT(req: Request, context: RouteContext) {
 
     return NextResponse.json({ dependencies: result, count: result.length })
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to set dependencies"
-    return NextResponse.json({ error: message }, { status: 500 })
+    const sandboxError = getSandboxApiError(error)
+    return NextResponse.json({ error: sandboxError.message }, { status: sandboxError.status })
   }
 }

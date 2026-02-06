@@ -34,8 +34,12 @@ export function useCodeGeneration(): UseCodeGenerationReturn {
     setError(null)
     setState("creating")
 
-    const activityId = crypto.randomUUID()
-    addActivity("Generating code", `${language ?? "code"}: "${prompt.slice(0, 50)}..."`)
+    const activityId = addActivity(
+      "Generating code",
+      `${language ?? "code"}: "${prompt.slice(0, 50)}..."`,
+      undefined,
+      "running"
+    )
     addThought(`Writing ${language ?? "code"}: "${prompt.slice(0, 60)}"`, "action")
 
     try {

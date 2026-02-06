@@ -5,6 +5,72 @@
 
 import { sql } from "./neon"
 
+const REQUIRED_SANDBOX_TABLES = [
+  "sandbox_projects",
+  "sandbox_files",
+  "sandbox_executions",
+  "sandbox_dependencies",
+] as const
+
+interface PostgresErrorLike {
+  code?: string
+  message?: string
+}
+
+export interface SandboxApiError {
+  message: string
+  status: number
+}
+
+export class SandboxPreflightError extends Error {
+  readonly missingTables: string[]
+
+  constructor(missingTables: string[]) {
+    const tableLabel = missingTables.length === 1 ? "table" : "tables"
+    const tableList = missingTables.join(", ")
+    super(
+      `Sandbox database ${tableLabel} missing: ${tableList}. Run "pnpm run db:migrate" to create required sandbox tables.`
+    )
+    this.name = "SandboxPreflightError"
+    this.missingTables = missingTables
+  }
+}
+
+export async function ensureSandboxTablesReady(): Promise<void> {
+  const rows = await sql<{ table_name: string }>(
+    `SELECT table_name
+     FROM information_schema.tables
+     WHERE table_schema = 'public'
+       AND table_name = ANY($1::text[])`,
+    [[...REQUIRED_SANDBOX_TABLES]]
+  )
+
+  const existing = new Set(rows.map((row) => row.table_name))
+  const missing = REQUIRED_SANDBOX_TABLES.filter((tableName) => !existing.has(tableName))
+  if (missing.length > 0) {
+    throw new SandboxPreflightError([...missing])
+  }
+}
+
+export function getSandboxApiError(error: unknown): SandboxApiError {
+  if (error instanceof SandboxPreflightError) {
+    return { message: error.message, status: 503 }
+  }
+
+  const pgError = error as PostgresErrorLike
+  if (pgError?.code === "42P01") {
+    return {
+      status: 503,
+      message:
+        'Sandbox database schema is not ready. Run "pnpm run db:migrate" and retry.',
+    }
+  }
+
+  const message =
+    error instanceof Error ? error.message : "Sandbox request failed unexpectedly"
+  return { message, status: 500 }
+}
+
 // ============================================================================
 // Types
 // ============================================================================

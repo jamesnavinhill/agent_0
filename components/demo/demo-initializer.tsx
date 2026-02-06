@@ -3,6 +3,8 @@
 import { useEffect, useRef } from "react"
 import { useAgentStore } from "@/lib/store/agent-store"
 
+const DEMO_DATA_ENABLED = process.env.NEXT_PUBLIC_ENABLE_DEMO_DATA === "true"
+
 // Demo data to showcase the interface
 const demoThoughts = [
   { content: "System initialized. All subsystems operational.", type: "observation" as const, delay: 500 },
@@ -50,6 +52,7 @@ export function DemoInitializer() {
   const { addThought, addActivity, updateActivity, addOutput, addMemory } = useAgentStore()
 
   useEffect(() => {
+    if (!DEMO_DATA_ENABLED) return
     if (initialized.current) return
     initialized.current = true
 
@@ -81,6 +84,10 @@ export function DemoInitializer() {
       addMemory(type, content, relevance)
     })
   }, [addThought, addActivity, updateActivity, addOutput, addMemory])
+
+  if (!DEMO_DATA_ENABLED) {
+    return null
+  }
 
   return null
 }

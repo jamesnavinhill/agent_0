@@ -3,7 +3,6 @@
 import { useState, useCallback, useRef } from "react"
 import { useAgentStore } from "@/lib/store/agent-store"
 import { useSettings } from "@/hooks/use-settings"
-import { createId } from "@/lib/utils/id"
 
 export type ChatStatus = "idle" | "loading" | "streaming" | "error"
 
@@ -36,8 +35,12 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
     
     addThought(`Received: "${content.slice(0, 50)}${content.length > 50 ? "..." : ""}"`, "observation")
     
-    const activityId = createId()
-    addActivity("Processing message", content.slice(0, 100))
+    const activityId = addActivity(
+      "Processing message",
+      content.slice(0, 100),
+      undefined,
+      "running"
+    )
     
     const chatMessages = [
       ...messages.map(m => ({ role: m.role, content: m.content })),
@@ -103,6 +106,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
       }
 
       addMessage("assistant", fullContent)
+      updateActivity(activityId, "complete")
       setState("idle")
       setStatus("idle")
       setStreamingContent("")
@@ -111,12 +115,14 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
       
     } catch (error) {
       if ((error as Error).name === "AbortError") {
+        updateActivity(activityId, "error")
         setStatus("idle")
         setState("idle")
         return
       }
       
       console.error("Chat error:", error)
+      updateActivity(activityId, "error")
       setState("error")
       setStatus("error")
       addThought(`Error: ${(error as Error).message}`, "observation")
@@ -127,7 +133,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
         setStatus("idle")
       }, 3000)
     }
-  }, [messages, addMessage, setState, addThought, addActivity, options, settings.model, settings.temperature])
+  }, [messages, addMessage, setState, addThought, addActivity, updateActivity, options, settings.model, settings.temperature])
 
   const abort = useCallback(() => {
     abortControllerRef.current?.abort()

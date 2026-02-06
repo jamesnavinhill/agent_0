@@ -97,7 +97,12 @@ interface AgentStore {
 
   // Activity log
   activities: ActivityEntry[]
-  addActivity: (action: string, details?: string, imageUrl?: string) => void
+  addActivity: (
+    action: string,
+    details?: string,
+    imageUrl?: string,
+    status?: ActivityEntry["status"]
+  ) => string
   updateActivity: (id: string, status: ActivityEntry["status"]) => void
 
   // Outputs/creations
@@ -134,7 +139,7 @@ interface AgentStore {
   }
 
   // UI state
-  activePanel: "chat" | "thoughts" | "activity" | "gallery" | "create" | "monitor" | "schedule" | "memory" | "settings" | "subagents" | "sandbox"
+  activePanel: "chat" | "gallery" | "create" | "monitor" | "schedule" | "memory" | "settings" | "subagents" | "sandbox"
   setActivePanel: (panel: AgentStore["activePanel"]) => void
 
   sidebarOpen: boolean
@@ -163,16 +168,23 @@ export const useAgentStore = create<AgentStore>((set) => ({
   clearThoughts: () => set({ thoughts: [] }),
 
   activities: [],
-  addActivity: (action, details, imageUrl) => set((s) => ({
-    activities: [...s.activities, {
-      id: createId(),
-      action,
-      details,
-      imageUrl,
-      timestamp: new Date(),
-      status: "running" as const
-    }].slice(-100)
-  })),
+  addActivity: (action, details, imageUrl, status = "complete") => {
+    const id = createId()
+    set((s) => ({
+      activities: [
+        ...s.activities,
+        {
+          id,
+          action,
+          details,
+          imageUrl,
+          timestamp: new Date(),
+          status,
+        },
+      ].slice(-100),
+    }))
+    return id
+  },
   updateActivity: (id, status) => set((s) => ({
     activities: s.activities.map((a) => a.id === id ? { ...a, status } : a)
   })),

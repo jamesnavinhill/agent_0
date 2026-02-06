@@ -114,6 +114,23 @@ export interface UseSandboxReturn {
   refresh: () => Promise<void>
 }
 
+async function readErrorMessage(response: Response, fallback: string): Promise<string> {
+  try {
+    const payload = await response.json()
+    if (payload && typeof payload.error === "string" && payload.error.trim()) {
+      return payload.error
+    }
+  } catch {
+    try {
+      const text = await response.text()
+      if (text.trim()) return text
+    } catch {
+      // Ignore parse failures and use fallback.
+    }
+  }
+  return fallback
+}
+
 export function useSandbox(): UseSandboxReturn {
   const [projects, setProjects] = useState<SandboxProject[]>([])
   const [selectedProject, setSelectedProject] = useState<FullProject | null>(null)
@@ -128,7 +145,7 @@ export function useSandbox(): UseSandboxReturn {
     setError(null)
     try {
       const res = await fetch("/api/sandbox/projects")
-      if (!res.ok) throw new Error("Failed to fetch projects")
+      if (!res.ok) throw new Error(await readErrorMessage(res, "Failed to fetch projects"))
       const data = await res.json()
       setProjects(data.projects || [])
     } catch (err) {
@@ -148,7 +165,7 @@ export function useSandbox(): UseSandboxReturn {
     setError(null)
     try {
       const res = await fetch(`/api/sandbox/projects/${projectId}`)
-      if (!res.ok) throw new Error("Failed to fetch project")
+      if (!res.ok) throw new Error(await readErrorMessage(res, "Failed to fetch project"))
       const project = await res.json()
       setSelectedProject(project)
     } catch (err) {
@@ -173,7 +190,7 @@ export function useSandbox(): UseSandboxReturn {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(input),
         })
-        if (!res.ok) throw new Error("Failed to create project")
+        if (!res.ok) throw new Error(await readErrorMessage(res, "Failed to create project"))
         const project = await res.json()
         setProjects((prev) => [project, ...prev])
         return project
@@ -197,7 +214,7 @@ export function useSandbox(): UseSandboxReturn {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(updates),
         })
-        if (!res.ok) throw new Error("Failed to update project")
+        if (!res.ok) throw new Error(await readErrorMessage(res, "Failed to update project"))
         const project = await res.json()
         setProjects((prev) =>
           prev.map((p) => (p.id === projectId ? project : p))
@@ -227,7 +244,7 @@ export function useSandbox(): UseSandboxReturn {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ path, content }),
         })
-        if (!res.ok) throw new Error("Failed to write file")
+        if (!res.ok) throw new Error(await readErrorMessage(res, "Failed to write file"))
         const file = await res.json()
 
         pushActivity({
@@ -269,7 +286,7 @@ export function useSandbox(): UseSandboxReturn {
           `/api/sandbox/projects/${projectId}/files?path=${encodeURIComponent(path)}`,
           { method: "DELETE" }
         )
-        if (!res.ok) throw new Error("Failed to delete file")
+        if (!res.ok) throw new Error(await readErrorMessage(res, "Failed to delete file"))
 
         pushActivity({
           action: "Sandbox: File deleted",
@@ -314,7 +331,7 @@ export function useSandbox(): UseSandboxReturn {
             body: JSON.stringify({ dependencies: deps }),
           }
         )
-        if (!res.ok) throw new Error("Failed to set dependencies")
+        if (!res.ok) throw new Error(await readErrorMessage(res, "Failed to set dependencies"))
         const data = await res.json()
 
         pushActivity({
@@ -362,7 +379,7 @@ export function useSandbox(): UseSandboxReturn {
             }),
           }
         )
-        if (!res.ok) throw new Error("Failed to run code")
+        if (!res.ok) throw new Error(await readErrorMessage(res, "Failed to run code"))
         const execution = await res.json()
 
         pushActivity({
@@ -452,7 +469,9 @@ export function useSandbox(): UseSandboxReturn {
           }
         )
 
-        if (!res.ok) throw new Error("Failed to start streaming execution")
+        if (!res.ok) {
+          throw new Error(await readErrorMessage(res, "Failed to start streaming execution"))
+        }
         if (!res.body) throw new Error("No response body")
 
         const reader = res.body.getReader()

@@ -4,8 +4,6 @@ import { useAgentStore } from "@/lib/store/agent-store"
 import { cn } from "@/lib/utils"
 import {
   MessageSquare,
-  Brain,
-  Activity,
   ImageIcon,
   Settings,
   Calendar,
@@ -26,8 +24,6 @@ import {
 const navItems = [
   { id: "chat" as const, icon: MessageSquare, label: "Chat" },
   { id: "create" as const, icon: Sparkles, label: "Create" },
-  { id: "thoughts" as const, icon: Brain, label: "Thoughts" },
-  { id: "activity" as const, icon: Activity, label: "Activity" },
   { id: "subagents" as const, icon: Users, label: "Sub-Agents" },
   { id: "gallery" as const, icon: ImageIcon, label: "Gallery" },
   { id: "monitor" as const, icon: Radio, label: "Live Monitor" },

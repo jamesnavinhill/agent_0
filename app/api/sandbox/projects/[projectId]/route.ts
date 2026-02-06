@@ -6,6 +6,8 @@
 
 import { NextResponse } from "next/server"
 import {
+  ensureSandboxTablesReady,
+  getSandboxApiError,
   getFullProject,
   updateProject,
   type UpdateProjectInput,
@@ -18,6 +20,8 @@ interface RouteContext {
 
 export async function GET(req: Request, context: RouteContext) {
   try {
+    await ensureSandboxTablesReady()
+
     const { projectId } = await context.params
     const project = await getFullProject(projectId)
 
@@ -27,13 +31,15 @@ export async function GET(req: Request, context: RouteContext) {
 
     return NextResponse.json(project)
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to get project"
-    return NextResponse.json({ error: message }, { status: 500 })
+    const sandboxError = getSandboxApiError(error)
+    return NextResponse.json({ error: sandboxError.message }, { status: sandboxError.status })
   }
 }
 
 export async function PATCH(req: Request, context: RouteContext) {
   try {
+    await ensureSandboxTablesReady()
+
     const { projectId } = await context.params
     const body = await req.json()
 
@@ -61,7 +67,7 @@ export async function PATCH(req: Request, context: RouteContext) {
 
     return NextResponse.json(project)
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to update project"
-    return NextResponse.json({ error: message }, { status: 500 })
+    const sandboxError = getSandboxApiError(error)
+    return NextResponse.json({ error: sandboxError.message }, { status: sandboxError.status })
   }
 }

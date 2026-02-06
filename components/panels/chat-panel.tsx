@@ -5,10 +5,15 @@ import { cn } from "@/lib/utils"
 import { useRef, useEffect } from "react"
 import { AgentOrb } from "@/components/agent/agent-orb"
 import { useTTS } from "@/hooks/use-tts"
-import { Volume2, VolumeX } from "lucide-react"
+import { MessageSquare, PanelRightClose, PanelRightOpen, Volume2, VolumeX } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
-export function ChatPanel() {
+interface ChatPanelProps {
+  thoughtsOpen?: boolean
+  onToggleThoughts?: () => void
+}
+
+export function ChatPanel({ thoughtsOpen = true, onToggleThoughts }: ChatPanelProps) {
   const { messages, state } = useAgentStore()
   const scrollRef = useRef<HTMLDivElement>(null)
   const { speak, stop, isSpeaking } = useTTS()
@@ -42,6 +47,22 @@ export function ChatPanel() {
 
   return (
     <div className="flex flex-col h-full">
+      <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <MessageSquare className="w-4 h-4 text-accent" />
+          <span className="text-sm font-medium">Chat</span>
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 gap-1.5 text-xs"
+          onClick={onToggleThoughts}
+        >
+          {thoughtsOpen ? <PanelRightClose className="w-3.5 h-3.5" /> : <PanelRightOpen className="w-3.5 h-3.5" />}
+          Thought Stream
+        </Button>
+      </div>
+
       {/* Messages area */}
       <div
         ref={scrollRef}

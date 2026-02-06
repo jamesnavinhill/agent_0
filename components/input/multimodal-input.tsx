@@ -262,7 +262,7 @@ export function MultimodalInput({ onSend, disabled }: MultimodalInputProps) {
         )}
 
         {/* Input area */}
-        <div className="flex items-end gap-2">
+        <div className="flex items-center gap-2 rounded-2xl border border-border bg-surface-2 px-2 py-2">
           {/* File upload */}
           <Tooltip>
             <TooltipTrigger asChild>
@@ -271,9 +271,9 @@ export function MultimodalInput({ onSend, disabled }: MultimodalInputProps) {
                 size="icon"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={disabled}
-                className="shrink-0 text-muted-foreground hover:text-foreground"
+                className="h-9 w-9 shrink-0 text-muted-foreground hover:text-foreground"
               >
-                <Paperclip className="w-5 h-5" />
+                <Paperclip className="w-4 h-4" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>Attach files</TooltipContent>
@@ -296,20 +296,20 @@ export function MultimodalInput({ onSend, disabled }: MultimodalInputProps) {
                 onClick={isRecording ? stopRecording : startRecording}
                 disabled={disabled}
                 className={cn(
-                  "shrink-0",
+                  "h-9 w-9 shrink-0",
                   isRecording
                     ? "text-destructive hover:text-destructive animate-pulse"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                {isRecording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+                {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
               </Button>
             </TooltipTrigger>
             <TooltipContent>{isRecording ? "Stop recording" : "Voice input"}</TooltipContent>
           </Tooltip>
 
           {/* Text input */}
-          <div className="flex-1 relative">
+          <div className="flex-1 min-w-0">
             <textarea
               ref={textareaRef}
               value={input}
@@ -320,11 +320,11 @@ export function MultimodalInput({ onSend, disabled }: MultimodalInputProps) {
               disabled={disabled || isRecording}
               rows={1}
               className={cn(
-                "w-full resize-none bg-surface-2 rounded-xl px-4 py-3",
+                "w-full resize-none bg-transparent px-2 py-2",
                 "text-sm placeholder:text-muted-foreground",
-                "focus:outline-none focus:ring-2 focus:ring-accent/50",
+                "leading-5 focus:outline-none",
                 "disabled:opacity-50 disabled:cursor-not-allowed",
-                "max-h-[200px]"
+                "min-h-9 max-h-[200px]"
               )}
             />
           </div>
@@ -336,12 +336,12 @@ export function MultimodalInput({ onSend, disabled }: MultimodalInputProps) {
                 onClick={handleSend}
                 disabled={disabled || isSending || (!input.trim() && attachments.length === 0)}
                 size="icon"
-                className="shrink-0 bg-accent hover:bg-accent/90 text-accent-foreground"
+                className="h-9 w-9 shrink-0 bg-accent hover:bg-accent/90 text-accent-foreground"
               >
                 {isSending ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
-                  <Send className="w-5 h-5" />
+                  <Send className="w-4 h-4" />
                 )}
               </Button>
             </TooltipTrigger>

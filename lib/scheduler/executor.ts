@@ -4,7 +4,12 @@ import { createLogger } from "@/lib/logging/logger"
 const log = createLogger("Executor")
 
 export interface ExecutorContext {
-  addActivity: (action: string, details?: string, imageUrl?: string) => void
+  addActivity: (
+    action: string,
+    details?: string,
+    imageUrl?: string,
+    status?: "pending" | "running" | "complete" | "error"
+  ) => string
   updateActivity: (id: string, status: "pending" | "running" | "complete" | "error") => void
   addThought: (content: string, type: "observation" | "reasoning" | "decision" | "action") => void
   addOutput: (output: {
@@ -17,6 +22,7 @@ export interface ExecutorContext {
   setState: (state: "idle" | "listening" | "thinking" | "creating" | "speaking" | "error") => void
   settings?: {
     imageModel?: string
+    imageAspectRatio?: string
     videoModel?: string
     videoAspectRatio?: string
     videoResolution?: string
@@ -34,7 +40,12 @@ export async function executeTask(
 
   context.setState("creating")
   context.addThought(`Starting scheduled task: ${task.name}`, "action")
-  context.addActivity(`Executing: ${task.name}`, task.description ?? undefined)
+  const activityId = context.addActivity(
+    `Executing: ${task.name}`,
+    task.description ?? undefined,
+    undefined,
+    "running"
+  )
 
   try {
     const result = await executeByCategory(task, context)
@@ -43,6 +54,7 @@ export async function executeTask(
     log.action("Task completed successfully", { taskId: task.id, taskName: task.name, durationMs: duration })
 
     context.addThought(`Completed task: ${task.name}`, "observation")
+    context.updateActivity(activityId, "complete")
     context.setState("idle")
 
     return result
@@ -56,6 +68,7 @@ export async function executeTask(
     })
 
     context.setState("error")
+    context.updateActivity(activityId, "error")
     context.addThought(`Task failed: ${task.name} - ${error instanceof Error ? error.message : "Unknown error"}`, "observation")
     throw error
   }

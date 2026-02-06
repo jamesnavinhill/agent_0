@@ -21,17 +21,27 @@ const client = new Client({
 
 async function main() {
     try {
-        console.log("Reading schema.sql...");
-        const schemaPath = path.join(process.cwd(), "lib", "db", "schema.sql");
-        const schemaSql = fs.readFileSync(schemaPath, "utf8");
+        const migrations = [
+            {
+                label: "core schema",
+                filePath: path.join(process.cwd(), "lib", "db", "schema.sql"),
+            },
+            {
+                label: "sandbox schema",
+                filePath: path.join(process.cwd(), "scripts", "create-sandbox-tables.sql"),
+            },
+        ];
 
         console.log("Connecting to database...");
         await client.connect();
 
-        console.log("Applying schema...");
-        await client.query(schemaSql);
+        for (const migration of migrations) {
+            console.log(`Applying ${migration.label} from ${path.basename(migration.filePath)}...`);
+            const sqlText = fs.readFileSync(migration.filePath, "utf8");
+            await client.query(sqlText);
+        }
 
-        console.log("Schema applied successfully!");
+        console.log("All migrations applied successfully!");
     } catch (error) {
         console.error("Error applying schema:", error);
         process.exit(1);
