@@ -6,7 +6,8 @@
 /* CSS Custom Properties for dynamic accent color */
 :root {
   --accent-hue: 165;
-  --accent-saturation: 0.15;
+  --accent-chroma: 0.15;
+  --accent-lightness: 0.62;
   
   /* Light theme */
   --background: oklch(0.98 0 0);
@@ -15,21 +16,21 @@
   --card-foreground: oklch(0.12 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.12 0 0);
-  --primary: oklch(0.55 var(--accent-saturation) var(--accent-hue));
+  --primary: oklch(var(--accent-lightness) var(--accent-chroma) var(--accent-hue));
   --primary-foreground: oklch(0.98 0 0);
-  --secondary: oklch(0.95 0.01 var(--accent-hue));
+  --secondary: oklch(0.95 calc(var(--accent-chroma) * 0.18) var(--accent-hue));
   --secondary-foreground: oklch(0.2 0 0);
   --muted: oklch(0.94 0 0);
   --muted-foreground: oklch(0.5 0 0);
-  --accent: oklch(0.55 var(--accent-saturation) var(--accent-hue));
+  --accent: oklch(var(--accent-lightness) var(--accent-chroma) var(--accent-hue));
   --accent-foreground: oklch(0.98 0 0);
-  --accent-glow: oklch(0.65 var(--accent-saturation) var(--accent-hue) / 0.4);
-  --accent-subtle: oklch(0.55 var(--accent-saturation) var(--accent-hue) / 0.1);
+  --accent-glow: oklch(calc(var(--accent-lightness) + 0.08) var(--accent-chroma) var(--accent-hue) / 0.4);
+  --accent-subtle: oklch(var(--accent-lightness) var(--accent-chroma) var(--accent-hue) / 0.1);
   --destructive: oklch(0.55 0.2 25);
   --destructive-foreground: oklch(0.98 0 0);
   --border: oklch(0.88 0 0);
   --input: oklch(0.92 0 0);
-  --ring: oklch(0.55 var(--accent-saturation) var(--accent-hue));
+  --ring: oklch(var(--accent-lightness) var(--accent-chroma) var(--accent-hue));
   --radius: 0.5rem; /* Preserving user's radius */
   
   /* Surface layers */
@@ -57,27 +58,30 @@
 }
 
 .dark {
+  --accent-dark-lightness: clamp(0.58, calc(var(--accent-lightness) + 0.08), 0.82);
+  --accent-dark-chroma: clamp(0.06, var(--accent-chroma), 0.22);
+
   --background: oklch(0.08 0.005 var(--accent-hue));
   --foreground: oklch(0.92 0 0);
   --card: oklch(0.11 0.005 var(--accent-hue));
   --card-foreground: oklch(0.92 0 0);
   --popover: oklch(0.10 0.005 var(--accent-hue));
   --popover-foreground: oklch(0.92 0 0);
-  --primary: oklch(0.7 var(--accent-saturation) var(--accent-hue));
+  --primary: oklch(var(--accent-dark-lightness) var(--accent-dark-chroma) var(--accent-hue));
   --primary-foreground: oklch(0.08 0 0);
   --secondary: oklch(0.16 0.008 var(--accent-hue));
   --secondary-foreground: oklch(0.92 0 0);
   --muted: oklch(0.18 0.005 var(--accent-hue));
   --muted-foreground: oklch(0.6 0 0);
-  --accent: oklch(0.7 var(--accent-saturation) var(--accent-hue));
+  --accent: oklch(var(--accent-dark-lightness) var(--accent-dark-chroma) var(--accent-hue));
   --accent-foreground: oklch(0.08 0 0);
-  --accent-glow: oklch(0.7 var(--accent-saturation) var(--accent-hue) / 0.3);
-  --accent-subtle: oklch(0.7 var(--accent-saturation) var(--accent-hue) / 0.08);
+  --accent-glow: oklch(var(--accent-dark-lightness) var(--accent-dark-chroma) var(--accent-hue) / 0.3);
+  --accent-subtle: oklch(var(--accent-dark-lightness) var(--accent-dark-chroma) var(--accent-hue) / 0.08);
   --destructive: oklch(0.55 0.2 25);
   --destructive-foreground: oklch(0.98 0 0);
   --border: oklch(0.22 0.008 var(--accent-hue));
   --input: oklch(0.18 0.005 var(--accent-hue));
-  --ring: oklch(0.7 var(--accent-saturation) var(--accent-hue));
+  --ring: oklch(var(--accent-dark-lightness) var(--accent-dark-chroma) var(--accent-hue));
   
   /* Surface layers - dark */
   --surface-0: oklch(0.08 0.005 var(--accent-hue));

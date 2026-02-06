@@ -1,7 +1,7 @@
 # KOMOREBI V2 ROADMAP
 
 Date: 2026-02-05  
-Status: In Progress (Phases 0-2 completed on 2026-02-06)
+Status: In Progress (Phases 0-3 completed on 2026-02-06)
 
 ## Purpose
 
@@ -171,25 +171,25 @@ Acceptance:
 - [x] No duplicated top "Ready" header.
 - [x] Chat controls align consistently at all widths.
 
-### [ ] Phase 3: Settings IA and Accent Picker Upgrade
+### [x] Phase 3: Settings IA and Accent Picker Upgrade (Completed 2026-02-06)
 
 Target: 2-4 days
 
 Implementation:
 
-- [ ] Restructure API configuration into responsive multi-column layout.
-- [ ] Group controls by function (chat, image, video, scheduling sync).
-- [ ] Replace hue-only picker with full-range picker.
-- [ ] Add 2D color field.
-- [ ] Add hue slider.
-- [ ] Add chroma slider.
-- [ ] Add lightness slider.
-- [ ] Update theme model from single `accentHue` to full accent token state.
+- [x] Restructure API configuration into responsive multi-column layout.
+- [x] Group controls by function (chat, image, video, scheduling sync).
+- [x] Replace hue-only picker with full-range picker.
+- [x] Add 2D color field.
+- [x] Add hue slider.
+- [x] Add chroma slider.
+- [x] Add lightness slider.
+- [x] Update theme model from single `accentHue` to full accent token state.
 
 Acceptance:
 
-- [ ] Settings use space efficiently on desktop while remaining usable on mobile.
-- [ ] Accent control supports precise color shaping (hue/chroma/lightness).
+- [x] Settings use space efficiently on desktop while remaining usable on mobile.
+- [x] Accent control supports precise color shaping (hue/chroma/lightness).
 
 ### [ ] Phase 4: Gallery and Modal Usability
 
@@ -273,7 +273,8 @@ Acceptance:
 
 - [x] Phase 0 (stability, migrations, no-mock baseline)
 - [x] Phase 1 + 2 (navigation consolidation + core UX cleanup)
-- [ ] Phase 4 + 3 (gallery/modal fixes + settings redesign)
+- [x] Phase 3 (settings redesign + full accent controls)
+- [ ] Phase 4 (gallery/modal fixes)
 - [ ] Phase 5 (remove Create tab)
 - [ ] Phase 6 + 7 (sandbox completion + memory bridge)
 
