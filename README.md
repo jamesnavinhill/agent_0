@@ -55,6 +55,19 @@ Run the dev server.
 pnpm run dev
 ```
 
+## Validation Commands
+
+```bash
+pnpm run lint
+pnpm run test
+pnpm run typecheck
+pnpm run build
+```
+
+Notes:
+- `pnpm run build` now runs `pnpm run typecheck` first.
+- Typecheck targets shipped app/runtime code and tests, and excludes `scripts/`.
+
 ## Documentation
 
 - `docs/ARCHITECTURE.MD`
@@ -62,7 +75,8 @@ pnpm run dev
 - `docs/CONFIG.MD`
 - `docs/DATABASE.MD`
 - `docs/DEVELOPMENT.MD`
-- `docs/MEDIA_GENERATION.MD`n- `docs/MODELS.MD``
+- `docs/MEDIA_GENERATION.MD`
+- `docs/MODELS.MD`
 - `docs/COMPONENTS.MD`
 - `docs/SCHEDULING.MD`
 - `docs/STORAGE.MD`
