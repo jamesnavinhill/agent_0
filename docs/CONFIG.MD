@@ -1,6 +1,6 @@
 # CONFIGURATION
 
-Last reviewed: 2026-02-05 (local)
+Last reviewed: 2026-02-06 (local)
 
 This document describes runtime configuration and UI settings based on the current codebase.
 
@@ -9,11 +9,19 @@ This document describes runtime configuration and UI settings based on the curre
 Defined in `.env.local` and referenced via `process.env`.
 
 - `GOOGLE_API_KEY` is required for Gemini, Imagen, and Veo API calls in `lib/api/*`.
+- `GOOGLE_GENERATIVE_AI_API_KEY` is optional as a fallback alias for AI SDK Google provider calls.
 - `DATABASE_URL` is required for Neon Postgres access in `lib/db/neon.ts`.
 - `CRON_SECRET` protects `/api/cron` and `/api/test/morning-read` when set.
 - `MEDIA_ROOT_DIR` optionally overrides the local media root. It must resolve inside `public/` or storage will throw.
+- `AI_GATEWAY_API_KEY` is not used by this project runtime.
 
 Example file: `.env.local.example`.
+
+## Provider Routing
+
+- `lib/api/gemini.ts`, `lib/api/imagen.ts`, and `lib/api/veo.ts` call Google directly via `@google/genai`.
+- AI SDK routes bind explicitly to Google via `lib/api/google-ai-sdk.ts` (`@ai-sdk/google`).
+- The app does not require Vercel AI Gateway for local development or runtime operation.
 
 ## UI Settings (Client-Side)
 

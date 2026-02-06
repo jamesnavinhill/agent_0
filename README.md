@@ -5,6 +5,7 @@ Komorebi is a local-first autonomous agent interface built with Next.js. It comb
 ## Core Capabilities (From Current Code)
 
 - Agent chat with AI SDK orchestration and streaming.
+- Direct Google provider auth for AI SDK routes (no AI Gateway key required).
 - Morning Read research task with Google Search grounding.
 - Image generation and editing with Gemini/Imagen models.
 - Video generation with Veo (text-to-video and image-to-video).
@@ -33,6 +34,10 @@ Required variables:
 - `GOOGLE_API_KEY`
 - `DATABASE_URL`
 - `CRON_SECRET`
+
+Not required:
+
+- `AI_GATEWAY_API_KEY`
 
 Apply database schema (core + sandbox tables).
 

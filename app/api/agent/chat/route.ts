@@ -16,6 +16,7 @@ import {
   composeCitationAwareSystemInstruction,
   getPassiveContext,
 } from "@/lib/memory/bridge"
+import { google, resolveGoogleModelId } from "@/lib/api/google-ai-sdk"
 
 export const maxDuration = 60
 
@@ -159,7 +160,7 @@ export async function POST(req: Request) {
 5. Cite retrieved memory/knowledge IDs when used`
 
       const result = streamText({
-        model: model || "google/gemini-2.5-pro",
+        model: google(resolveGoogleModelId(model, "gemini-2.5-pro")),
         temperature,
         system: composeCitationAwareSystemInstruction(
           `${baseSystem}

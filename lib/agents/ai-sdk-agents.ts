@@ -5,6 +5,7 @@
 
 import { ToolLoopAgent, stepCountIs, tool } from "ai"
 import { z } from "zod"
+import { google } from "@/lib/api/google-ai-sdk"
 import {
   orchestratorTools,
   researcherTools,
@@ -43,7 +44,7 @@ const AGENT_ZERO_INSTRUCTIONS = `You are Komorebi, an autonomous AI agent with a
  * This agent decides what to do and can delegate to specialized sub-agents
  */
 export const orchestratorAgent = new ToolLoopAgent({
-  model: "google/gemini-2.5-pro", // Primary reasoning model
+  model: google("gemini-2.5-pro"), // Primary reasoning model
   instructions: `${AGENT_ZERO_INSTRUCTIONS}
 
 ## Your Role: Orchestrator
@@ -120,7 +121,7 @@ ${options.retrievalContext || "## Retrieved Context\nNo retrieved context provid
 
     // Upgrade model for complex multi-step tasks
     if (stepNumber > 5 && steps.length > 3) {
-      return { model: "google/gemini-2.5-pro" }
+      return { model: google("gemini-2.5-pro") }
     }
 
     return {}
@@ -131,7 +132,7 @@ ${options.retrievalContext || "## Retrieved Context\nNo retrieved context provid
  * Researcher Sub-Agent - Specialized for information gathering
  */
 export const researcherAgent = new ToolLoopAgent({
-  model: "google/gemini-2.5-pro", // Best for research with large context
+  model: google("gemini-2.5-pro"), // Best for research with large context
   instructions: `${AGENT_ZERO_INSTRUCTIONS}
 
 ## Your Role: Researcher
@@ -177,7 +178,7 @@ Always cite sources when possible and distinguish between facts and analysis.`,
  * Creator Sub-Agent - Specialized for content generation
  */
 export const creatorAgent = new ToolLoopAgent({
-  model: "google/gemini-3-pro-preview", // Best for creative tasks
+  model: google("gemini-3-pro-preview"), // Best for creative tasks
   instructions: `${AGENT_ZERO_INSTRUCTIONS}
 
 ## Your Role: Creator
@@ -222,7 +223,7 @@ Be original, imaginative, and detail-oriented in your creations.`,
  * Reviewer Sub-Agent - Specialized for quality assurance
  */
 export const reviewerAgent = new ToolLoopAgent({
-  model: "google/gemini-3-flash-preview", // Fast for analysis tasks
+  model: google("gemini-3-flash-preview"), // Fast for analysis tasks
   instructions: `${AGENT_ZERO_INSTRUCTIONS}
 
 ## Your Role: Reviewer
@@ -267,7 +268,7 @@ Be thorough, objective, and constructive in your reviews.`,
  * Coder Sub-Agent - Specialized for sandbox development
  */
 export const coderAgent = new ToolLoopAgent({
-  model: "google/gemini-3-pro-preview", // Best for coding tasks
+  model: google("gemini-3-pro-preview"), // Best for coding tasks
   instructions: `${AGENT_ZERO_INSTRUCTIONS}
 
 ## Your Role: Coder

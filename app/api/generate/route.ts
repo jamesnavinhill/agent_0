@@ -1,4 +1,5 @@
 import { generateText } from "ai"
+import { google } from "@/lib/api/google-ai-sdk"
 
 export const maxDuration = 120
 
@@ -8,7 +9,7 @@ export async function POST(req: Request) {
   // For image generation, use the Gemini model that supports image output
   if (type === "image") {
     const result = await generateText({
-      model: "google/gemini-2.5-flash-image",
+      model: google("gemini-2.5-flash-image"),
       prompt: `Create a detailed, artistic image based on this description: ${prompt}`,
       maxOutputTokens: 8192,
     })
@@ -34,7 +35,7 @@ export async function POST(req: Request) {
 
   // For text generation
   const result = await generateText({
-    model: "google/gemini-2.5-flash",
+    model: google("gemini-2.5-flash"),
     prompt,
     maxOutputTokens: 4096,
   })

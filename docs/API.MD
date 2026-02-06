@@ -1,6 +1,6 @@
 # API REFERENCE
 
-Last reviewed: 2026-02-05 (local)
+Last reviewed: 2026-02-06 (local)
 
 All routes are under `/api`. This document reflects current route implementations in `app/api/*`.
 
@@ -40,7 +40,7 @@ Notes: `overrides` merges into task parameters for manual runs.
 Method: POST (streaming)
 Body: `{ messages?, prompt?, sessionId?, autonomous? }`
 Response: AI SDK streaming response.
-Notes: Uses `lib/agents/ai-sdk-agents.ts` and `lib/agents/tools`.
+Notes: Uses `lib/agents/ai-sdk-agents.ts`, `lib/agents/tools`, and direct Google provider binding in `lib/api/google-ai-sdk.ts` (no AI Gateway key required).
 
 ### POST /api/agent/stream
 
@@ -147,7 +147,7 @@ Response: `{ success: true }`.
 Method: POST
 Body: `{ prompt, type? }`
 Response: Text or text plus images depending on `type`.
-Notes: Uses Gemini image-capable model when `type` is `image`.
+Notes: Uses AI SDK with direct Google provider binding in `lib/api/google-ai-sdk.ts`.
 
 ### POST /api/generate/image
 
