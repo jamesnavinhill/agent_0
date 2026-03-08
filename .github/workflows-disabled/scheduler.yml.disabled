@@ -1,3 +1,5 @@
+# Disabled intentionally. Keep this file outside `.github/workflows` to prevent GitHub Actions execution.
+
 name: Agent Scheduler
 
 on:

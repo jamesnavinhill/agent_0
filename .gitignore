@@ -30,3 +30,11 @@ next-env.d.ts
 # System Files
 .DS_Store
 Thumbs.db
+
+# Keep GitHub Actions disabled in this repo.
+.github/workflows/*.yml
+.github/workflows/*.yaml
+
+# Keep Git LFS config out of this repo.
+.lfsconfig
+.gitattributes
